@@ -1,0 +1,190 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
+  diagnosticResult Json?
+  onboardingComplete Boolean @default(false)
+
+  progress      UserProgress[]
+  attempts      Attempt[]
+  mistakeLogs   MistakeLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Subject {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  topics      Topic[]
+}
+
+model Topic {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  subjectId        String
+  subject          Subject  @relation(fields: [subjectId], references: [id])
+  dependencyOrder  Int      @default(0)
+  difficultyTier   String   @default("Foundational") // Foundational, Core, Advanced
+
+  pyqs             PYQ[]
+  summaries        TopicSummary?
+  resources        TopicResource?
+  userProgress     UserProgress[]
+
+  @@unique([subjectId, name])
+}
+
+model PYQ {
+  id          String   @id @default(cuid())
+  topicId     String
+  topic       Topic    @relation(fields: [topicId], references: [id])
+  year        Int
+  exam        String   @default("GATE")
+  question    String
+  options     Json?    // Array of options
+  answer      String
+  type        String   @default("MCQ") // MCQ, NAT, MSQ
+  marks       Int      @default(1)
+
+  metadata    PYQMetadata?
+  attempts    Attempt[]
+  mistakeLogs MistakeLog[]
+}
+
+model PYQMetadata {
+  id                  String   @id @default(cuid())
+  pyqId               String   @unique
+  pyq                 PYQ      @relation(fields: [pyqId], references: [id])
+  subtopic            String?
+  conceptTags         String?  // JSON stringified array
+  difficulty          String   @default("medium")
+  questionType        String?  // conceptual, numerical, application
+  commonMistake       String?
+  oneLineExplanation  String?
+  precomputedAt       DateTime @default(now())
+}
+
+model TopicSummary {
+  id                  String   @id @default(cuid())
+  topicId             String   @unique
+  topic               Topic    @relation(fields: [topicId], references: [id])
+  coreConcepts        String?  // JSON stringified array
+  commonExamPatterns  String?  // JSON stringified array
+  keyFormulas         String?  // JSON stringified array
+  mostTestedSubtopics String?  // JSON stringified array
+  typicalMistakes     String?  // JSON stringified array
+  precomputedAt       DateTime @default(now())
+}
+
+model TopicResource {
+  id                      String   @id @default(cuid())
+  topicId                 String   @unique
+  topic                   Topic    @relation(fields: [topicId], references: [id])
+  bestYoutubeChannels     String?  // JSON stringified array
+  recommendedBookChapters String?  // JSON stringified array of objects
+  notesKeywords           String?  // JSON stringified array
+  precomputedAt           DateTime @default(now())
+}
+
+model UserProgress {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  topicId       String
+  topic         Topic    @relation(fields: [topicId], references: [id])
+  status        String   @default("Locked") // Locked, Active, InProgress, Completed
+  coverageScore Float    @default(0)
+  lastStudiedAt DateTime @default(now())
+
+  @@unique([userId, topicId])
+}
+
+model Attempt {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  pyqId       String
+  pyq         PYQ      @relation(fields: [pyqId], references: [id])
+  userAnswer  String?
+  isCorrect   Boolean
+  timeSpent   Int      // in seconds
+  memoryScore Float    @default(1.0)
+  attemptedAt DateTime @default(now())
+}
+
+model MistakeLog {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
+  pyqId            String
+  pyq              PYQ      @relation(fields: [pyqId], references: [id])
+  mistakeType      String   // Conceptual, Calculation, Misread, TimePressure, Silly
+  confidenceBefore Int      @default(3) // 1-5
+  timeSpent        Int
+  loggedAt         DateTime @default(now())
+}
+
+model MistakeClassificationRule {
+  id                 String   @id @default(cuid())
+  topicId            String
+  wrongAnswerPattern String
+  mistakeType        String
+  rootCause          String
+  precomputedAt      DateTime @default(now())
+}
