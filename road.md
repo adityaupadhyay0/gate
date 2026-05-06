@@ -53,10 +53,10 @@ The system produces:
 - `initial_roadmap`: ordered topic list (auto-generated)
 
 ### Task: Build Entry Test Flow
-- [ ] Build `/onboarding/test` page in Next.js (App Router)
-- [ ] Create `DiagnosticEngine` service — takes answers, returns `strength_map`
-- [ ] Store result in DB under `user.diagnostic_result`
-- [ ] Redirect → `/roadmap` after submission
+- [x] Build `/onboarding/test` page in Next.js (App Router)
+- [x] Create `DiagnosticEngine` service — takes answers, returns `strength_map`
+- [x] Store result in DB under `user.diagnostic_result`
+- [x] Redirect → `/roadmap` after submission
 
 ---
 
@@ -83,10 +83,10 @@ Each topic card shows:
 - Status: `Locked / Active / In Progress / Completed`
 
 ### Task: Build Roadmap Page
-- [ ] Build `/roadmap` page — vertical scrollable topic list
-- [ ] `RoadmapEngine.generate(userId)` — pure function, no AI call
-- [ ] Topic cards with lock/unlock logic based on prerequisites
-- [ ] Persist roadmap to DB — regenerate only if syllabus changes
+- [x] Build `/roadmap` page — vertical scrollable topic list
+- [x] `RoadmapEngine.generate(userId)` — pure function, no AI call
+- [x] Topic cards with lock/unlock logic based on prerequisites
+- [x] Persist roadmap to DB — regenerate only if syllabus changes
 
 ---
 
@@ -126,11 +126,11 @@ System offers **curated choices** — never forces one path:
 > ⚠️ **Design Rule:** PYQs are always Tab 1. Resources are Tab 2+. Never swap this order.
 
 ### Task: Build Topic Learning Page
-- [ ] Build `/topic/[slug]` page
-- [ ] `PYQPlayer` component — renders question, options, timer
-- [ ] Tab system: PYQs → Notes → Videos → Books
-- [ ] Track `attempted`, `correct`, `skipped` per PYQ in DB
-- [ ] Show progress bar: X of Y PYQs solved
+- [x] Build `/topic/[slug]` page
+- [x] `PYQPlayer` component — renders question, options, timer
+- [x] Tab system: PYQs → Notes → Videos → Books
+- [x] Track `attempted`, `correct`, `skipped` per PYQ in DB
+- [x] Show progress bar: X of Y PYQs solved
 
 ---
 
@@ -157,10 +157,10 @@ coverage_score = (solved_PYQs / available_PYQs) × concept_coverage_weight
 | Topic has exactly 50 | Same | Same |
 
 ### Task: Build Completion Gate Logic
-- [ ] `CompletionEngine.check(userId, topicId)` → returns `{ complete: bool, score: float }`
-- [ ] Block "Mark Complete" button until threshold met
-- [ ] Show gap message: *"Solve 6 more PYQs to unlock next topic"*
-- [ ] On completion: trigger `RevisionEngine.enqueue(topicId)`
+- [x] `CompletionEngine.check(userId, topicId)` → returns `{ complete: bool, score: float }`
+- [x] Block "Mark Complete" button until threshold met
+- [x] Show gap message: *"Solve 6 more PYQs to unlock next topic"*
+- [x] On completion: trigger `RevisionEngine.enqueue(topicId)`
 
 ---
 
@@ -210,11 +210,11 @@ revision_priority = (1 − memory_score) × topic_pyq_weight × exam_proximity_f
 - After session: memory scores recalculated
 
 ### Task: Build Revision Engine
-- [ ] `RevisionEngine.enqueue(topicId)` — called on topic completion
-- [ ] Nightly cron job (Next.js API route + Vercel Cron): recalculate all memory scores
-- [ ] `RevisionEngine.getQueue(userId)` — returns sorted list of PYQs due
-- [ ] Build `/revision` page — shows today's queue
-- [ ] After session: call `RevisionEngine.updateScores(sessionResults[])`
+- [x] `RevisionEngine.enqueue(topicId)` — called on topic completion
+- [x] Nightly cron job (Next.js API route + Vercel Cron): recalculate all memory scores
+- [x] `RevisionEngine.getQueue(userId)` — returns sorted list of PYQs due
+- [x] Build `/revision` page — shows today's queue
+- [x] After session: call `RevisionEngine.updateScores(sessionResults[])`
 
 ---
 
@@ -242,10 +242,10 @@ Every subject shows a **health bar** — aggregate memory score across all its P
 - Red → below 0.50
 
 ### Task: Build Revision Dashboard
-- [ ] `/dashboard/revision` — health map + today's queue
-- [ ] Color-coded topic cards by memory health
-- [ ] Streak tracker: consecutive days of revision
-- [ ] "Weak Topics" summary panel
+- [x] `/dashboard/revision` — health map + today's queue
+- [x] Color-coded topic cards by memory health
+- [x] Streak tracker: consecutive days of revision
+- [x] "Weak Topics" summary panel
 
 ---
 
@@ -271,10 +271,10 @@ Automatically unlocked when **all topics in a subject** reach `coverage_score �
 - Recommended revision targets
 
 ### Task: Build Sectional Test Engine
-- [ ] `TestEngine.generate(subjectId, userId)` — builds paper from PYQ pool
-- [ ] Build `/test/[id]` — full-screen timed test interface
-- [ ] Negative marking logic baked into scoring
-- [ ] Post-test report page `/test/[id]/report`
+- [x] `TestEngine.generate(subjectId, userId)` — builds paper from PYQ pool
+- [x] Build `/test/[id]` — full-screen timed test interface
+- [x] Negative marking logic baked into scoring
+- [x] Post-test report page `/test/[id]/report`
 
 ---
 
@@ -299,10 +299,10 @@ All subjects completed (coverage threshold met).
 - Score trend across mocks (graph)
 
 ### Task: Build Mock Test System
-- [ ] Full GATE-pattern paper generator
-- [ ] Rank estimator using historical cutoff data (static table)
-- [ ] Score trend chart on `/dashboard`
-- [ ] Error pattern report: cluster mistakes by concept type
+- [x] Full GATE-pattern paper generator
+- [x] Rank estimator using historical cutoff data (static table)
+- [x] Score trend chart on `/dashboard`
+- [x] Error pattern report: cluster mistakes by concept type
 
 ---
 
@@ -334,10 +334,10 @@ if (silly_mistakes > 4):
 ```
 
 ### Task: Build Mistake Intelligence
-- [ ] Add `mistake_log` table to DB
-- [ ] Post-answer modal: "What went wrong?" (quick-tap options)
-- [ ] `MistakeAnalyzer.run(userId, subjectId)` — pattern detection
-- [ ] Mistake insights card on dashboard
+- [x] Add `mistake_log` table to DB
+- [x] Post-answer modal: "What went wrong?" (quick-tap options)
+- [x] `MistakeAnalyzer.run(userId, subjectId)` — pattern detection
+- [x] Mistake insights card on dashboard
 
 ---
 
@@ -460,10 +460,10 @@ These features call Gemini **live**, gated behind a premium flag:
 ```
 
 ### Task: Build Precomputation Pipeline
-- [ ] Set up Gemini API client in `/lib/gemini.ts`
-- [ ] Write `run-pyq-tagging.ts` — reads all PYQs, calls Gemini, stores to DB
-- [ ] Add `precomputed_at` timestamp to every table → re-run only on content change
-- [ ] Build `/admin/precompute` dashboard — trigger jobs manually, view status
+- [x] Set up Gemini API client in `/lib/gemini.ts`
+- [x] Write `run-pyq-tagging.ts` — reads all PYQs, calls Gemini, stores to DB
+- [x] Add `precomputed_at` timestamp to every table → re-run only on content change
+- [x] Build `/admin/precompute` dashboard — trigger jobs manually, view status
 
 ---
 
@@ -476,61 +476,61 @@ These features call Gemini **live**, gated behind a premium flag:
 ---
 
 ## Phase 0 — Foundation (Week 1)
-- [ ] Init Next.js 14 App Router project
-- [ ] Set up Postgres DB + Prisma ORM
-- [ ] Auth: NextAuth.js (Google login)
-- [ ] DB schema: `users`, `topics`, `pyqs`, `pyq_metadata`, `user_progress`
-- [ ] Seed DB with GATE syllabus (static JSON → DB)
-- [ ] Deploy to Vercel (staging env)
+- [x] Init Next.js 14 App Router project
+- [x] Set up Postgres DB + Prisma ORM
+- [x] Auth: NextAuth.js (Google login)
+- [x] DB schema: `users`, `topics`, `pyqs`, `pyq_metadata`, `user_progress`
+- [x] Seed DB with GATE syllabus (static JSON → DB)
+- [x] Deploy to Vercel (staging env)
 
 ---
 
 ## Phase 1 — Learning Experience (Week 2–3)
-- [ ] Entry test page + `DiagnosticEngine`
-- [ ] Roadmap page + `RoadmapEngine.generate()`
-- [ ] Topic page + `PYQPlayer` component
-- [ ] PYQ attempt tracking (correct / wrong / skipped)
-- [ ] Completion gate logic + unlock flow
-- [ ] Resource tabs (Notes / Video / Books)
+- [x] Entry test page + `DiagnosticEngine`
+- [x] Roadmap page + `RoadmapEngine.generate()`
+- [x] Topic page + `PYQPlayer` component
+- [x] PYQ attempt tracking (correct / wrong / skipped)
+- [x] Completion gate logic + unlock flow
+- [x] Resource tabs (Notes / Video / Books)
 
 ---
 
 ## Phase 2 — Revision Surety (Week 4–5)
-- [ ] Memory score schema + decay calculation
-- [ ] Nightly cron: recalculate memory scores
-- [ ] Revision queue page + session player
-- [ ] Mistake log: capture type, confidence, time
-- [ ] `MistakeAnalyzer` pattern detection
-- [ ] Dashboard: health map + streak + weak topics
+- [x] Memory score schema + decay calculation
+- [x] Nightly cron: recalculate memory scores
+- [x] Revision queue page + session player
+- [x] Mistake log: capture type, confidence, time
+- [x] `MistakeAnalyzer` pattern detection
+- [x] Dashboard: health map + streak + weak topics
 
 ---
 
 ## Phase 3 — Testing System (Week 6)
-- [ ] Sectional test generator
-- [ ] Full-screen test interface (GATE-like UI)
-- [ ] Negative marking scoring engine
-- [ ] Post-test report page
-- [ ] Full mock test (65Q / 3hr)
-- [ ] Score trend chart + rank estimator
+- [x] Sectional test generator
+- [x] Full-screen test interface (GATE-like UI)
+- [x] Negative marking scoring engine
+- [x] Post-test report page
+- [x] Full mock test (65Q / 3hr)
+- [x] Score trend chart + rank estimator
 
 ---
 
 ## Phase 4 — AI Precomputation (Week 7)
-- [ ] Gemini API client setup
-- [ ] Batch: PYQ tagging script
-- [ ] Batch: Topic summary script
-- [ ] Batch: Resource curation script
-- [ ] Admin panel to trigger + monitor jobs
-- [ ] Wire precomputed data into topic pages
+- [x] Gemini API client setup
+- [x] Batch: PYQ tagging script
+- [x] Batch: Topic summary script
+- [x] Batch: Resource curation script
+- [x] Admin panel to trigger + monitor jobs
+- [x] Wire precomputed data into topic pages
 
 ---
 
 ## Phase 5 — Rank Optimization Mode (Week 8)
-- [ ] Auto-detect: all subjects completed → shift to rank mode
-- [ ] Weak-area-only revision queue
-- [ ] Test frequency intensifier (more mocks)
-- [ ] "Marks at stake" view: topics sorted by ROI
-- [ ] Final 30-day sprint plan generator
+- [x] Auto-detect: all subjects completed → shift to rank mode
+- [x] Weak-area-only revision queue
+- [x] Test frequency intensifier (more mocks)
+- [x] "Marks at stake" view: topics sorted by ROI
+- [x] Final 30-day sprint plan generator
 
 ---
 
