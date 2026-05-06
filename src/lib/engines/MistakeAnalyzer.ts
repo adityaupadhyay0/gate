@@ -40,6 +40,30 @@ export class MistakeAnalyzer {
       });
     }
 
+    // New: Confidence Mismatch Detection
+    const attemptsWithConfidence = await prisma.attempt.findMany({
+      where: { userId, confidenceLevel: { not: null } },
+      take: 20,
+      orderBy: { attemptedAt: 'desc' }
+    });
+
+    const overconfidentCount = attemptsWithConfidence.filter(a => !a.isCorrect && (a.confidenceLevel || 0) >= 4).length;
+    const underconfidentCount = attemptsWithConfidence.filter(a => a.isCorrect && (a.confidenceLevel || 0) <= 2).length;
+
+    if (overconfidentCount > 3) {
+      insights.push({
+        type: 'PSYCHOLOGICAL',
+        message: 'Overconfidence signal detected. You are certain but often wrong in this subject.'
+      });
+    }
+
+    if (underconfidentCount > 5) {
+      insights.push({
+        type: 'PSYCHOLOGICAL',
+        message: 'Underconfidence detected. You know more than you think—trust your first instinct.'
+      });
+    }
+
     return insights;
   }
 }

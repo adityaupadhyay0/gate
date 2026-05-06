@@ -115,6 +115,8 @@ const syllabus = [
 
 async function main() {
   console.log('Seeding syllabus...');
+  const topicMap: Record<string, string> = {};
+
   for (const s of syllabus) {
     const subject = await prisma.subject.upsert({
       where: { slug: s.slug },
@@ -126,7 +128,7 @@ async function main() {
     });
 
     for (const t of s.topics) {
-      await prisma.topic.upsert({
+      const topic = await prisma.topic.upsert({
         where: { slug: t.slug },
         update: {},
         create: {
@@ -137,15 +139,69 @@ async function main() {
           difficultyTier: t.difficultyTier,
         },
       });
+      topicMap[t.slug] = topic.id;
+    }
+  }
+
+  console.log('Seeding Topic Dependencies (DAG)...');
+  const dependencies = [
+    // Programming -> DS -> Algorithms
+    ['c-programming', 'basic-ds'],
+    ['basic-ds', 'linked-lists'],
+    ['basic-ds', 'trees'],
+    ['trees', 'bst'],
+    ['basic-ds', 'searching-sorting'],
+    ['searching-sorting', 'greedy'],
+    ['searching-sorting', 'divide-conquer'],
+    ['graphs-ds', 'graph-search'],
+    ['graph-search', 'mst'],
+    ['graph-search', 'shortest-paths'],
+
+    // Discrete Math (Not in syllabus array but needed if added) -> TOC -> Compiler
+    ['regular-languages', 'cfg-pda'],
+    ['cfg-pda', 'tm-undecidability'],
+    ['regular-languages', 'lexical-analysis'],
+    ['cfg-pda', 'parsing'],
+    ['parsing', 'sdt'],
+
+    // Digital Logic -> COA -> OS
+    ['boolean-algebra', 'combinational-circuits'],
+    ['combinational-circuits', 'sequential-circuits'],
+    ['sequential-circuits', 'alu-datapath'],
+    ['instructions-addressing', 'alu-datapath'],
+    ['alu-datapath', 'pipelining'],
+    ['memory-hierarchy', 'os'], // Generic OS dependency
+    ['processes-ipc', 'concurrency-sync'],
+    ['concurrency-sync', 'deadlock'],
+  ];
+
+  for (const [preSlug, depSlug] of dependencies) {
+    const topicId = topicMap[depSlug];
+    const prerequisiteId = topicMap[preSlug];
+
+    if (topicId && prerequisiteId) {
+      await prisma.topicDependency.upsert({
+        where: {
+          topicId_prerequisiteId: {
+            topicId,
+            prerequisiteId,
+          }
+        },
+        update: {},
+        create: {
+          topicId,
+          prerequisiteId,
+        }
+      });
     }
   }
 
   console.log('Seeding sample PYQs...');
   const topics = await prisma.topic.findMany();
   for (const topic of topics) {
-    const numPyqs = Math.floor(Math.random() * 10) + 5; // 5-15 PYQs per topic
+    const numPyqs = Math.floor(Math.random() * 10) + 15; // At least 15 to meet floor
     for (let i = 1; i <= numPyqs; i++) {
-      await prisma.pYQ.create({
+      const pyq = await prisma.pYQ.create({
         data: {
           topicId: topic.id,
           year: 2015 + Math.floor(Math.random() * 10),
@@ -155,6 +211,15 @@ async function main() {
           type: 'MCQ',
           marks: Math.random() > 0.5 ? 2 : 1,
         },
+      });
+
+      await prisma.pYQMetadata.create({
+        data: {
+          pyqId: pyq.id,
+          globalDifficulty: Math.random(),
+          questionType: i % 2 === 0 ? 'conceptual' : 'numerical',
+          oneLineExplanation: `This is a precomputed explanation for question ${i}.`,
+        }
       });
     }
   }

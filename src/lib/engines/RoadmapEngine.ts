@@ -1,52 +1,70 @@
 import prisma from "@/lib/db/prisma";
 
 export class RoadmapEngine {
+  /**
+   * Topological Order (dependencies) + ROI Priority Score
+   * ROI = (ExamWeight × ImprovementPotential) / TimeCost
+   */
   static async generate(userId: string) {
     const user = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: userId },
+      include: {
+        attempts: true,
+        progress: true,
+      }
     });
 
     const diagnostic = user?.diagnosticResult ? JSON.parse(user.diagnosticResult as string) : null;
     const weakAreas = diagnostic?.weakAreas || [];
 
-    const subjects = await prisma.subject.findMany({
+    // 1. Fetch all topics with dependencies and metadata
+    const allTopics = await prisma.topic.findMany({
       include: {
-        topics: {
-          include: {
-            _count: {
-              select: { pyqs: true }
-            }
-          }
-        }
+        subject: true,
+        dependencies: true,
+        prerequisites: true,
+        _count: { select: { pyqs: true } },
+        userProgress: { where: { userId } },
+        summaries: true,
       }
     });
 
-    // Score topics
-    const scoredSubjects = subjects.map(subject => {
-      const scoredTopics = subject.topics.map(topic => {
-        const pyqWeight = topic._count.pyqs;
-        const dependencyOrder = topic.dependencyOrder;
-        const userWeakness = weakAreas.includes(topic.name) ? 100 : 0;
+    // 2. ROI Scoring
+    const scoredTopics = allTopics.map(topic => {
+      const examWeight = topic._count.pyqs; // Proxy for weight
+      const mastery = topic.userProgress[0]?.coverageScore || 0;
 
-        // priority_score = (pyq_weight × 0.5) + (dependency_order × 0.3) + (user_weakness × 0.2)
-        // Normalizing for this demo
-        const score = (pyqWeight * 0.5) + (dependencyOrder * 0.3) + (userWeakness * 0.2);
+      // ImprovementPotential = (1 - mastery) + (diagnostic_weakness ? 0.5 : 0)
+      const improvementPotential = (1 - mastery) + (weakAreas.includes(topic.name) ? 0.5 : 0);
 
-        return {
-          ...topic,
-          priorityScore: score
-        };
-      });
+      // TimeCost: Base 1.0, can be refined later by actual usage
+      const timeCost = 1.0;
 
-      // Sort topics within subject by priority score descending
-      scoredTopics.sort((a, b) => b.priorityScore - a.priorityScore);
+      const roiScore = (examWeight * improvementPotential) / timeCost;
 
       return {
-        ...subject,
-        topics: scoredTopics
+        ...topic,
+        roiScore,
+        isUnlocked: topic.prerequisites.every(p => {
+          const preTopic = allTopics.find(t => t.id === p.prerequisiteId);
+          return preTopic?.userProgress[0]?.status === 'Completed';
+        })
       };
     });
 
-    return scoredSubjects;
+    // 3. Subject Grouping (as requested by SRS)
+    const subjects = await prisma.subject.findMany();
+    const roadmap = subjects.map(subject => {
+      const topicsInSubject = scoredTopics
+        .filter(t => t.subjectId === subject.id)
+        .sort((a, b) => b.roiScore - a.roiScore); // Within subject, show high ROI first
+
+      return {
+        ...subject,
+        topics: topicsInSubject
+      };
+    });
+
+    return roadmap;
   }
 }

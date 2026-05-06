@@ -79,7 +79,7 @@ model Topic {
   slug             String   @unique
   subjectId        String
   subject          Subject  @relation(fields: [subjectId], references: [id])
-  dependencyOrder  Int      @default(0)
+  dependencyOrder  Int      @default(0) // Still useful for general ordering
   difficultyTier   String   @default("Foundational") // Foundational, Core, Advanced
 
   pyqs             PYQ[]
@@ -87,7 +87,21 @@ model Topic {
   resources        TopicResource?
   userProgress     UserProgress[]
 
+  dependencies     TopicDependency[] @relation("DependentTopic")
+  prerequisites    TopicDependency[] @relation("PrerequisiteTopic")
+
   @@unique([subjectId, name])
+}
+
+model TopicDependency {
+  id               String @id @default(cuid())
+  topicId          String
+  prerequisiteId   String
+
+  topic            Topic @relation("DependentTopic", fields: [topicId], references: [id])
+  prerequisite     Topic @relation("PrerequisiteTopic", fields: [prerequisiteId], references: [id])
+
+  @@unique([topicId, prerequisiteId])
 }
 
 model PYQ {
@@ -113,7 +127,7 @@ model PYQMetadata {
   pyq                 PYQ      @relation(fields: [pyqId], references: [id])
   subtopic            String?
   conceptTags         String?  // JSON stringified array
-  difficulty          String   @default("medium")
+  globalDifficulty    Float    @default(0.5) // 0 to 1
   questionType        String?  // conceptual, numerical, application
   commonMistake       String?
   oneLineExplanation  String?
@@ -139,6 +153,11 @@ model TopicResource {
   bestYoutubeChannels     String?  // JSON stringified array
   recommendedBookChapters String?  // JSON stringified array of objects
   notesKeywords           String?  // JSON stringified array
+
+  learningGain            Float    @default(0) // Aggregate learning gain
+  totalTimeSpent          Int      @default(0) // In seconds
+  usageCount              Int      @default(0)
+
   precomputedAt           DateTime @default(now())
 }
 
@@ -156,16 +175,18 @@ model UserProgress {
 }
 
 model Attempt {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  pyqId       String
-  pyq         PYQ      @relation(fields: [pyqId], references: [id])
-  userAnswer  String?
-  isCorrect   Boolean
-  timeSpent   Int      // in seconds
-  memoryScore Float    @default(1.0)
-  attemptedAt DateTime @default(now())
+  id                  String   @id @default(cuid())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id])
+  pyqId               String
+  pyq                 PYQ      @relation(fields: [pyqId], references: [id])
+  userAnswer          String?
+  isCorrect           Boolean
+  timeSpent           Int      // in seconds
+  memoryScore         Float    @default(1.0)
+  personalDifficulty  Float    @default(0.5) // Calculated per attempt
+  confidenceLevel     Int?     // 1-5 (Post-answer reflection)
+  attemptedAt         DateTime @default(now())
 }
 
 model MistakeLog {

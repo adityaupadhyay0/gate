@@ -10,6 +10,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
   const [startTime, setStartTime] = useState(Date.now());
   const [confidence, setConfidence] = useState(3);
   const [showMistakeModal, setShowMistakeModal] = useState(false);
+  const [showReflection, setShowReflection] = useState(false);
 
   useEffect(() => {
     setStartTime(Date.now());
@@ -21,17 +22,27 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
   const options = JSON.parse(currentPYQ.options);
 
   const handleSubmit = async () => {
+    // Show reflection BEFORE final submission to database
+    // "How sure were you?" - Post-answer but pre-persistence
+    setShowReflection(true);
+  };
+
+  const handleFinalSubmit = async (selectedConfidence: number) => {
     const isCorrect = selectedOption === currentPYQ.answer;
     const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+
+    setConfidence(selectedConfidence);
+    setIsSubmitted(true);
+    setShowReflection(false);
 
     await saveAttempt({
       pyqId: currentPYQ.id,
       userAnswer: selectedOption!,
       isCorrect,
-      timeSpent
+      timeSpent,
+      confidenceLevel: selectedConfidence
     });
 
-    setIsSubmitted(true);
     if (!isCorrect) {
       setShowMistakeModal(true);
     }
@@ -71,18 +82,6 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
         </p>
       </div>
 
-      <div className="mb-6">
-        <label className="text-sm font-bold text-gray-500 mb-2 block uppercase tracking-wider">
-          Confidence Level (Before Answering): {confidence}/5
-        </label>
-        <input
-          type="range" min="1" max="5"
-          value={confidence}
-          disabled={isSubmitted}
-          onChange={(e) => setConfidence(parseInt(e.target.value))}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-        />
-      </div>
 
       <div className="space-y-3 mb-8">
         {options.map((option: string) => (
@@ -138,17 +137,41 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
         </div>
       )}
 
+      {showReflection && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl text-center">
+            <h3 className="text-2xl font-bold mb-2">How sure were you?</h3>
+            <p className="text-gray-500 text-sm mb-8">Reflecting on your certainty helps AI detect mastery patterns.</p>
+            <div className="flex justify-between items-center gap-2 mb-2">
+              {[1, 2, 3, 4, 5].map(val => (
+                <button
+                  key={val}
+                  onClick={() => handleFinalSubmit(val)}
+                  className="w-12 h-12 rounded-xl border-2 border-gray-100 hover:border-blue-600 hover:bg-blue-50 text-xl font-bold transition-all"
+                >
+                  {val}
+                </button>
+              ))}
+            </div>
+            <div className="flex justify-between text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+              <span>Guessing</span>
+              <span>Certain</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showMistakeModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl">
-            <h3 className="text-xl font-bold mb-2">What went wrong?</h3>
-            <p className="text-gray-500 text-sm mb-6">Capture the root cause to fix it forever.</p>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl">
+            <h3 className="text-2xl font-bold mb-2">What went wrong?</h3>
+            <p className="text-gray-500 text-sm mb-8">Capture the root cause to fix it forever.</p>
             <div className="grid grid-cols-1 gap-3">
               {['Conceptual', 'Calculation', 'Misread', 'Time Pressure', 'Silly'].map(type => (
                 <button
                   key={type}
                   onClick={() => handleLogMistake(type)}
-                  className="w-full text-left p-3 border rounded-lg hover:bg-gray-50 font-medium transition-colors"
+                  className="w-full text-left p-4 border rounded-xl hover:border-blue-600 hover:bg-blue-50 font-bold transition-all"
                 >
                   {type}
                 </button>

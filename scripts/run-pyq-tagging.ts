@@ -14,7 +14,7 @@ async function main() {
     const metadata = {
       subtopic: "General",
       conceptTags: JSON.stringify(["Logic", "Basics"]),
-      difficulty: Math.random() > 0.7 ? "hard" : Math.random() > 0.4 ? "medium" : "easy",
+      globalDifficulty: Math.random(),
       questionType: "conceptual",
       commonMistake: "Misinterpreting the question",
       oneLineExplanation: "This is a precomputed explanation for " + pyq.question.substring(0, 20)

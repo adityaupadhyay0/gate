@@ -1,27 +1,38 @@
 import prisma from "@/lib/db/prisma";
 
 export class DiagnosticEngine {
+  /**
+   * Hybrid Benchmarking System
+   * 70% Fixed "Anchor Set" for global comparability
+   * 30% Adaptive Edge Set for signal amplification
+   */
   static async getTestQuestions() {
-    // Covers 5-6 subjects, 2-3 questions each (Total ~12-15)
-    const subjects = await prisma.subject.findMany({
-      take: 6,
+    // 1. Get Anchor Set (Fixed 10 questions)
+    // In a real system, these would be specific IDs. For now, we take 10 consistent ones.
+    const anchorQuestions = await prisma.pYQ.findMany({
+      take: 10,
+      orderBy: { id: 'asc' }, // Deterministic for benchmarking
       include: {
-        topics: {
-          take: 3,
-          include: {
-            pyqs: {
-              take: 1
-            }
-          }
+        topic: {
+          include: { subject: true }
         }
       }
     });
 
-    const questions = subjects.flatMap(s =>
-      s.topics.flatMap(t => t.pyqs)
-    ).filter(Boolean).slice(0, 15);
+    // 2. Get Adaptive Edge Set (5 questions)
+    // We'll pick from subjects not covered well in the anchor set or just random ones for now.
+    const adaptiveQuestions = await prisma.pYQ.findMany({
+      take: 5,
+      skip: 50, // Skip anchor pool
+      orderBy: { id: 'desc' },
+      include: {
+        topic: {
+          include: { subject: true }
+        }
+      }
+    });
 
-    return questions;
+    return [...anchorQuestions, ...adaptiveQuestions];
   }
 
   static async processResults(userId: string, answers: { pyqId: string, isCorrect: boolean }[]) {

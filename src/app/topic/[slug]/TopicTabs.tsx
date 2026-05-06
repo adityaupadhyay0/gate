@@ -30,6 +30,15 @@ export default function TopicTabs({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
            <p className="text-gray-500 italic">
              {activeTab} for this topic are being curated by Gemini.
            </p>
+           <button
+             onClick={() => {
+                // Future: track usage in ResourceService
+                alert(`Tracking simulated usage for ${activeTab}. Learning Gain/Time logic activated.`);
+             }}
+             className="mt-4 text-xs bg-gray-900 text-white px-4 py-2 rounded-lg font-bold"
+           >
+             Open {activeTab}
+           </button>
         </div>
       )}
     </div>

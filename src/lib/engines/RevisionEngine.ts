@@ -22,9 +22,15 @@ export class RevisionEngine {
     const queue = attempts.map(attempt => {
       const daysSince = (now.getTime() - attempt.attemptedAt.getTime()) / (1000 * 60 * 60 * 24);
 
-      // λ (decay rate): 0.1 for easy, 0.2 for medium, 0.3 for hard
-      const difficulty = (attempt.pyq as any).metadata?.difficulty || 'medium';
-      const lambda = difficulty === 'easy' ? 0.1 : difficulty === 'hard' ? 0.3 : 0.2;
+      // Dual Difficulty lambda calculation
+      // Effective λ = α * Global_λ + (1 - α) * Personal_λ
+      const globalDiff = (attempt.pyq as any).metadata?.globalDifficulty || 0.5;
+      const personalDiff = attempt.personalDifficulty || 0.5;
+
+      // Map 0-1 diff to 0.1-0.4 lambda
+      const alpha = 0.5;
+      const effectiveDiff = (alpha * globalDiff) + ((1 - alpha) * personalDiff);
+      const lambda = 0.1 + (effectiveDiff * 0.3);
 
       const currentMemoryScore = this.calculateMemoryScore(attempt.isCorrect ? 1.0 : 0.5, lambda, daysSince);
 
