@@ -1,0 +1,157 @@
+
+> gate-system@0.1.0 start
+> next start
+
+  ▲ Next.js 14.2.3
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 438ms
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/chunks/315.js:419:54160
+    at oe (/app/.next/server/chunks/315.js:419:56835)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:34666
+    at async eS.execute (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:25813)
+    at async eS.handle (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:35920)
+    at async doRender (/app/node_modules/next/dist/server/base-server.js:1377:42)
+    at async cacheEntry.responseCache.get.routeKind (/app/node_modules/next/dist/server/base-server.js:1599:28)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/src/middleware.js:420:54215
+    at sE (/app/.next/server/src/middleware.js:420:56915)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/chunks/315.js:419:54160
+    at oe (/app/.next/server/chunks/315.js:419:56835)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:34666
+    at async eS.execute (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:25813)
+    at async eS.handle (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:35920)
+    at async doRender (/app/node_modules/next/dist/server/base-server.js:1377:42)
+    at async cacheEntry.responseCache.get.routeKind (/app/node_modules/next/dist/server/base-server.js:1599:28)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/chunks/315.js:419:54160
+    at oe (/app/.next/server/chunks/315.js:419:56835)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:34666
+    at async eS.execute (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:25813)
+    at async eS.handle (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:35920)
+    at async doRender (/app/node_modules/next/dist/server/base-server.js:1377:42)
+    at async cacheEntry.responseCache.get.routeKind (/app/node_modules/next/dist/server/base-server.js:1599:28)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/chunks/315.js:419:54160
+    at oe (/app/.next/server/chunks/315.js:419:56835)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:34666
+    at async eS.execute (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:25813)
+    at async eS.handle (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:35920)
+    at async doRender (/app/node_modules/next/dist/server/base-server.js:1377:42)
+    at async cacheEntry.responseCache.get.routeKind (/app/node_modules/next/dist/server/base-server.js:1599:28)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/src/middleware.js:420:54215
+    at sE (/app/.next/server/src/middleware.js:420:56915)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/chunks/315.js:419:54160
+    at oe (/app/.next/server/chunks/315.js:419:56835)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/chunks/315.js:419:54160
+    at oe (/app/.next/server/chunks/315.js:419:56835)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:34666
+    at async eS.execute (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:25813)
+    at async eS.handle (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:35920)
+    at async doRender (/app/node_modules/next/dist/server/base-server.js:1377:42)
+    at async cacheEntry.responseCache.get.routeKind (/app/node_modules/next/dist/server/base-server.js:1599:28)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/src/middleware.js:420:54215
+    at sE (/app/.next/server/src/middleware.js:420:56915)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/src/middleware.js:420:54215
+    at sE (/app/.next/server/src/middleware.js:420:56915)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/src/middleware.js:420:54215
+    at sE (/app/.next/server/src/middleware.js:420:56915)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/src/middleware.js:420:54215
+    at sE (/app/.next/server/src/middleware.js:420:56915)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/chunks/315.js:419:54160
+    at oe (/app/.next/server/chunks/315.js:419:56835)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:34666
+    at async eS.execute (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:25813)
+    at async eS.handle (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:35920)
+    at async doRender (/app/node_modules/next/dist/server/base-server.js:1377:42)
+    at async cacheEntry.responseCache.get.routeKind (/app/node_modules/next/dist/server/base-server.js:1599:28)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/src/middleware.js:420:54215
+    at sE (/app/.next/server/src/middleware.js:420:56915)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/src/middleware.js:420:54215
+    at sE (/app/.next/server/src/middleware.js:420:56915)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/chunks/315.js:419:54160
+    at oe (/app/.next/server/chunks/315.js:419:56835)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/chunks/315.js:419:54160
+    at oe (/app/.next/server/chunks/315.js:419:56835)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:34666
+    at async eS.execute (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:25813)
+    at async eS.handle (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:35920)
+    at async doRender (/app/node_modules/next/dist/server/base-server.js:1377:42)
+    at async cacheEntry.responseCache.get.routeKind (/app/node_modules/next/dist/server/base-server.js:1599:28)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/src/middleware.js:420:54215
+    at sE (/app/.next/server/src/middleware.js:420:56915)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/chunks/315.js:419:54160
+    at oe (/app/.next/server/chunks/315.js:419:56835)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:34666
+    at async eS.execute (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:25813)
+    at async eS.handle (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:35920)
+    at async doRender (/app/node_modules/next/dist/server/base-server.js:1377:42)
+    at async cacheEntry.responseCache.get.routeKind (/app/node_modules/next/dist/server/base-server.js:1599:28)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/src/middleware.js:420:54215
+    at sE (/app/.next/server/src/middleware.js:420:56915)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/chunks/315.js:419:54160
+    at oe (/app/.next/server/chunks/315.js:419:56835)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/chunks/315.js:419:54160
+    at oe (/app/.next/server/chunks/315.js:419:56835)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:34666
+    at async eS.execute (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:25813)
+    at async eS.handle (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:35920)
+    at async doRender (/app/node_modules/next/dist/server/base-server.js:1377:42)
+    at async cacheEntry.responseCache.get.routeKind (/app/node_modules/next/dist/server/base-server.js:1599:28)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/src/middleware.js:420:54215
+    at sE (/app/.next/server/src/middleware.js:420:56915)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/src/middleware.js:420:54215
+    at sE (/app/.next/server/src/middleware.js:420:56915)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+[31m[auth][error][0m UntrustedHost: Host must be trusted. URL was: http://localhost:3000/api/auth/session. Read more at https://errors.authjs.dev#untrustedhost
+    at /app/.next/server/chunks/315.js:419:54160
+    at oe (/app/.next/server/chunks/315.js:419:56835)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:34666
+    at async eS.execute (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:25813)
+    at async eS.handle (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:35920)
+    at async doRender (/app/node_modules/next/dist/server/base-server.js:1377:42)
+    at async cacheEntry.responseCache.get.routeKind (/app/node_modules/next/dist/server/base-server.js:1599:28)
+Killed

@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { DiagnosticEngine } from "@/lib/engines/DiagnosticEngine";
 import DiagnosticTestClient from "./DiagnosticTestClient";
 

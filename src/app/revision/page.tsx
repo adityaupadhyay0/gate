@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { auth } from "@/lib/auth/auth";
 import { RevisionEngine } from "@/lib/engines/RevisionEngine";
 import Link from "next/link";

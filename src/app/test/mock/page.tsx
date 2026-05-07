@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { auth } from "@/lib/auth/auth";
 import { TestEngine } from "@/lib/engines/TestEngine";
 import TestPlayer from "../[id]/TestPlayer";

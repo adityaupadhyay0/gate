@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { auth } from "@/lib/auth/auth";
 import { RankOptimizer } from "@/lib/engines/RankOptimizer";
 import { redirect } from "next/navigation";
