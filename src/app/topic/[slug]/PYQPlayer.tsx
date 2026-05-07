@@ -1,0 +1,231 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Timer,
+  Lightbulb,
+  CheckCircle2,
+  XCircle,
+  ArrowRight,
+  BrainCircuit,
+  Loader2
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import ScientificCalculator from "@/components/ScientificCalculator";
+
+export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug: string }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [startTime, setStartTime] = useState(Date.now());
+  const [timer, setTimer] = useState(0);
+  const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
+  const currentPYQ = pyqs[currentIndex];
+  const options = JSON.parse(currentPYQ.options || '[]');
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimer(Math.floor((Date.now() - startTime) / 1000));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [startTime, currentIndex]);
+
+  const handleSubmit = () => {
+    if (!selectedOption) return;
+    const correct = selectedOption === currentPYQ.answer;
+    setIsCorrect(correct);
+    setShowExplanation(true);
+
+    // In real app, call Server Action to log attempt
+    console.log(`Attempt logged: ${currentPYQ.id}, Correct: ${correct}, Time: ${timer}s`);
+  };
+
+  const nextQuestion = () => {
+    if (currentIndex < pyqs.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+      resetState();
+    }
+  };
+
+  const resetState = () => {
+    setSelectedOption(null);
+    setShowExplanation(false);
+    setIsCorrect(null);
+    setStartTime(Date.now());
+    setTimer(0);
+    setAiExplanation(null);
+  };
+
+  const getAiHelp = async () => {
+    setIsAiLoading(true);
+    try {
+        const resp = await fetch('/api/ai/explain', {
+            method: 'POST',
+            body: JSON.stringify({
+                question: currentPYQ.question,
+                options,
+                answer: currentPYQ.answer,
+                userAnswer: selectedOption
+            })
+        });
+        const data = await resp.json();
+        setAiExplanation(data.explanation);
+    } catch (e) {
+        console.error(e);
+    } finally {
+        setIsAiLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      <div className="bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl relative border border-slate-800">
+        {/* Player Header */}
+        <div className="px-10 py-6 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-md">
+           <div className="flex items-center gap-4">
+              <span className="px-3 py-1 bg-white/10 rounded-lg text-[10px] font-black uppercase tracking-widest text-slate-400">
+                 GATE {currentPYQ.year}
+              </span>
+              <div className="flex items-center gap-2 text-brand-400 text-xs font-bold">
+                 <div className="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
+                 Active Session
+              </div>
+           </div>
+           <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2 text-slate-400 font-mono text-sm">
+                 <Timer className="w-4 h-4" />
+                 {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}
+              </div>
+              <div className="text-slate-500 text-xs font-black uppercase tracking-widest">
+                 {currentIndex + 1} <span className="text-slate-700">/</span> {pyqs.length}
+              </div>
+           </div>
+        </div>
+
+        {/* Question Area */}
+        <div className="p-12 min-h-[400px]">
+           <AnimatePresence mode="wait">
+             <motion.div
+               key={currentPYQ.id}
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               exit={{ opacity: 0, y: -10 }}
+               className="space-y-12"
+             >
+                <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight">
+                   {currentPYQ.question}
+                </h2>
+
+                <div className="grid grid-cols-1 gap-4">
+                   {options.map((option: string, i: number) => {
+                      const letter = String.fromCharCode(65 + i);
+                      const isSelected = selectedOption === option;
+                      const isCorrectOption = showExplanation && option === currentPYQ.answer;
+                      const isWrongSelection = showExplanation && isSelected && option !== currentPYQ.answer;
+
+                      return (
+                        <button
+                          key={i}
+                          disabled={showExplanation}
+                          onClick={() => setSelectedOption(option)}
+                          className={cn(
+                            "flex items-center gap-6 p-6 rounded-3xl text-left transition-all duration-300 border-2",
+                            isSelected && !showExplanation ? "bg-brand-600/20 border-brand-500 text-white" :
+                            isCorrectOption ? "bg-emerald-500/20 border-emerald-500 text-white" :
+                            isWrongSelection ? "bg-red-500/20 border-red-500 text-white" :
+                            "bg-white/5 border-transparent text-slate-400 hover:bg-white/10"
+                          )}
+                        >
+                          <div className={cn(
+                            "w-10 h-10 rounded-xl flex items-center justify-center font-black transition-all",
+                            isSelected && !showExplanation ? "bg-brand-500 text-white" :
+                            isCorrectOption ? "bg-emerald-500 text-white" :
+                            isWrongSelection ? "bg-red-500 text-white" :
+                            "bg-white/10 text-slate-500"
+                          )}>
+                             {letter}
+                          </div>
+                          <span className="font-bold">{option}</span>
+                          {isCorrectOption && <CheckCircle2 className="w-6 h-6 ml-auto text-emerald-500" />}
+                          {isWrongSelection && <XCircle className="w-6 h-6 ml-auto text-red-500" />}
+                        </button>
+                      );
+                   })}
+                </div>
+             </motion.div>
+           </AnimatePresence>
+        </div>
+
+        {/* Footer Actions */}
+        <div className="px-10 py-8 border-t border-white/5 bg-white/5 flex items-center justify-between">
+           <div className="flex gap-4">
+              {!showExplanation ? (
+                 <button
+                  onClick={handleSubmit}
+                  disabled={!selectedOption}
+                  className="btn-primary h-14 px-10 bg-brand-600 hover:bg-brand-500"
+                 >
+                    Submit Answer
+                 </button>
+              ) : (
+                 <button
+                  onClick={nextQuestion}
+                  disabled={currentIndex === pyqs.length - 1}
+                  className="btn-primary h-14 px-10 bg-emerald-600 hover:bg-emerald-500"
+                 >
+                    Next Question <ArrowRight className="w-5 h-5" />
+                 </button>
+              )}
+           </div>
+
+           <div className="flex items-center gap-3">
+              <button
+                onClick={getAiHelp}
+                className="w-14 h-14 rounded-2xl bg-white/5 text-slate-400 flex items-center justify-center hover:bg-brand-500 hover:text-white transition-all group"
+              >
+                 {isAiLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : <BrainCircuit className="w-6 h-6 group-hover:scale-110" />}
+              </button>
+              <button className="w-14 h-14 rounded-2xl bg-white/5 text-slate-400 flex items-center justify-center hover:bg-brand-500 hover:text-white transition-all">
+                 <Lightbulb className="w-6 h-6" />
+              </button>
+           </div>
+        </div>
+      </div>
+
+      <AnimatePresence>
+         {aiExplanation && (
+           <motion.div
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             exit={{ opacity: 0, y: 20 }}
+             className="premium-card p-10 bg-slate-900 border-brand-500/30 text-white"
+           >
+              <div className="flex items-center gap-3 mb-8">
+                 <div className="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center text-white">
+                    <BrainCircuit className="w-6 h-6" />
+                 </div>
+                 <div>
+                    <h3 className="text-xl font-black">Technical Derivation</h3>
+                    <p className="text-xs font-bold text-brand-400 uppercase tracking-widest">Gemini 1.5 Pro Analysis</p>
+                 </div>
+                 <button onClick={() => setAiExplanation(null)} className="ml-auto text-slate-500 hover:text-white">
+                    <XCircle className="w-6 h-6" />
+                 </button>
+              </div>
+              <div className="prose prose-invert max-w-none font-medium leading-relaxed text-slate-300">
+                 {aiExplanation.split('\n').map((line, i) => <p key={i}>{line}</p>)}
+              </div>
+           </motion.div>
+         )}
+      </AnimatePresence>
+
+      <ScientificCalculator />
+    </div>
+  );
+}

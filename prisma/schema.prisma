@@ -1,0 +1,201 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String         @id @default(cuid())
+  name               String?
+  email              String?        @unique
+  emailVerified      DateTime?
+  image              String?
+  diagnosticResult   Json?
+  onboardingComplete Boolean        @default(false)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  accounts           Account[]
+  attempts           Attempt[]
+  mistakeLogs        MistakeLog[]
+  sessions           Session[]
+  progress           UserProgress[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Subject {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  slug        String  @unique
+  description String?
+  topics      Topic[]
+}
+
+model Topic {
+  id              String            @id @default(cuid())
+  name            String
+  slug            String            @unique
+  subjectId       String
+  dependencyOrder Int               @default(0)
+  difficultyTier  String            @default("Foundational")
+  pyqs            PYQ[]
+  subject         Subject           @relation(fields: [subjectId], references: [id])
+  prerequisites   TopicDependency[] @relation("PrerequisiteTopic")
+  dependencies    TopicDependency[] @relation("DependentTopic")
+  resources       TopicResource?
+  summaries       TopicSummary?
+  userProgress    UserProgress[]
+
+  @@unique([subjectId, name])
+}
+
+model TopicDependency {
+  id             String @id @default(cuid())
+  topicId        String
+  prerequisiteId String
+  prerequisite   Topic  @relation("PrerequisiteTopic", fields: [prerequisiteId], references: [id])
+  topic          Topic  @relation("DependentTopic", fields: [topicId], references: [id])
+
+  @@unique([topicId, prerequisiteId])
+}
+
+model PYQ {
+  id          String       @id @default(cuid())
+  topicId     String
+  year        Int
+  exam        String       @default("GATE")
+  question    String
+  options     Json?
+  answer      String
+  type        String       @default("MCQ")
+  marks       Int          @default(1)
+  attempts    Attempt[]
+  mistakeLogs MistakeLog[]
+  topic       Topic        @relation(fields: [topicId], references: [id])
+  metadata    PYQMetadata?
+}
+
+model PYQMetadata {
+  id                 String   @id @default(cuid())
+  pyqId              String   @unique
+  subtopic           String?
+  conceptTags        String?
+  globalDifficulty   Float    @default(0.5)
+  questionType       String?
+  commonMistake      String?
+  oneLineExplanation String?
+  precomputedAt      DateTime @default(now())
+  pyq                PYQ      @relation(fields: [pyqId], references: [id])
+}
+
+model TopicSummary {
+  id                  String   @id @default(cuid())
+  topicId             String   @unique
+  coreConcepts        String?
+  commonExamPatterns  String?
+  keyFormulas         String?
+  mostTestedSubtopics String?
+  typicalMistakes     String?
+  precomputedAt       DateTime @default(now())
+  topic               Topic    @relation(fields: [topicId], references: [id])
+}
+
+model TopicResource {
+  id                      String   @id @default(cuid())
+  topicId                 String   @unique
+  bestYoutubeChannels     String?
+  recommendedBookChapters String?
+  notesKeywords           String?
+  learningGain            Float    @default(0)
+  totalTimeSpent          Int      @default(0)
+  usageCount              Int      @default(0)
+  precomputedAt           DateTime @default(now())
+  topic                   Topic    @relation(fields: [topicId], references: [id])
+}
+
+model UserProgress {
+  id            String   @id @default(cuid())
+  userId        String
+  topicId       String
+  status        String   @default("Locked")
+  coverageScore Float    @default(0)
+  lastStudiedAt DateTime @default(now())
+  topic         Topic    @relation(fields: [topicId], references: [id])
+  user          User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, topicId])
+}
+
+model Attempt {
+  id                 String   @id @default(cuid())
+  userId             String
+  pyqId              String
+  userAnswer         String?
+  isCorrect          Boolean
+  timeSpent          Int
+  stability          Float    @default(0)
+  difficulty         Float    @default(0)
+  retrievability     Float    @default(1.0)
+  memoryScore        Float    @default(1.0)
+  personalDifficulty Float    @default(0.5)
+  confidenceLevel    Int?
+  attemptedAt        DateTime @default(now())
+  pyq                PYQ      @relation(fields: [pyqId], references: [id])
+  user               User     @relation(fields: [userId], references: [id])
+}
+
+model MistakeLog {
+  id               String   @id @default(cuid())
+  userId           String
+  pyqId            String
+  mistakeType      String
+  confidenceBefore Int      @default(3)
+  timeSpent        Int
+  loggedAt         DateTime @default(now())
+  pyq              PYQ      @relation(fields: [pyqId], references: [id])
+  user             User     @relation(fields: [userId], references: [id])
+}
+
+model MistakeClassificationRule {
+  id                 String   @id @default(cuid())
+  topicId            String
+  wrongAnswerPattern String
+  mistakeType        String
+  rootCause          String
+  precomputedAt      DateTime @default(now())
+}

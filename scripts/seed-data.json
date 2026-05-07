@@ -1,0 +1,540 @@
+[
+  {
+    "topicSlug": "asymptotic-analysis",
+    "questions": [
+      {
+        "year": 2017,
+        "question": "Which of the following is true? (n! is factorial, log is base 2)",
+        "options": [
+          "n! = O(n^n)",
+          "n^n = O(n!)",
+          "2^n = O(n!)",
+          "n! = O(2^n)"
+        ],
+        "answer": "n! = O(n^n)",
+        "marks": 1,
+        "explanation": "n! = 1*2*...*n <= n*n*...*n = n^n. So n! = O(n^n). Also n! grows faster than 2^n."
+      },
+      {
+        "year": 2014,
+        "question": "Arrange in increasing order of asymptotic growth: n, sqrt(n), n log n, n^2",
+        "options": [
+          "sqrt(n), n, n log n, n^2",
+          "n, sqrt(n), n log n, n^2",
+          "sqrt(n), n log n, n, n^2",
+          "n^2, n log n, n, sqrt(n)"
+        ],
+        "answer": "sqrt(n), n, n log n, n^2",
+        "marks": 1,
+        "explanation": "Growth order: Constant < log n < sqrt(n) < n < n log n < n^2 < 2^n."
+      }
+    ]
+  },
+  {
+    "topicSlug": "searching-sorting",
+    "questions": [
+      {
+        "year": 2015,
+        "question": "Which sorting algorithm has the best worst-case time complexity?",
+        "options": [
+          "Bubble Sort",
+          "Quick Sort",
+          "Merge Sort",
+          "Selection Sort"
+        ],
+        "answer": "Merge Sort",
+        "marks": 1,
+        "explanation": "Merge Sort is O(n log n) in worst case. Quick sort is O(n^2), others are O(n^2)."
+      }
+    ]
+  },
+  {
+    "topicSlug": "stacks",
+    "questions": [
+      {
+        "year": 2016,
+        "question": "The post-fix expression for (A + B) * (C - D) is:",
+        "options": [
+          "AB+CD-*",
+          "ABCD+-*",
+          "AB+CD*-",
+          "None"
+        ],
+        "answer": "AB+CD-*",
+        "marks": 1,
+        "explanation": "(A+B) -> AB+, (C-D) -> CD-. Multiply them: AB+ CD- *"
+      },
+      {
+        "year": 2014,
+        "question": "Which data structure is used to implement recursion?",
+        "options": [
+          "Queue",
+          "Stack",
+          "Linked List",
+          "Tree"
+        ],
+        "answer": "Stack",
+        "marks": 1,
+        "explanation": "Function calls are managed using a Call Stack."
+      }
+    ]
+  },
+  {
+    "topicSlug": "c-pointers",
+    "questions": [
+      {
+        "year": 2022,
+        "question": "What is the output of: int a=5; int *p = &a; printf(\"%d\", *p + 1);",
+        "options": [
+          "5",
+          "6",
+          "Address of a",
+          "Error"
+        ],
+        "answer": "6",
+        "marks": 1,
+        "explanation": "*p dereferences to 5, then +1 equals 6."
+      }
+    ]
+  },
+  {
+    "topicSlug": "finite-automata",
+    "questions": [
+      {
+        "year": 2021,
+        "question": "An NFA can be converted into an equivalent DFA with at most ___ states, where n is number of NFA states.",
+        "options": [
+          "n",
+          "n^2",
+          "2^n",
+          "n!"
+        ],
+        "answer": "2^n",
+        "marks": 1,
+        "explanation": "Subset construction algorithm creates a DFA with states from the power set of NFA states."
+      }
+    ]
+  },
+  {
+    "topicSlug": "regular-expressions",
+    "questions": [
+      {
+        "year": 2018,
+        "question": "Which of the following represents the language of all strings over {a, b} starting with 'a'?",
+        "options": [
+          "a(a+b)*",
+          "(a+b)*a",
+          "a*b*",
+          "a+b"
+        ],
+        "answer": "a(a+b)*",
+        "marks": 1,
+        "explanation": "Starts with 'a' followed by any sequence of 'a' and 'b'."
+      }
+    ]
+  },
+  {
+    "topicSlug": "processes-threads",
+    "questions": [
+      {
+        "year": 2017,
+        "question": "Which of the following is shared between threads of the same process?",
+        "options": [
+          "Stack",
+          "Registers",
+          "Program Counter",
+          "Address Space"
+        ],
+        "answer": "Address Space",
+        "marks": 1,
+        "explanation": "Threads share global variables, heap, and code. They have private stack and PC."
+      }
+    ]
+  },
+  {
+    "topicSlug": "osi-tcp-models",
+    "questions": [
+      {
+        "year": 2021,
+        "question": "Which layer of the OSI model handles end-to-end delivery?",
+        "options": [
+          "Network",
+          "Data Link",
+          "Transport",
+          "Physical"
+        ],
+        "answer": "Transport",
+        "marks": 1,
+        "explanation": "Transport layer provides process-to-process (end-to-end) communication."
+      }
+    ]
+  },
+  {
+    "topicSlug": "sql",
+    "questions": [
+      {
+        "year": 2019,
+        "question": "Which SQL clause is used to filter results AFTER grouping?",
+        "options": [
+          "WHERE",
+          "ORDER BY",
+          "HAVING",
+          "GROUP BY"
+        ],
+        "answer": "HAVING",
+        "marks": 1,
+        "explanation": "HAVING is for groups; WHERE is for individual rows."
+      }
+    ]
+  },
+  {
+    "topicSlug": "boolean-min",
+    "questions": [
+      {
+        "year": 2023,
+        "question": "A + AB is equivalent to:",
+        "options": [
+          "A",
+          "B",
+          "AB",
+          "1"
+        ],
+        "answer": "A",
+        "marks": 1,
+        "explanation": "Absorption Law: A(1+B) = A."
+      }
+    ]
+  },
+  {
+    "topicSlug": "linear-algebra",
+    "questions": [
+      {
+        "year": 2021,
+        "question": "Determinant of an identity matrix of size 3x3 is:",
+        "options": [
+          "0",
+          "1",
+          "3",
+          "9"
+        ],
+        "answer": "1",
+        "marks": 1,
+        "explanation": "Det(I) is always 1."
+      }
+    ]
+  },
+  {
+    "topicSlug": "dp",
+    "questions": [
+      {
+        "year": 2016,
+        "question": "Which of the following problems can be solved using Dynamic Programming?",
+        "options": [
+          "Matrix Chain Multiplication",
+          "0/1 Knapsack",
+          "Longest Common Subsequence",
+          "All of the above"
+        ],
+        "answer": "All of the above",
+        "marks": 1,
+        "explanation": "These are classic examples of problems with optimal substructure and overlapping subproblems."
+      },
+      {
+        "year": 2018,
+        "question": "In the fractional knapsack problem, which approach is used?",
+        "options": [
+          "Greedy",
+          "Dynamic Programming",
+          "Divide and Conquer",
+          "None"
+        ],
+        "answer": "Greedy",
+        "marks": 1,
+        "explanation": "Fractional knapsack uses greedy (sort by value/weight). 0/1 knapsack needs DP."
+      }
+    ]
+  },
+  {
+    "topicSlug": "graph-search",
+    "questions": [
+      {
+        "year": 2017,
+        "question": "Which data structure is used for Breadth First Search (BFS)?",
+        "options": [
+          "Stack",
+          "Queue",
+          "Priority Queue",
+          "Linked List"
+        ],
+        "answer": "Queue",
+        "marks": 1,
+        "explanation": "BFS uses a FIFO queue to visit nodes layer by layer."
+      }
+    ]
+  },
+  {
+    "topicSlug": "binary-trees",
+    "questions": [
+      {
+        "year": 2014,
+        "question": "A binary tree with 10 leaf nodes has how many nodes of degree 2?",
+        "options": [
+          "9",
+          "10",
+          "11",
+          "Depends on tree"
+        ],
+        "answer": "9",
+        "marks": 2,
+        "explanation": "In any binary tree, Number of degree-2 nodes = Number of leaf nodes - 1. So 10 - 1 = 9."
+      }
+    ]
+  },
+  {
+    "topicSlug": "heaps",
+    "questions": [
+      {
+        "year": 2015,
+        "question": "Time complexity to build a max-heap of n elements from an unsorted array is:",
+        "options": [
+          "O(n log n)",
+          "O(n)",
+          "O(log n)",
+          "O(n^2)"
+        ],
+        "answer": "O(n)",
+        "marks": 2,
+        "explanation": "Build-heap algorithm takes O(n) time using bottom-up approach."
+      }
+    ]
+  },
+  {
+    "topicSlug": "ip-routing",
+    "questions": [
+      {
+        "year": 2021,
+        "question": "Which of the following is a private IP address range?",
+        "options": [
+          "10.0.0.0 - 10.255.255.255",
+          "172.16.0.0 - 172.31.255.255",
+          "192.168.0.0 - 192.168.255.255",
+          "All of the above"
+        ],
+        "answer": "All of the above",
+        "marks": 1,
+        "explanation": "RFC 1918 defines these three ranges as private."
+      },
+      {
+        "year": 2018,
+        "question": "The subnet mask for a /26 network is:",
+        "options": [
+          "255.255.255.0",
+          "255.255.255.128",
+          "255.255.255.192",
+          "255.255.255.240"
+        ],
+        "answer": "255.255.255.192",
+        "marks": 2,
+        "explanation": "26 bits of 1s: 11111111.11111111.11111111.11000000 = .192"
+      }
+    ]
+  },
+  {
+    "topicSlug": "transport-layer",
+    "questions": [
+      {
+        "year": 2020,
+        "question": "In TCP, the size of the window specifies:",
+        "options": [
+          "Amount of data that can be sent before ACK",
+          "Size of buffer",
+          "Speed of link",
+          "None"
+        ],
+        "answer": "Amount of data that can be sent before ACK",
+        "marks": 1,
+        "explanation": "Sliding window protocol controls flow."
+      }
+    ]
+  },
+  {
+    "topicSlug": "cpu-scheduling",
+    "questions": [
+      {
+        "year": 2019,
+        "question": "Which scheduling algorithm is used in time-sharing systems?",
+        "options": [
+          "FCFS",
+          "SJF",
+          "Round Robin",
+          "Priority"
+        ],
+        "answer": "Round Robin",
+        "marks": 1,
+        "explanation": "Round Robin ensures fair distribution of CPU time among users."
+      }
+    ]
+  },
+  {
+    "topicSlug": "memory-paging",
+    "questions": [
+      {
+        "year": 2018,
+        "question": "Belady's Anomaly occurs in which page replacement algorithm?",
+        "options": [
+          "LRU",
+          "FIFO",
+          "Optimal",
+          "MRU"
+        ],
+        "answer": "FIFO",
+        "marks": 2,
+        "explanation": "In FIFO, increasing the number of frames can sometimes increase the number of page faults."
+      }
+    ]
+  },
+  {
+    "topicSlug": "cfl",
+    "questions": [
+      {
+        "year": 2016,
+        "question": "Which of the following is NOT closed under intersection?",
+        "options": [
+          "Regular Languages",
+          "Context Free Languages",
+          "Recursive Languages",
+          "RE Languages"
+        ],
+        "answer": "Context Free Languages",
+        "marks": 2,
+        "explanation": "Intersection of two CFLs is not necessarily a CFL."
+      }
+    ]
+  },
+  {
+    "topicSlug": "turing-machines",
+    "questions": [
+      {
+        "year": 2015,
+        "question": "A language is recursive if and only if it is accepted by a Turing Machine that:",
+        "options": [
+          "Always halts",
+          "Halt on accept, loops on reject",
+          "Halt on reject, loops on accept",
+          "None"
+        ],
+        "answer": "Always halts",
+        "marks": 1,
+        "explanation": "Recursive languages are decidable; the TM must always give an answer."
+      }
+    ]
+  },
+  {
+    "topicSlug": "set-theory",
+    "questions": [
+      {
+        "year": 2014,
+        "question": "If a set A has 5 elements, how many non-empty proper subsets does it have?",
+        "options": [
+          "31",
+          "30",
+          "32",
+          "25"
+        ],
+        "answer": "30",
+        "marks": 2,
+        "explanation": "Total subsets = 2^5 = 32. Proper subsets (excluding A itself) = 31. Non-empty proper (excluding A and empty set) = 30."
+      }
+    ]
+  },
+  {
+    "topicSlug": "combinatorics",
+    "questions": [
+      {
+        "year": 2017,
+        "question": "In how many ways can 5 people be seated around a circular table?",
+        "options": [
+          "120",
+          "24",
+          "60",
+          "12"
+        ],
+        "answer": "24",
+        "marks": 1,
+        "explanation": "Circular permutations = (n-1)! = (5-1)! = 4! = 24."
+      }
+    ]
+  },
+  {
+    "topicSlug": "lexical-analysis",
+    "questions": [
+      {
+        "year": 2011,
+        "question": "Which of the following is NOT a responsibility of a lexical analyzer?",
+        "options": [
+          "Removing comments",
+          "Generating tokens",
+          "Symbol table management",
+          "Parsing expressions"
+        ],
+        "answer": "Parsing expressions",
+        "marks": 1,
+        "explanation": "Parsing expressions is the responsibility of the Syntax Analyzer (Parser)."
+      }
+    ]
+  },
+  {
+    "topicSlug": "cache-memory",
+    "questions": [
+      {
+        "year": 2014,
+        "question": "In a 2-way set associative cache with 128 lines, how many sets are there?",
+        "options": [
+          "64",
+          "128",
+          "256",
+          "32"
+        ],
+        "answer": "64",
+        "marks": 2,
+        "explanation": "Sets = Total lines / Associativity = 128 / 2 = 64."
+      }
+    ]
+  },
+  {
+    "topicSlug": "prob-basics",
+    "questions": [
+      {
+        "year": 2015,
+        "question": "Two dice are thrown simultaneously. What is the probability that the sum is 7?",
+        "options": [
+          "1/6",
+          "1/12",
+          "1/36",
+          "7/36"
+        ],
+        "answer": "1/6",
+        "marks": 1,
+        "explanation": "Pairs with sum 7: (1,6), (2,5), (3,4), (4,3), (5,2), (6,1). Total = 6. Total outcomes = 36. Prob = 6/36 = 1/6."
+      }
+    ]
+  },
+  {
+    "topicSlug": "seq-circuits",
+    "questions": [
+      {
+        "year": 2020,
+        "question": "The number of flip-flops required to build a modulo-16 counter is:",
+        "options": [
+          "4",
+          "16",
+          "8",
+          "2"
+        ],
+        "answer": "4",
+        "marks": 1,
+        "explanation": "2^n >= 16 => n=4."
+      }
+    ]
+  }
+]
