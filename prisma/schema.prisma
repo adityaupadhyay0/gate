@@ -50,14 +50,6 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
 model Subject {
   id          String  @id @default(cuid())
   name        String  @unique
@@ -74,6 +66,7 @@ model Topic {
   dependencyOrder Int               @default(0)
   difficultyTier  String            @default("Foundational")
   pyqs            PYQ[]
+  questionBank    QuestionBank[]
   subject         Subject           @relation(fields: [subjectId], references: [id])
   prerequisites   TopicDependency[] @relation("PrerequisiteTopic")
   dependencies    TopicDependency[] @relation("DependentTopic")
@@ -102,12 +95,31 @@ model PYQ {
   question    String
   options     Json?
   answer      String
-  type        String       @default("MCQ")
+  type        String       @default("MCQ") // MCQ, NAT, MSQ
   marks       Int          @default(1)
+
+  // New architecture fields
+  difficulty  String       @default("medium") // easy, medium, hard
+  class       String       @default("theoretical") // numerical, theoretical, mixed
+
   attempts    Attempt[]
   mistakeLogs MistakeLog[]
   topic       Topic        @relation(fields: [topicId], references: [id])
   metadata    PYQMetadata?
+}
+
+model QuestionBank {
+  id          String   @id @default(cuid())
+  topicId     String
+  topic       Topic    @relation(fields: [topicId], references: [id])
+  question    String
+  options     Json?
+  answer      String
+  type        String   @default("MCQ")
+  difficulty  String   @default("medium")
+  class       String   @default("theoretical")
+  isGenerated Boolean  @default(true)
+  explanation String?
 }
 
 model PYQMetadata {

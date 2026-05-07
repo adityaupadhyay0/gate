@@ -26,6 +26,7 @@ export default async function TopicPage({ params }: { params: { slug: string } }
       pyqs: {
         include: { metadata: true }
       },
+      questionBank: true,
       summaries: true,
       userProgress: {
          where: { userId }
@@ -40,14 +41,13 @@ export default async function TopicPage({ params }: { params: { slug: string } }
   return (
     <div className="min-h-screen pt-32 pb-20 bg-slate-50/30">
       <div className="max-w-7xl mx-auto px-6">
-        {/* Topic Header */}
         <div className="mb-12">
           <Link
             href="/roadmap"
             className="inline-flex items-center gap-2 text-slate-400 hover:text-brand-600 font-black text-[10px] uppercase tracking-[0.2em] mb-6 transition-colors"
           >
             <ChevronLeft className="w-3 h-3" />
-            Back to Roadmap
+            Return to Learning Path
           </Link>
 
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
@@ -58,17 +58,17 @@ export default async function TopicPage({ params }: { params: { slug: string } }
                   </div>
                   <span className="font-black text-xs uppercase tracking-widest text-brand-600">{topic.subject.name}</span>
                </div>
-               <h1 className="text-5xl font-black tracking-tight text-slate-900">{topic.name}</h1>
+               <h1 className="text-6xl font-black tracking-tighter text-slate-900">{topic.name}</h1>
             </div>
 
             <div className="flex flex-col items-end gap-3">
-               <div className="flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-widest">
-                  Target Mastery
+               <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  Target Rank Mastery
                   <span className="text-slate-900">{Math.round(coverage * 100)}%</span>
                </div>
-               <div className="w-64 h-3 bg-white rounded-full overflow-hidden shadow-inner border border-slate-100">
+               <div className="w-72 h-4 bg-white rounded-full overflow-hidden shadow-inner border border-slate-100 p-1">
                   <div
-                    className="h-full bg-brand-600 transition-all duration-1000"
+                    className="h-full bg-brand-600 rounded-full transition-all duration-1000 shadow-glow"
                     style={{ width: `${coverage * 100}%` }}
                   />
                </div>
@@ -77,7 +77,7 @@ export default async function TopicPage({ params }: { params: { slug: string } }
         </div>
 
         <TopicTabs topicSummary={topic.summaries}>
-           <PYQPlayer pyqs={topic.pyqs} topicSlug={topic.slug} />
+           <PYQPlayer pyqs={topic.pyqs} questionBank={topic.questionBank} topicSlug={topic.slug} />
         </TopicTabs>
       </div>
     </div>
