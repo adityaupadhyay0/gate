@@ -10,9 +10,9 @@ export class TestEngine {
       include: { metadata: true }
     });
 
-    const easy = pyqs.filter(p => p.metadata?.difficulty === 'easy' || !p.metadata);
-    const medium = pyqs.filter(p => p.metadata?.difficulty === 'medium');
-    const hard = pyqs.filter(p => p.metadata?.difficulty === 'hard');
+    const easy = pyqs.filter(p => (p.metadata?.globalDifficulty || 0.5) <= 0.33);
+    const medium = pyqs.filter(p => (p.metadata?.globalDifficulty || 0.5) > 0.33 && (p.metadata?.globalDifficulty || 0.5) <= 0.66);
+    const hard = pyqs.filter(p => (p.metadata?.globalDifficulty || 0.5) > 0.66);
 
     const selected = [
       ...this.getRandom(easy, 15),

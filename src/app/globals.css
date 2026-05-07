@@ -2,38 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+
+  ::selection {
+    @apply bg-brand-100 text-brand-900;
+  }
+}
+
 @layer components {
   .clip-trapezoid {
     clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
   }
-}
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-premium;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+  .btn-primary {
+    @apply bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 px-6 rounded-xl transition-all active:scale-95 shadow-md hover:shadow-lg disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2;
+  }
+
+  .btn-secondary {
+    @apply bg-white border border-slate-200 text-slate-700 font-bold py-3 px-6 rounded-xl transition-all hover:bg-slate-50 active:scale-95 shadow-sm hover:shadow-md flex items-center justify-center gap-2;
+  }
+
+  .premium-card {
+    @apply bg-white border border-slate-200/60 rounded-3xl p-6 shadow-sm hover:shadow-premium transition-all duration-300;
   }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+.roadmap-gradient {
+  background: radial-gradient(circle at top left, theme('colors.brand.50'), transparent 40%),
+              radial-gradient(circle at bottom right, theme('colors.slate.100'), transparent 40%);
 }

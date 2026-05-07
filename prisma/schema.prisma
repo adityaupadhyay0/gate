@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,40 +8,36 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-
-  diagnosticResult Json?
-  onboardingComplete Boolean @default(false)
-
-  progress      UserProgress[]
-  attempts      Attempt[]
-  mistakeLogs   MistakeLog[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 String         @id @default(cuid())
+  name               String?
+  email              String?        @unique
+  emailVerified      DateTime?
+  image              String?
+  diagnosticResult   Json?
+  onboardingComplete Boolean        @default(false)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  accounts           Account[]
+  attempts           Attempt[]
+  mistakeLogs        MistakeLog[]
+  sessions           Session[]
+  progress           UserProgress[]
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -66,139 +59,136 @@ model VerificationToken {
 }
 
 model Subject {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  slug        String   @unique
+  id          String  @id @default(cuid())
+  name        String  @unique
+  slug        String  @unique
   description String?
   topics      Topic[]
 }
 
 model Topic {
-  id               String   @id @default(cuid())
-  name             String
-  slug             String   @unique
-  subjectId        String
-  subject          Subject  @relation(fields: [subjectId], references: [id])
-  dependencyOrder  Int      @default(0) // Still useful for general ordering
-  difficultyTier   String   @default("Foundational") // Foundational, Core, Advanced
-
-  pyqs             PYQ[]
-  summaries        TopicSummary?
-  resources        TopicResource?
-  userProgress     UserProgress[]
-
-  dependencies     TopicDependency[] @relation("DependentTopic")
-  prerequisites    TopicDependency[] @relation("PrerequisiteTopic")
+  id              String            @id @default(cuid())
+  name            String
+  slug            String            @unique
+  subjectId       String
+  dependencyOrder Int               @default(0)
+  difficultyTier  String            @default("Foundational")
+  pyqs            PYQ[]
+  subject         Subject           @relation(fields: [subjectId], references: [id])
+  prerequisites   TopicDependency[] @relation("PrerequisiteTopic")
+  dependencies    TopicDependency[] @relation("DependentTopic")
+  resources       TopicResource?
+  summaries       TopicSummary?
+  userProgress    UserProgress[]
 
   @@unique([subjectId, name])
 }
 
 model TopicDependency {
-  id               String @id @default(cuid())
-  topicId          String
-  prerequisiteId   String
-
-  topic            Topic @relation("DependentTopic", fields: [topicId], references: [id])
-  prerequisite     Topic @relation("PrerequisiteTopic", fields: [prerequisiteId], references: [id])
+  id             String @id @default(cuid())
+  topicId        String
+  prerequisiteId String
+  prerequisite   Topic  @relation("PrerequisiteTopic", fields: [prerequisiteId], references: [id])
+  topic          Topic  @relation("DependentTopic", fields: [topicId], references: [id])
 
   @@unique([topicId, prerequisiteId])
 }
 
 model PYQ {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
   topicId     String
-  topic       Topic    @relation(fields: [topicId], references: [id])
   year        Int
-  exam        String   @default("GATE")
+  exam        String       @default("GATE")
   question    String
-  options     Json?    // Array of options
+  options     Json?
   answer      String
-  type        String   @default("MCQ") // MCQ, NAT, MSQ
-  marks       Int      @default(1)
-
-  metadata    PYQMetadata?
+  type        String       @default("MCQ")
+  marks       Int          @default(1)
   attempts    Attempt[]
   mistakeLogs MistakeLog[]
+  topic       Topic        @relation(fields: [topicId], references: [id])
+  metadata    PYQMetadata?
 }
 
 model PYQMetadata {
-  id                  String   @id @default(cuid())
-  pyqId               String   @unique
-  pyq                 PYQ      @relation(fields: [pyqId], references: [id])
-  subtopic            String?
-  conceptTags         String?  // JSON stringified array
-  globalDifficulty    Float    @default(0.5) // 0 to 1
-  questionType        String?  // conceptual, numerical, application
-  commonMistake       String?
-  oneLineExplanation  String?
-  precomputedAt       DateTime @default(now())
+  id                 String   @id @default(cuid())
+  pyqId              String   @unique
+  subtopic           String?
+  conceptTags        String?
+  globalDifficulty   Float    @default(0.5)
+  questionType       String?
+  commonMistake      String?
+  oneLineExplanation String?
+  precomputedAt      DateTime @default(now())
+  pyq                PYQ      @relation(fields: [pyqId], references: [id])
 }
 
 model TopicSummary {
   id                  String   @id @default(cuid())
   topicId             String   @unique
-  topic               Topic    @relation(fields: [topicId], references: [id])
-  coreConcepts        String?  // JSON stringified array
-  commonExamPatterns  String?  // JSON stringified array
-  keyFormulas         String?  // JSON stringified array
-  mostTestedSubtopics String?  // JSON stringified array
-  typicalMistakes     String?  // JSON stringified array
+  coreConcepts        String?
+  commonExamPatterns  String?
+  keyFormulas         String?
+  mostTestedSubtopics String?
+  typicalMistakes     String?
   precomputedAt       DateTime @default(now())
+  topic               Topic    @relation(fields: [topicId], references: [id])
 }
 
 model TopicResource {
   id                      String   @id @default(cuid())
   topicId                 String   @unique
-  topic                   Topic    @relation(fields: [topicId], references: [id])
-  bestYoutubeChannels     String?  // JSON stringified array
-  recommendedBookChapters String?  // JSON stringified array of objects
-  notesKeywords           String?  // JSON stringified array
-
-  learningGain            Float    @default(0) // Aggregate learning gain
-  totalTimeSpent          Int      @default(0) // In seconds
+  bestYoutubeChannels     String?
+  recommendedBookChapters String?
+  notesKeywords           String?
+  learningGain            Float    @default(0)
+  totalTimeSpent          Int      @default(0)
   usageCount              Int      @default(0)
-
   precomputedAt           DateTime @default(now())
+  topic                   Topic    @relation(fields: [topicId], references: [id])
 }
 
 model UserProgress {
   id            String   @id @default(cuid())
   userId        String
-  user          User     @relation(fields: [userId], references: [id])
   topicId       String
-  topic         Topic    @relation(fields: [topicId], references: [id])
-  status        String   @default("Locked") // Locked, Active, InProgress, Completed
+  status        String   @default("Locked")
   coverageScore Float    @default(0)
   lastStudiedAt DateTime @default(now())
+  topic         Topic    @relation(fields: [topicId], references: [id])
+  user          User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, topicId])
 }
 
 model Attempt {
-  id                  String   @id @default(cuid())
-  userId              String
-  user                User     @relation(fields: [userId], references: [id])
-  pyqId               String
-  pyq                 PYQ      @relation(fields: [pyqId], references: [id])
-  userAnswer          String?
-  isCorrect           Boolean
-  timeSpent           Int      // in seconds
-  memoryScore         Float    @default(1.0)
-  personalDifficulty  Float    @default(0.5) // Calculated per attempt
-  confidenceLevel     Int?     // 1-5 (Post-answer reflection)
-  attemptedAt         DateTime @default(now())
+  id                 String   @id @default(cuid())
+  userId             String
+  pyqId              String
+  userAnswer         String?
+  isCorrect          Boolean
+  timeSpent          Int
+  stability          Float    @default(0)
+  difficulty         Float    @default(0)
+  retrievability     Float    @default(1.0)
+  memoryScore        Float    @default(1.0)
+  personalDifficulty Float    @default(0.5)
+  confidenceLevel    Int?
+  attemptedAt        DateTime @default(now())
+  pyq                PYQ      @relation(fields: [pyqId], references: [id])
+  user               User     @relation(fields: [userId], references: [id])
 }
 
 model MistakeLog {
   id               String   @id @default(cuid())
   userId           String
-  user             User     @relation(fields: [userId], references: [id])
   pyqId            String
-  pyq              PYQ      @relation(fields: [pyqId], references: [id])
-  mistakeType      String   // Conceptual, Calculation, Misread, TimePressure, Silly
-  confidenceBefore Int      @default(3) // 1-5
+  mistakeType      String
+  confidenceBefore Int      @default(3)
   timeSpent        Int
   loggedAt         DateTime @default(now())
+  pyq              PYQ      @relation(fields: [pyqId], references: [id])
+  user             User     @relation(fields: [userId], references: [id])
 }
 
 model MistakeClassificationRule {

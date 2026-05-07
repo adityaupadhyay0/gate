@@ -22,19 +22,15 @@ export async function saveAttempt(data: {
     personalDifficulty = 0.8;
   }
 
-  const attempt = await prisma.attempt.create({
-    data: {
-      userId: session.user.id,
-      pyqId: data.pyqId,
-      userAnswer: data.userAnswer,
-      isCorrect: data.isCorrect,
-      timeSpent: data.timeSpent,
-      memoryScore: data.isCorrect ? 1.0 : 0.5,
-      confidenceLevel: data.confidenceLevel,
-      personalDifficulty
-    },
-    include: { pyq: true }
-  });
+  // Use FSRS to update memory state
+  const rating = data.isCorrect ? (data.confidenceLevel! >= 4 ? 4 : 3) : 1;
+  const { RevisionEngine } = await import("@/lib/engines/RevisionEngine");
+  const attempt = await RevisionEngine.updateFSRS(
+    session.user.id,
+    data.pyqId,
+    rating as any,
+    data.timeSpent
+  );
 
   // Update coverage and topic status
   await CompletionEngine.check(session.user.id, attempt.pyq.topicId);
