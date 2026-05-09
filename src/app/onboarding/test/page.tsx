@@ -6,11 +6,16 @@ export default async function OnboardingTestPage() {
   const questions = await DiagnosticEngine.getTestQuestions();
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-gray-900">Entry Diagnosis</h1>
-          <p className="text-gray-500">Let&apos;s see where you stand. 15 questions, 45 seconds each.</p>
+    <div className="min-h-screen bg-slate-50/50 pt-32 pb-20">
+      <div className="container mx-auto px-6">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-50 border border-brand-100 text-brand-600 text-[10px] font-black uppercase tracking-widest mb-6 shadow-sm">
+             Baseline Evaluation v2.0
+          </div>
+          <h1 className="text-5xl font-jakarta font-black text-slate-900 mb-4 tracking-tight">Entry Diagnosis</h1>
+          <p className="text-slate-500 font-medium max-w-lg mx-auto leading-relaxed">
+            Let&apos;s map your current mastery. We&apos;ve curated {questions.length} high-signal questions across core GATE subjects.
+          </p>
         </div>
         <DiagnosticTestClient questions={questions} />
       </div>
