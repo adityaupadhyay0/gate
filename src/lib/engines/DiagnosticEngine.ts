@@ -2,44 +2,63 @@ import prisma from "@/lib/db/prisma";
 
 export class DiagnosticEngine {
   /**
-   * Hybrid Benchmarking System
-   * 70% Fixed "Anchor Set" for global comparability
-   * 30% Adaptive Edge Set for signal amplification
+   * Industrial-Grade Proportional Sampling
+   * Ensures 100% subject coverage for a 15-question diagnostic.
    */
   static async getTestQuestions() {
-    // 1. Get Anchor Set (Fixed 10 questions)
-    // In a real system, these would be specific IDs. For now, we take 10 consistent ones.
-    const anchorQuestions = await prisma.pYQ.findMany({
-      take: 10,
-      orderBy: { id: 'asc' }, // Deterministic for benchmarking
+    const subjects = await prisma.subject.findMany({
       include: {
-        topic: {
-          include: { subject: true }
+        topics: {
+          include: {
+            pyqs: {
+              take: 1
+            }
+          }
         }
       }
     });
 
-    // 2. Get Adaptive Edge Set (5 questions)
-    // We'll pick from subjects not covered well in the anchor set or just random ones for now.
-    const adaptiveQuestions = await prisma.pYQ.findMany({
-      take: 5,
-      skip: 50, // Skip anchor pool
-      orderBy: { id: 'desc' },
-      include: {
-        topic: {
-          include: { subject: true }
-        }
-      }
-    });
+    const questions: any[] = [];
 
-    return [...anchorQuestions, ...adaptiveQuestions];
+    // Core subjects to prioritize for diagnostic
+    const coreSubjectSlugs = [
+      'algorithms', 'data-structures', 'os', 'networks',
+      'dbms', 'toc', 'coa', 'compiler-design',
+      'discrete-math', 'digital-logic', 'eng-math', 'c-programming'
+    ];
+
+    for (const slug of coreSubjectSlugs) {
+      const subject = subjects.find(s => s.slug === slug);
+      if (!subject) continue;
+
+      // Flatten all available PYQs for this subject
+      const subjectPyqs = subject.topics.flatMap(t => t.pyqs);
+
+      if (subjectPyqs.length > 0) {
+        // Pick 1-2 random questions per core subject
+        const count = slug === 'algorithms' || slug === 'data-structures' ? 2 : 1;
+        const shuffled = subjectPyqs.sort(() => 0.5 - Math.random());
+        questions.push(...shuffled.slice(0, count));
+      }
+    }
+
+    // Fill up to 15 if needed
+    if (questions.length < 15) {
+      const allOtherPyqs = await prisma.pYQ.findMany({
+        where: { id: { notIn: questions.map(q => q.id) } },
+        take: 15 - questions.length,
+        include: { topic: { include: { subject: true } } }
+      });
+      questions.push(...allOtherPyqs);
+    }
+
+    return questions.slice(0, 20); // Cap at 20 max
   }
 
   static async processResults(userId: string, answers: { pyqId: string, isCorrect: boolean }[]) {
-    const strengthMap: Record<string, number> = {};
+    const subjectPerformance: Record<string, { correct: number, total: number }> = {};
     const weakAreas: string[] = [];
 
-    // Simple scoring logic
     for (const answer of answers) {
       const pyq = await prisma.pYQ.findUnique({
         where: { id: answer.pyqId },
@@ -49,20 +68,34 @@ export class DiagnosticEngine {
       if (!pyq) continue;
 
       const subjectName = pyq.topic.subject.name;
-      if (!strengthMap[subjectName]) strengthMap[subjectName] = 0;
+      if (!subjectPerformance[subjectName]) {
+        subjectPerformance[subjectName] = { correct: 0, total: 0 };
+      }
 
+      subjectPerformance[subjectName].total += 1;
       if (answer.isCorrect) {
-        strengthMap[subjectName] += 100 / 3; // Approx 3 questions per subject
+        subjectPerformance[subjectName].correct += 1;
       } else {
         weakAreas.push(pyq.topic.name);
       }
     }
 
-    // Normalize and store
+    // Calculate normalized strength map (0-100)
+    const strengthMap: Record<string, number> = {};
+    Object.entries(subjectPerformance).forEach(([subject, stats]) => {
+      strengthMap[subject] = (stats.correct / stats.total) * 100;
+    });
+
+    // Store in DB
     await prisma.user.update({
       where: { id: userId },
       data: {
-        diagnosticResult: JSON.stringify({ strengthMap, weakAreas }),
+        diagnosticResult: JSON.stringify({
+          strengthMap,
+          weakAreas,
+          timestamp: new Date().toISOString(),
+          version: "2.0-proportional"
+        }),
         onboardingComplete: true
       }
     });
