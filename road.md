@@ -17,63 +17,64 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 - **Analytics**: Basic attempt tracking; needs deeper aggregation.
 - **Content Pipeline**: Curated JSON/CSV to Prisma seed script.
 
-## ACTIVE TASK (COMPLETED)
+## ACTIVE TASK
 
-# Task: Industrial-Grade Diagnostic Test Engine
+# Task: Integrated AI Doubt Solver V2 (Context-aware grounding)
 
 ## Priority
-High (Learning-critical)
+High (Learning-critical / AI quality)
 
 ## Goal
-Implement proportional subject sampling and granular strength mapping for more accurate entry evaluation.
+Enhance the AI doubt solver by grounding its explanations in precomputed metadata (PYQMetadata) and TopicSummaries to reduce hallucinations and improve technical depth.
 
 ## Why It Matters
-The current diagnostic engine is too random. A "Rank 1" aspirant needs an accurate baseline across all GATE subjects to prioritize study effectively from Day 1.
+Generic AI explanations often miss subtle GATE-specific nuances or common pitfalls. Grounding ensures the AI "knows" what concepts are being tested and what typical mistakes students make.
 
 ## Scope
-- Modify `DiagnosticEngine.ts` to fetch balanced questions.
-- Implement subject-wise strength/weakness calculation logic.
-- Update UI to reflect "Industrial" quality.
+- Update `PYQPlayer.tsx` to pass `pyqId`.
+- Update `/api/ai/explain` to fetch metadata.
+- Refine AI prompt for grounded reasoning.
 
 ## Dependencies
-- Prisma schema for Subject/Topic/PYQ.
+- Prisma schema (PYQMetadata, TopicSummary).
+- Gemini API.
 
 ## Implementation Plan
-1. Calculate proportional subject weights.
-2. Select 1-2 questions per core subject for a 15-20 question test.
-3. Normalize scores per subject.
-4. Integrate with `RoadmapEngine` for better initial prioritization.
+1. Update `PYQPlayer.tsx` to include `pyqId` in the API request.
+2. Modify the API route to fetch `PYQMetadata` and `TopicSummary`.
+3. Enhance the AI prompt to incorporate fetched context.
+4. Add unit tests for prompt grounding logic.
 
 ## UX Improvements
-- Progress bars, smooth transitions, and high-fidelity typography in the test client.
+- Display precomputed "One-line explanation" instantly while AI generates the full derivation.
 
 ## Validation Strategy
-- Unit tests for sampling logic.
-- Manual verification of roadmap generation post-diagnostic.
+- Compare AI responses with and without grounding.
+- Unit tests for metadata fetching and prompt construction.
 
 ## Risks
-- Insufficient question bank for certain subjects might break sampling.
+- Missing metadata for some questions might lead to inconsistent quality (needs fallback).
 
 ## Rollback Strategy
-- Revert `DiagnosticEngine.ts` to previous `take(10)`/`take(5)` logic.
+- Revert API route to use only raw question/options/answer data.
 
 ## Completion Criteria
-- 100% subject coverage in diagnostic selection.
-- Accurate strength map stored in user profile.
-- Passing unit tests.
+- AI explanations include specific references to `conceptTags` and `typicalMistakes` when available.
+- Seamless fallback when metadata is missing.
+- Verified data flow from client to AI route.
 
 ---
 
 ## QUEUED TASKS
-1. Integrated AI Doubt Solver V2 (Context-aware grounding)
-2. FSRS Parameter Optimization (Auto-tuning weights)
-3. Subject Mastery Heatmaps (Visual progress tracking)
-4. Mobile-First UX Overhaul (PWA support)
-5. Peer Benchmarking System (Global rank estimation)
-6. Automated Flashcard Generation (AI-driven)
-7. Revision Streak Gamification (Retention engine)
-8. Advanced Mistake Clustering (Root cause analysis)
-9. Performance: Database Query Optimization & Caching
+1. FSRS Parameter Optimization (Auto-tuning weights)
+2. Subject Mastery Heatmaps (Visual progress tracking)
+3. Mobile-First UX Overhaul (PWA support)
+4. Peer Benchmarking System (Global rank estimation)
+5. Automated Flashcard Generation (AI-driven)
+6. Revision Streak Gamification (Retention engine)
+7. Advanced Mistake Clustering (Root cause analysis)
+8. Performance: Database Query Optimization & Caching
+9. Advanced Analytics Dashboard
 
 # Repository Health Audit
 - **Broken Systems**: None detected.
@@ -179,15 +180,20 @@ The current diagnostic engine is too random. A "Rank 1" aspirant needs an accura
 - [Detailed list suppressed for brevity, to be expanded in future runs]
 
 # Execution Log
-## [2025-05-15 10:00:00]
+
+## [2025-05-15 14:00:00]
 ### Completed
-- Initialized comprehensive `road.md` repository intelligence.
-- Performed deep audit of engines, UI, and architecture.
-- Identified `DiagnosticEngine` as the primary target for improvement.
+- Implemented Context-Aware Grounding for AI Doubt Solver.
+- Created `PromptEngine` for structured prompt engineering and testing.
+- Added "Instant Insight" UI component for immediate technical feedback.
+- Fixed `road.md` duplication and organization.
 
 ### Discovered
-- `DiagnosticEngine` currently uses a simple `take(10)`/`take(5)` which doesn't guarantee subject coverage.
-- Lack of unit tests is a major risk for engine reliability.
+- `TopicSummary` in schema was correctly defined as `@unique topicId`, meaning it's a 1:1 relation, but Prisma naming convention sometimes uses plurals in relations.
+- Metadata inclusion in the main topic page was already present but needed verification for the AI route.
+
+### Architecture Changes
+- Introduced `PromptEngine` to decouple AI prompt logic from API route handlers.
 
 ## [2025-05-15 11:00:00]
 ### Completed
@@ -206,6 +212,16 @@ The current diagnostic engine is too random. A "Rank 1" aspirant needs an accura
 ### Architecture Changes
 - Moved from fixed "Anchor/Edge" sets to a proportional subject-wide sampling strategy.
 - Integrated Vitest as the primary unit testing framework.
+
+## [2025-05-15 10:00:00]
+### Completed
+- Initialized comprehensive `road.md` repository intelligence.
+- Performed deep audit of engines, UI, and architecture.
+- Identified `DiagnosticEngine` as the primary target for improvement.
+
+### Discovered
+- `DiagnosticEngine` currently uses a simple `take(10)`/`take(5)` which doesn't guarantee subject coverage.
+- Lack of unit tests is a major risk for engine reliability.
 
 ### Architecture Changes
 - None yet.

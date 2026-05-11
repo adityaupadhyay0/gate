@@ -11,7 +11,8 @@ import {
   XCircle,
   ArrowRight,
   BrainCircuit,
-  Loader2
+  Loader2,
+  Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ScientificCalculator from "@/components/ScientificCalculator";
@@ -68,6 +69,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
         const resp = await fetch('/api/ai/explain', {
             method: 'POST',
             body: JSON.stringify({
+                pyqId: currentPYQ.id,
                 question: currentPYQ.question,
                 options,
                 answer: currentPYQ.answer,
@@ -85,6 +87,25 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
 
   return (
     <div className="space-y-8">
+      {/* Instant Insight - Grounded Metadata */}
+      {showExplanation && currentPYQ.metadata?.oneLineExplanation && (
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="bg-brand-500/10 border border-brand-500/20 rounded-2xl p-6 flex items-start gap-4"
+        >
+          <div className="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center shrink-0">
+            <Zap className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h4 className="text-brand-400 text-[10px] font-black uppercase tracking-widest mb-1">Instant Insight</h4>
+            <p className="text-white font-bold leading-relaxed">
+              {currentPYQ.metadata.oneLineExplanation}
+            </p>
+          </div>
+        </motion.div>
+      )}
+
       <div className="bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl relative border border-slate-800">
         {/* Player Header */}
         <div className="px-10 py-6 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-md">
