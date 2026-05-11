@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
+import prisma from "@/lib/db/prisma";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
@@ -12,12 +13,43 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { question, options, answer, userAnswer } = await req.json();
+    const { pyqId, question, options, answer, userAnswer } = await req.json();
+
+    // Fetch grounding context if pyqId is provided
+    let groundingContext = "";
+    if (pyqId) {
+      const pyq = await prisma.pYQ.findUnique({
+        where: { id: pyqId },
+        include: {
+          metadata: true,
+          topic: {
+            include: {
+              summaries: true,
+              resources: true,
+            },
+          },
+        },
+      });
+
+      if (pyq) {
+        groundingContext = `
+          --- GROUNDING CONTEXT ---
+          Expert Hint: ${pyq.metadata?.oneLineExplanation || "N/A"}
+          Core Concepts: ${pyq.topic.summaries?.coreConcepts || "N/A"}
+          Key Formulas: ${pyq.topic.summaries?.keyFormulas || "N/A"}
+          Typical Mistakes: ${pyq.topic.summaries?.typicalMistakes || "N/A"}
+          Recommended Reading: ${pyq.topic.resources?.recommendedBookChapters || "N/A"}
+          --------------------------
+        `;
+      }
+    }
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
-      As a GATE CSE Expert, explain the following PYQ in a structured, step-by-step manner.
+      As a GATE CSE Expert, explain the following PYQ in a structured, professional manner using Markdown.
+
+      ${groundingContext}
 
       Question: ${question}
       Options: ${JSON.stringify(options)}
@@ -25,12 +57,13 @@ export async function POST(req: Request) {
       User's Answer: ${userAnswer}
 
       Requirements:
-      1. Explain the core concept involved.
-      2. Show the step-by-step derivation or logical reasoning.
-      3. If the user was wrong, gently explain why the user's answer might be a common pitfall.
-      4. Use concise, technical language suitable for a Rank 1 aspirant.
+      1. Concept Overview: Use the provided "Core Concepts" and "Expert Hint" to frame the problem.
+      2. Technical Derivation: Show the step-by-step derivation or logical reasoning. Use LaTeX for math if needed.
+      3. Common Pitfalls: Specifically address the "Typical Mistakes" provided in the context and explain why they are tempting.
+      4. Suggested Deep Dive: Use the "Recommended Reading" to suggest specific textbook sections for further study.
+      5. Tone: Use concise, elite technical language suitable for a Rank 1 aspirant.
 
-      Return as plain text with clear line breaks.
+      Structure the response with clear H3 headers: ### Concept Overview, ### Technical Derivation, ### Common Pitfalls, ### Suggested Deep Dive.
     `;
 
     const result = await model.generateContent(prompt);

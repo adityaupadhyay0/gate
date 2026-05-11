@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import {
   ChevronLeft,
   ChevronRight,
@@ -68,6 +71,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
         const resp = await fetch('/api/ai/explain', {
             method: 'POST',
             body: JSON.stringify({
+                pyqId: currentPYQ.id,
                 question: currentPYQ.question,
                 options,
                 answer: currentPYQ.answer,
@@ -218,8 +222,13 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
                     <XCircle className="w-6 h-6" />
                  </button>
               </div>
-              <div className="prose prose-invert max-w-none font-medium leading-relaxed text-slate-300">
-                 {aiExplanation.split('\n').map((line, i) => <p key={i}>{line}</p>)}
+              <div className="prose prose-invert max-w-none font-medium leading-relaxed text-slate-300 prose-headings:text-white prose-headings:font-black prose-h3:text-brand-400 prose-h3:uppercase prose-h3:tracking-widest prose-h3:text-sm">
+                 <ReactMarkdown
+                    remarkPlugins={[remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
+                 >
+                    {aiExplanation}
+                 </ReactMarkdown>
               </div>
            </motion.div>
          )}

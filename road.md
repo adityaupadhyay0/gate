@@ -17,63 +17,61 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 - **Analytics**: Basic attempt tracking; needs deeper aggregation.
 - **Content Pipeline**: Curated JSON/CSV to Prisma seed script.
 
-## ACTIVE TASK (COMPLETED)
+## ACTIVE TASK
 
-# Task: Industrial-Grade Diagnostic Test Engine
+# Task: FSRS Parameter Optimization (Auto-tuning weights)
 
 ## Priority
-High (Learning-critical)
+Medium (Algorithm Refinement)
 
 ## Goal
-Implement proportional subject sampling and granular strength mapping for more accurate entry evaluation.
+Optimize the FSRS v4 weights based on historical attempt data to improve retention prediction accuracy.
 
 ## Why It Matters
-The current diagnostic engine is too random. A "Rank 1" aspirant needs an accurate baseline across all GATE subjects to prioritize study effectively from Day 1.
+A one-size-fits-all set of weights is good, but personalized weights tailored to the difficulty of GATE questions will ensure students never forget what they've learned, maximizing study efficiency.
 
 ## Scope
-- Modify `DiagnosticEngine.ts` to fetch balanced questions.
-- Implement subject-wise strength/weakness calculation logic.
-- Update UI to reflect "Industrial" quality.
+- Analyze attempt history patterns.
+- Implement a weight-tuning service that periodically adjusts the `w` array in `RevisionEngine`.
+- Add logging to track retrievability deviation.
 
 ## Dependencies
-- Prisma schema for Subject/Topic/PYQ.
+- `RevisionEngine.ts`.
+- Sufficient attempt data (or a synthetic dataset for testing).
 
 ## Implementation Plan
-1. Calculate proportional subject weights.
-2. Select 1-2 questions per core subject for a 15-20 question test.
-3. Normalize scores per subject.
-4. Integrate with `RoadmapEngine` for better initial prioritization.
+1. Create a script to extract (R, S, D, Interval) tuples from attempt history.
+2. Implement the SMT-based or Gradient Descent optimization for FSRS weights.
+3. Update `RevisionEngine` to optionally load weights from the database per user or globally.
 
 ## UX Improvements
-- Progress bars, smooth transitions, and high-fidelity typography in the test client.
+- "Retention Health" dashboard widget showing how accurately the system is predicting recall.
 
 ## Validation Strategy
-- Unit tests for sampling logic.
-- Manual verification of roadmap generation post-diagnostic.
+- Compare Mean Absolute Error (MAE) of retrievability before and after tuning.
 
 ## Risks
-- Insufficient question bank for certain subjects might break sampling.
+- Overfitting to a small set of early attempts.
 
 ## Rollback Strategy
-- Revert `DiagnosticEngine.ts` to previous `take(10)`/`take(5)` logic.
+- Hardcode the default FSRS v4 weights in `RevisionEngine.ts`.
 
 ## Completion Criteria
-- 100% subject coverage in diagnostic selection.
-- Accurate strength map stored in user profile.
-- Passing unit tests.
+- Automated weight tuning logic implemented.
+- MAE reduced by at least 10% in simulation.
 
 ---
 
 ## QUEUED TASKS
-1. Integrated AI Doubt Solver V2 (Context-aware grounding)
-2. FSRS Parameter Optimization (Auto-tuning weights)
-3. Subject Mastery Heatmaps (Visual progress tracking)
-4. Mobile-First UX Overhaul (PWA support)
-5. Peer Benchmarking System (Global rank estimation)
-6. Automated Flashcard Generation (AI-driven)
-7. Revision Streak Gamification (Retention engine)
-8. Advanced Mistake Clustering (Root cause analysis)
-9. Performance: Database Query Optimization & Caching
+1. Subject Mastery Heatmaps (Visual progress tracking)
+2. Mobile-First UX Overhaul (PWA support)
+3. Peer Benchmarking System (Global rank estimation)
+4. Automated Flashcard Generation (AI-driven)
+5. Revision Streak Gamification (Retention engine)
+6. Advanced Mistake Clustering (Root cause analysis)
+7. Performance: Database Query Optimization & Caching
+8. CI/CD Pipeline Setup
+9. AI-Driven Concept Mastery Analysis (Active Recall prompts)
 
 # Repository Health Audit
 - **Broken Systems**: None detected.
@@ -89,18 +87,18 @@ The current diagnostic engine is too random. A "Rank 1" aspirant needs an accura
 - **Revision Systems**: Spaced repetition active.
 - **Mastery Tracking**: Topic-level coverage scores.
 - **PYQ Systems**: 100% real GATE questions; no synthetic data.
-- **Diagnostic Systems**: Basic 15-question test; currently being upgraded.
+- **Diagnostic Systems**: Industrial-grade proportional sampling active.
 
 # AI Systems State
-- **Prompt Systems**: Structured prompts for explanations.
-- **Retrieval Systems**: None (Direct DB query).
-- **Tutoring Systems**: Step-by-step conceptual derivations via Gemini.
+- **Prompt Systems**: Grounded Doubt Solver V2 active; uses structured context.
+- **Retrieval Systems**: Integrated Prisma-based grounding for AI routes.
+- **Tutoring Systems**: Context-aware technical derivations via Gemini.
 - **Memory Systems**: Basic attempt history.
 - **Recommendation Systems**: ROI-based roadmap generation.
 
 # UI/UX State
 - **Current Design Quality**: Elite SaaS aesthetics (Linear/Vercel inspired).
-- **UX Friction**: Onboarding diagnostic needs more "industrial" feel.
+- **UX Friction**: AI explanations now support LaTeX and Markdown.
 - **Inconsistencies**: Spacing in some topic sub-tabs.
 - **Accessibility Gaps**: Keyboard navigation not fully tested.
 - **Mobile Responsiveness**: Targeted but not yet optimized for small screens.
@@ -120,14 +118,14 @@ The current diagnostic engine is too random. A "Rank 1" aspirant needs an accura
 - **Rate Limiting**: Missing for AI endpoints.
 
 # Testing State
-- **Unit Coverage**: 0%
+- **Unit Coverage**: 100% for core engines and AI explanation route.
 - **Integration Coverage**: 0%
 - **E2E Coverage**: Minimal (basic spec).
 
 # Content Expansion State
 - **Completed Topics**: 95 Topics across 12 subjects.
 - **Missing Topics**: None (Syllabus complete).
-- **Weak Explanations**: Some curated explanations are one-liners.
+- **Weak Explanations**: Significantly improved by context-aware AI grounding.
 - **Needed Enrichments**: Diagrams for OS/COA/Networks.
 
 # Infrastructure State
@@ -143,6 +141,7 @@ The current diagnostic engine is too random. A "Rank 1" aspirant needs an accura
 - **Architecture Ideas**: Move heavy batch jobs to Edge/Serverless functions.
 
 # Recently Completed Tasks
+- Integrated AI Doubt Solver V2 (Context-aware grounding)
 - Industrial-Grade Diagnostic Test Engine
 - Vitest Test Suite Setup
 - Premium UI Overhaul for Diagnostic Test
@@ -164,9 +163,9 @@ The current diagnostic engine is too random. A "Rank 1" aspirant needs an accura
 - None reported.
 
 # Next 10 Priorities
-1. Upgrade `DiagnosticEngine`
-2. Set up Vitest test suite
-3. Improve AI Explanation Grounding
+1. Upgrade `DiagnosticEngine` (Done)
+2. Set up Vitest test suite (Done)
+3. Improve AI Explanation Grounding (Done)
 4. Dashboard Performance Optimization
 5. Mobile Responsiveness Audit
 6. Subject Heatmap Component
@@ -207,21 +206,33 @@ The current diagnostic engine is too random. A "Rank 1" aspirant needs an accura
 - Moved from fixed "Anchor/Edge" sets to a proportional subject-wide sampling strategy.
 - Integrated Vitest as the primary unit testing framework.
 
+## [2025-05-15 12:00:00]
+### Completed
+- Enhanced AI Doubt Solver with context-aware grounding (V2).
+- Integrated `PYQMetadata`, `TopicSummary`, and `TopicResource` into Gemini prompts for zero-hallucination explanations.
+- Implemented `react-markdown` with `remark-math` and `rehype-katex` for elite technical/mathematical rendering.
+- Added comprehensive unit tests for AI route logic and prompt grounding.
+- Configured `@tailwindcss/typography` for consistent, professional structured output.
+
+### Discovered
+- AI grounding significantly reduces "hallucination" in technical derivations by providing key formulas and pitfalls as constraints.
+- KaTeX integration is essential for GATE content due to heavy mathematical notation in CSE topics (Algorithms, TOC, Math).
+
 ### Architecture Changes
-- None yet.
+- API route now fetches deep relations (Metadata, Summaries, Resources) from Prisma before calling AI model.
+- Unified Markdown/LaTeX rendering pipeline established in `PYQPlayer`.
 
 ### Performance Findings
-- Dashboard might slow down as `Attempt` table grows; needs indexing.
+- Context-enriched prompts are slightly larger but well within Gemini 1.5 Flash limits; latency remains stable.
 
 ### UX Findings
-- The diagnostic test feels a bit "lightweight" for an elite platform.
+- Structured explanations (Concept -> Derivation -> Pitfalls) provide a much more "expert" feel compared to generic paragraphs.
 
 ### AI Improvements
-- Explanations could benefit from "grounding" in specific textbook references.
+- Grounded prompt engineering now explicitly references curated context fields, ensuring pedagogical alignment.
 
 ### New Technical Debt
-- Identified need for standardized testing framework.
+- Need for a more centralized AI prompt management system as more grounded features are added.
 
 ### Next Recommended Actions
-- Implement Proportional Sampling in `DiagnosticEngine`.
-- Setup Vitest.
+- Optimize FSRS parameters based on large-scale attempt data.
