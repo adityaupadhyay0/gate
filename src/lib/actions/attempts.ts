@@ -3,6 +3,7 @@
 import prisma from "@/lib/db/prisma";
 import { auth } from "@/lib/auth/auth";
 import { CompletionEngine } from "@/lib/engines/CompletionEngine";
+import { revalidateTag } from "next/cache";
 
 export async function saveAttempt(data: {
   pyqId: string;
@@ -35,6 +36,45 @@ export async function saveAttempt(data: {
   // Update coverage and topic status
   await CompletionEngine.check(session.user.id, attempt.pyq.topicId);
 
+  // Update Streak
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { currentStreak: true, lastAttemptDate: true }
+  });
+
+  if (user) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const lastDate = user.lastAttemptDate ? new Date(user.lastAttemptDate) : null;
+    if (lastDate) lastDate.setHours(0, 0, 0, 0);
+
+    let newStreak = user.currentStreak;
+
+    if (!lastDate) {
+      newStreak = 1;
+    } else {
+      const diffDays = (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24);
+      if (diffDays === 1) {
+        newStreak += 1;
+      } else if (diffDays > 1) {
+        newStreak = 1;
+      }
+    }
+
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        currentStreak: newStreak,
+        lastAttemptDate: new Date()
+      }
+    });
+  }
+
+  // Invalidate cache
+  revalidateTag(`user-progress-${session.user.id}`);
+  revalidateTag(`user-streak-${session.user.id}`);
+
   return attempt;
 }
 
@@ -47,7 +87,7 @@ export async function logMistake(data: {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
-  return await prisma.mistakeLog.create({
+  const log = await prisma.mistakeLog.create({
     data: {
       userId: session.user.id,
       pyqId: data.pyqId,
@@ -56,4 +96,7 @@ export async function logMistake(data: {
       timeSpent: data.timeSpent
     }
   });
+
+  revalidateTag(`user-mistakes-${session.user.id}`);
+  return log;
 }

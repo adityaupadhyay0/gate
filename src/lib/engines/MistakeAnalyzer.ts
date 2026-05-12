@@ -1,46 +1,67 @@
 import prisma from "@/lib/db/prisma";
 
 export class MistakeAnalyzer {
-  static async run(userId: string, subjectId: string) {
+  /**
+   * Clusters mistakes by conceptTags and mistakeType to identify systemic weaknesses.
+   */
+  static async run(userId: string, subjectId?: string) {
     const logs = await prisma.mistakeLog.findMany({
       where: {
         userId,
-        pyq: { topic: { subjectId } }
+        ...(subjectId ? { pyq: { topic: { subjectId } } } : {})
       },
-      take: 10,
+      include: {
+        pyq: {
+          include: { metadata: true }
+        }
+      },
       orderBy: { loggedAt: 'desc' }
     });
 
-    if (logs.length < 10) return null;
+    if (logs.length === 0) return null;
 
-    const conceptualCount = logs.filter(l => l.mistakeType === 'Conceptual').length;
-    const timePressureCount = logs.filter(l => l.mistakeType === 'TimePressure').length;
-    const sillyCount = logs.filter(l => l.mistakeType === 'Silly').length;
+    // 1. Cluster by Concept Tags
+    const conceptClusters: Record<string, number> = {};
+    logs.forEach(log => {
+      const tags = log.pyq.metadata?.conceptTags?.split(',').map(t => t.trim()) || [];
+      tags.forEach(tag => {
+        conceptClusters[tag] = (conceptClusters[tag] || 0) + 1;
+      });
+    });
+
+    // 2. Identify Top Conceptual Blockers
+    const topBlockers = Object.entries(conceptClusters)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([concept, count]) => ({ concept, count }));
+
+    // 3. Cluster by Mistake Type
+    const typeClusters: Record<string, number> = {
+      'Conceptual': 0,
+      'TimePressure': 0,
+      'Silly': 0
+    };
+    logs.forEach(log => {
+      typeClusters[log.mistakeType] = (typeClusters[log.mistakeType] || 0) + 1;
+    });
 
     const insights = [];
 
-    if (conceptualCount / logs.length > 0.5) {
+    if (typeClusters['Conceptual'] / logs.length > 0.4) {
       insights.push({
         type: 'CRITICAL',
-        message: 'High conceptual error rate. Flagging subject for deep re-study.'
+        message: 'High conceptual error rate. You need to revisit foundational theory for your top blockers.'
       });
     }
 
-    if (timePressureCount > 3) {
+    if (typeClusters['TimePressure'] > 5) {
       insights.push({
         type: 'ACTION',
-        message: 'Time pressure detected. Recommend timed practice drills.'
+        message: 'Time pressure detected across multiple topics. Recommend switching to Rank Mode for timed practice.'
       });
     }
 
-    if (sillyCount > 4) {
-      insights.push({
-        type: 'ALERT',
-        message: 'Review your checking habit to reduce silly mistakes.'
-      });
-    }
-
-    // New: Confidence Mismatch Detection
+    // 4. Confidence Mismatch
     const attemptsWithConfidence = await prisma.attempt.findMany({
       where: { userId, confidenceLevel: { not: null } },
       take: 20,
@@ -48,22 +69,17 @@ export class MistakeAnalyzer {
     });
 
     const overconfidentCount = attemptsWithConfidence.filter(a => !a.isCorrect && (a.confidenceLevel || 0) >= 4).length;
-    const underconfidentCount = attemptsWithConfidence.filter(a => a.isCorrect && (a.confidenceLevel || 0) <= 2).length;
-
     if (overconfidentCount > 3) {
       insights.push({
         type: 'PSYCHOLOGICAL',
-        message: 'Overconfidence signal detected. You are certain but often wrong in this subject.'
+        message: 'High overconfidence detected. You often feel certain about incorrect answers.'
       });
     }
 
-    if (underconfidentCount > 5) {
-      insights.push({
-        type: 'PSYCHOLOGICAL',
-        message: 'Underconfidence detected. You know more than you think—trust your first instinct.'
-      });
-    }
-
-    return insights;
+    return {
+      topBlockers,
+      typeClusters,
+      insights
+    };
   }
 }

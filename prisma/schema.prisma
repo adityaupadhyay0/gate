@@ -14,6 +14,9 @@ model User {
   emailVerified      DateTime?
   image              String?
   diagnosticResult   Json?
+  fsrsWeights        Json?
+  currentStreak      Int            @default(0)
+  lastAttemptDate    DateTime?
   onboardingComplete Boolean        @default(false)
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
@@ -80,6 +83,7 @@ model Topic {
   resources       TopicResource?
   summaries       TopicSummary?
   userProgress    UserProgress[]
+  Flashcard       Flashcard[]
 
   @@unique([subjectId, name])
 }
@@ -159,6 +163,16 @@ model UserProgress {
   user          User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, topicId])
+  @@index([userId, status])
+}
+
+model Flashcard {
+  id        String   @id @default(cuid())
+  topicId   String
+  front     String
+  back      String
+  createdAt DateTime @default(now())
+  topic     Topic    @relation(fields: [topicId], references: [id])
 }
 
 model Attempt {
@@ -177,6 +191,9 @@ model Attempt {
   attemptedAt        DateTime @default(now())
   pyq                PYQ      @relation(fields: [pyqId], references: [id])
   user               User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, pyqId])
+  @@index([userId, attemptedAt])
 }
 
 model MistakeLog {

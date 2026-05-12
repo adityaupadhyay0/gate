@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth/auth";
-import { prisma } from "@/lib/db/prisma";
+import prisma from "@/lib/db/prisma";
 import { notFound } from "next/navigation";
 import PYQPlayer from "./PYQPlayer";
 import TopicTabs from "./TopicTabs";

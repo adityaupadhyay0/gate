@@ -29,12 +29,18 @@ export default async function RevisionPage() {
               </p>
             </div>
 
-            {queue.length > 0 && (
-              <button className="btn-primary bg-slate-900 hover:bg-black px-10 shadow-xl shadow-slate-200">
-                Start Revision Session
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            )}
+            <div className="flex gap-4">
+              <Link href="/revision/flashcards" className="btn-secondary bg-white hover:bg-slate-50 border-slate-200 px-8 shadow-sm">
+                Active Recall Cards
+                <Sparkles className="w-4 h-4 text-brand-500" />
+              </Link>
+              {queue.length > 0 && (
+                <button className="btn-primary bg-slate-900 hover:bg-black px-10 shadow-xl shadow-slate-200">
+                  Start Revision Session
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
