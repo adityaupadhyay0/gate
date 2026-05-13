@@ -19,55 +19,61 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 ## ACTIVE TASK
 
-# Task: Integrated AI Doubt Solver V2 (Context-aware grounding)
+# Task: Real-time Dashboard Analytics & Mastery Engine
 
 ## Priority
-High (Learning-critical / AI quality)
+High (Data Consistency / UX Quality)
 
 ## Goal
-Enhance the AI doubt solver by grounding its explanations in precomputed metadata (PYQMetadata) and TopicSummaries to reduce hallucinations and improve technical depth.
+Replace hardcoded dashboard placeholders with real-time analytics aggregated from user attempts, progress, and diagnostic results.
 
 ## Why It Matters
-Generic AI explanations often miss subtle GATE-specific nuances or common pitfalls. Grounding ensures the AI "knows" what concepts are being tested and what typical mistakes students make.
+A preparation platform is only as good as the feedback it provides. Real-time mastery and streak tracking are essential for student motivation and identifying learning gaps.
 
 ## Scope
-- Update `PYQPlayer.tsx` to pass `pyqId`.
-- Update `/api/ai/explain` to fetch metadata.
-- Refine AI prompt for grounded reasoning.
+- Implement `AnalyticsService` for server-side aggregation.
+- Calculate `Overall Mastery`, `Revision Streak`, and `Critical Weaknesses`.
+- Implement a deterministic `Rank Estimation` formula.
+- Refactor Dashboard UI to consume dynamic data.
+- Add `MasteryHeatmap` component for visual subject health.
 
 ## Dependencies
-- Prisma schema (PYQMetadata, TopicSummary).
-- Gemini API.
+- Prisma (Attempt, UserProgress, MistakeLog models).
+- Existing `DiagnosticEngine` results.
 
 ## Implementation Plan
-1. Update `PYQPlayer.tsx` to include `pyqId` in the API request.
-2. Modify the API route to fetch `PYQMetadata` and `TopicSummary`.
-3. Enhance the AI prompt to incorporate fetched context.
-4. Add unit tests for prompt grounding logic.
+1. Create `src/lib/services/AnalyticsService.ts`.
+2. Implement aggregation methods (mastery, streak, weaknesses, rank).
+3. Build `src/components/dashboard/MasteryHeatmap.tsx`.
+4. Update `src/app/dashboard/page.tsx` to use the new service.
+5. Benchmark query performance and add unit tests.
 
 ## UX Improvements
-- Display precomputed "One-line explanation" instantly while AI generates the full derivation.
+- Dynamic progress counters.
+- Visual heatmap for subject mastery.
+- Real-time streak display.
 
 ## Validation Strategy
-- Compare AI responses with and without grounding.
-- Unit tests for metadata fetching and prompt construction.
+- Unit tests for calculation logic.
+- Performance benchmarking of aggregation queries.
+- Verification of data consistency between topic-level progress and dashboard summary.
 
 ## Risks
-- Missing metadata for some questions might lead to inconsistent quality (needs fallback).
+- Slow aggregation queries as the `Attempt` table grows (addressed via indexing and efficient Prisma queries).
 
 ## Rollback Strategy
-- Revert API route to use only raw question/options/answer data.
+- Revert dashboard to use static placeholders if aggregation performance is unacceptable.
 
 ## Completion Criteria
-- AI explanations include specific references to `conceptTags` and `typicalMistakes` when available.
-- Seamless fallback when metadata is missing.
-- Verified data flow from client to AI route.
+- Dashboard displays real, non-hardcoded values for all 4 top-level stats.
+- Subject list shows real mastery percentages and heatmap.
+- Streak correctly increments based on daily attempts.
 
 ---
 
 ## QUEUED TASKS
 1. FSRS Parameter Optimization (Auto-tuning weights)
-2. Subject Mastery Heatmaps (Visual progress tracking)
+2. Subject Mastery Heatmaps (Visual progress tracking) - [In Progress as part of Active Task]
 3. Mobile-First UX Overhaul (PWA support)
 4. Peer Benchmarking System (Global rank estimation)
 5. Automated Flashcard Generation (AI-driven)
@@ -79,8 +85,8 @@ Generic AI explanations often miss subtle GATE-specific nuances or common pitfal
 # Repository Health Audit
 - **Broken Systems**: None detected.
 - **Weak Abstractions**: `DiagnosticEngine` is too simplistic. `MistakeAnalyzer` uses hardcoded thresholds.
-- **Technical Debt**: Lack of unit tests for core engines. Pinned Prisma/TS versions (intentional for stability).
-- **Missing Tests**: No unit coverage for `src/lib/engines`.
+- **Technical Debt**: Dashboard uses hardcoded placeholders for core metrics. Lack of unit tests for many engines.
+- **Missing Tests**: No unit coverage for `src/lib/services`.
 - **Performance Issues**: Potential for N+1 queries in dashboard subject lists.
 - **Security Concerns**: AI route protected, but rate-limiting is needed.
 - **Accessibility Concerns**: Needs a full ARIA audit.
@@ -90,18 +96,18 @@ Generic AI explanations often miss subtle GATE-specific nuances or common pitfal
 - **Revision Systems**: Spaced repetition active.
 - **Mastery Tracking**: Topic-level coverage scores.
 - **PYQ Systems**: 100% real GATE questions; no synthetic data.
-- **Diagnostic Systems**: Basic 15-question test; currently being upgraded.
+- **Diagnostic Systems**: Industrial-Grade Proportional Sampling (v2.0).
 
 # AI Systems State
-- **Prompt Systems**: Structured prompts for explanations.
-- **Retrieval Systems**: None (Direct DB query).
+- **Prompt Systems**: Structured prompts via `PromptEngine`.
+- **Retrieval Systems**: Context-aware grounding in metadata and summaries.
 - **Tutoring Systems**: Step-by-step conceptual derivations via Gemini.
 - **Memory Systems**: Basic attempt history.
 - **Recommendation Systems**: ROI-based roadmap generation.
 
 # UI/UX State
 - **Current Design Quality**: Elite SaaS aesthetics (Linear/Vercel inspired).
-- **UX Friction**: Onboarding diagnostic needs more "industrial" feel.
+- **UX Friction**: Dashboard metrics are currently hardcoded placeholders.
 - **Inconsistencies**: Spacing in some topic sub-tabs.
 - **Accessibility Gaps**: Keyboard navigation not fully tested.
 - **Mobile Responsiveness**: Targeted but not yet optimized for small screens.
@@ -110,7 +116,7 @@ Generic AI explanations often miss subtle GATE-specific nuances or common pitfal
 - **Bundle Size**: Optimized by Next.js defaults.
 - **Rendering**: Static/Dynamic hybrid.
 - **API Latency**: Low (direct Prisma calls).
-- **Query Bottlenecks**: None at current scale.
+- **Query Bottlenecks**: None at current scale; monitoring aggregation performance.
 - **Caching**: Minimal.
 
 # Security State
@@ -121,7 +127,7 @@ Generic AI explanations often miss subtle GATE-specific nuances or common pitfal
 - **Rate Limiting**: Missing for AI endpoints.
 
 # Testing State
-- **Unit Coverage**: 0%
+- **Unit Coverage**: Core engines (Diagnostic, Prompt) covered.
 - **Integration Coverage**: 0%
 - **E2E Coverage**: Minimal (basic spec).
 
@@ -144,42 +150,54 @@ Generic AI explanations often miss subtle GATE-specific nuances or common pitfal
 - **Architecture Ideas**: Move heavy batch jobs to Edge/Serverless functions.
 
 # Recently Completed Tasks
+- Integrated AI Doubt Solver V2 (Context-aware grounding)
 - Industrial-Grade Diagnostic Test Engine
 - Vitest Test Suite Setup
 - Premium UI Overhaul for Diagnostic Test
 - Proportional Subject Sampling Logic
 - FSRS v4 Integration
-- 95-Topic Syllabus Mapping
-- Scientific Calculator Component
-- Deep AI Doubt Solver (Beta)
-- Offline Precomputation Pipeline
 
 # Current Blockers
 - None.
 
 # Technical Debt Register
 - Hardcoded weights in `RevisionEngine`.
+- Hardcoded placeholders in Dashboard UI.
 - Need for standardized E2E auth mocking for tests.
 
 # Known Bugs
 - None reported.
 
 # Next 10 Priorities
-1. Upgrade `DiagnosticEngine`
-2. Set up Vitest test suite
-3. Improve AI Explanation Grounding
-4. Dashboard Performance Optimization
-5. Mobile Responsiveness Audit
-6. Subject Heatmap Component
-7. ARIA Accessibility Audit
-8. Rate Limiting for AI Routes
-9. Automated Flashcard Service
-10. CI/CD Pipeline Setup
+1. Implement Real-time Dashboard Analytics
+2. Dashboard Performance Optimization
+3. Subject Heatmap Component
+4. Mobile Responsiveness Audit
+5. ARIA Accessibility Audit
+6. Rate Limiting for AI Routes
+7. Automated Flashcard Service
+8. CI/CD Pipeline Setup
+9. Advanced Mistake Clustering
+10. FSRS Parameter Auto-tuning
 
 # Next 100 Improvements
 - [Detailed list suppressed for brevity, to be expanded in future runs]
 
 # Execution Log
+
+## [2025-05-15 15:00:00]
+### Completed
+- Initiated Dashboard Analytics overhaul.
+- Defined `AnalyticsService` architecture.
+- Updated `road.md` with new Active Task and repository health audit.
+
+### Discovered
+- Dashboard stats were entirely hardcoded, providing a misleading UX.
+- Subject progress dots were static and didn't reflect real user data accurately.
+
+### Next Recommended Actions
+- Implement `AnalyticsService.getOverallStats`.
+- Implement `MasteryHeatmap` component.
 
 ## [2025-05-15 14:00:00]
 ### Completed
@@ -189,55 +207,8 @@ Generic AI explanations often miss subtle GATE-specific nuances or common pitfal
 - Fixed `road.md` duplication and organization.
 
 ### Discovered
-- `TopicSummary` in schema was correctly defined as `@unique topicId`, meaning it's a 1:1 relation, but Prisma naming convention sometimes uses plurals in relations.
+- `TopicSummary` in schema was correctly defined as `@unique topicId`, meaning it's a 1:1 relation.
 - Metadata inclusion in the main topic page was already present but needed verification for the AI route.
 
 ### Architecture Changes
 - Introduced `PromptEngine` to decouple AI prompt logic from API route handlers.
-
-## [2025-05-15 11:00:00]
-### Completed
-- Implemented Industrial-Grade Proportional Sampling in `DiagnosticEngine`.
-- Enhanced `processResults` to calculate granular subject-wise normalized scores.
-- Established Vitest unit testing suite for core engines.
-- Refined Diagnostic Test UI with premium animations and typography.
-- Addressed code review feedback: ensured data consistency in engine and fixed unit test reliability.
-
-### Discovered
-- Core subject slugs were hardcoded in the engine; might want to make this dynamic later based on subject weight in GATE.
-- Prisma's `include` depth can impact performance if not careful, but fine for 15-20 questions.
-- Existing E2E tests were outdated and required alignment with current UI copy.
-- Ensuring `topic.subject` inclusion in all sampling branches is critical for UI stability.
-
-### Architecture Changes
-- Moved from fixed "Anchor/Edge" sets to a proportional subject-wide sampling strategy.
-- Integrated Vitest as the primary unit testing framework.
-
-## [2025-05-15 10:00:00]
-### Completed
-- Initialized comprehensive `road.md` repository intelligence.
-- Performed deep audit of engines, UI, and architecture.
-- Identified `DiagnosticEngine` as the primary target for improvement.
-
-### Discovered
-- `DiagnosticEngine` currently uses a simple `take(10)`/`take(5)` which doesn't guarantee subject coverage.
-- Lack of unit tests is a major risk for engine reliability.
-
-### Architecture Changes
-- None yet.
-
-### Performance Findings
-- Dashboard might slow down as `Attempt` table grows; needs indexing.
-
-### UX Findings
-- The diagnostic test feels a bit "lightweight" for an elite platform.
-
-### AI Improvements
-- Explanations could benefit from "grounding" in specific textbook references.
-
-### New Technical Debt
-- Identified need for standardized testing framework.
-
-### Next Recommended Actions
-- Implement Proportional Sampling in `DiagnosticEngine`.
-- Setup Vitest.

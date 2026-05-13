@@ -1,6 +1,8 @@
 export const dynamic = "force-dynamic";
 import { auth } from "@/lib/auth/auth";
-import { prisma } from "@/lib/db/prisma";
+import prisma from "@/lib/db/prisma";
+import { AnalyticsService } from "@/lib/services/AnalyticsService";
+import MasteryHeatmap from "@/components/dashboard/MasteryHeatmap";
 import { Activity, Flame, ShieldAlert, TrendingUp, Zap, Calendar } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -9,20 +11,25 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session?.user?.id || "guest";
 
+  // Fetch real-time analytics
+  const stats = await AnalyticsService.getOverallStats(userId);
+
   const subjects = await prisma.subject.findMany({
     include: {
       topics: {
         include: {
-          userProgress: { where: { userId } },
-          pyqs: {
-             include: {
-                attempts: { where: { userId }, orderBy: { attemptedAt: 'desc' }, take: 1 }
-             }
-          }
+          userProgress: { where: { userId } }
         }
       }
     }
   });
+
+  const dashboardMetrics = [
+    { label: "Overall Mastery", value: `${stats.overallMastery}%`, icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
+    { label: "Revision Streak", value: `${stats.revisionStreak} Days`, icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
+    { label: "Critical Weaknesses", value: `${stats.criticalWeaknessesCount} Topics`, icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
+    { label: "Rank Estimation", value: stats.rankEstimation, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
+  ];
 
   return (
     <div className="min-h-screen pt-32 pb-20 px-6 bg-slate-50/50">
@@ -44,12 +51,7 @@ export default async function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-           {[
-             { label: "Overall Mastery", value: "12%", icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
-             { label: "Revision Streak", value: "4 Days", icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
-             { label: "Critical Weaknesses", value: "8 Topics", icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
-             { label: "Rank Estimation", value: "Top 500", icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
-           ].map((stat, i) => (
+           {dashboardMetrics.map((stat, i) => (
              <div key={i} className="glass-card p-6 flex items-center gap-5">
                 <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center", stat.bg, stat.color)}>
                    <stat.icon className="w-7 h-7" />
@@ -73,36 +75,25 @@ export default async function DashboardPage() {
              const progress = (completedCount / subject.topics.length) * 100;
 
              return (
-               <Link key={subject.id} href="/roadmap" className="premium-card group">
+               <Link key={subject.id} href="/roadmap" className="premium-card group hover:scale-[1.02] transition-transform duration-300">
                   <div className="flex justify-between items-start mb-6">
                      <h3 className="text-xl font-black text-slate-900 group-hover:text-brand-600 transition-colors">{subject.name}</h3>
                      <span className="text-xs font-black text-slate-400 uppercase tracking-widest">{completedCount}/{subject.topics.length}</span>
                   </div>
 
-                  <div className="relative h-3 bg-slate-100 rounded-full overflow-hidden mb-6">
+                  <div className="relative h-3 bg-slate-100 rounded-full overflow-hidden mb-8">
                      <div
                         className="absolute inset-y-0 left-0 bg-brand-600 transition-all duration-1000"
                         style={{ width: `${progress}%` }}
                      />
                   </div>
 
-                  <div className="flex items-center gap-2 overflow-hidden">
-                     {subject.topics.slice(0, 8).map(topic => {
-                        const status = topic.userProgress[0]?.status || "Locked";
-                        return (
-                           <div
-                              key={topic.id}
-                              className={cn(
-                                 "w-2.5 h-2.5 rounded-full flex-shrink-0",
-                                 status === "Completed" ? "bg-emerald-500" :
-                                 status === "InProgress" ? "bg-brand-500 animate-pulse" :
-                                 "bg-slate-200"
-                              )}
-                              title={topic.name}
-                           />
-                        )
-                     })}
-                     {subject.topics.length > 8 && <span className="text-[10px] font-bold text-slate-300">+{subject.topics.length - 8}</span>}
+                  <div className="space-y-4">
+                     <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-400">
+                        <span>Topic Mastery Heatmap</span>
+                        <span className="text-brand-600">{Math.round(progress)}% Coverage</span>
+                     </div>
+                     <MasteryHeatmap topics={subject.topics} />
                   </div>
                </Link>
              )
