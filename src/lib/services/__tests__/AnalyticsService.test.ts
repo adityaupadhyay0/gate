@@ -13,11 +13,15 @@ vi.mock('../../db/prisma', () => ({
       groupBy: vi.fn(),
     },
     mistakeLog: {
+      findMany: vi.fn(),
       groupBy: vi.fn(),
     },
     user: {
       findUnique: vi.fn(),
     },
+    topic: {
+      count: vi.fn(),
+    }
   },
 }));
 
@@ -27,15 +31,16 @@ describe('AnalyticsService', () => {
   });
 
   describe('calculateOverallMastery', () => {
-    it('should calculate mastery normalized against 95 topics', async () => {
+    it('should calculate mastery normalized against total topics', async () => {
       (prisma.userProgress.findMany as any).mockResolvedValue([
         { coverageScore: 0.8 },
         { coverageScore: 0.5 },
       ]);
+      (prisma.topic.count as any).mockResolvedValue(10);
 
       const result = await AnalyticsService.calculateOverallMastery('user-1');
-      // (0.8 + 0.5) / 95 = 0.01368... -> 1%
-      expect(result).toBe(1);
+      // (0.8 + 0.5) / 10 = 0.13 -> 13%
+      expect(result).toBe(13);
     });
 
     it('should return 0 if no progress found', async () => {
@@ -59,6 +64,13 @@ describe('AnalyticsService', () => {
 
       const result = await AnalyticsService.calculateStreak('user-1');
       expect(result).toBe(3);
+
+      // Verify filter was applied
+      expect(prisma.attempt.findMany).toHaveBeenCalledWith(expect.objectContaining({
+        where: expect.objectContaining({
+          attemptedAt: expect.objectContaining({ gte: expect.any(Date) })
+        })
+      }));
     });
 
     it('should return 0 if last attempt was > 1 day ago', async () => {
@@ -94,16 +106,42 @@ describe('AnalyticsService', () => {
       });
       (prisma.user.findUnique as any).mockResolvedValue({ diagnosticResult: mockDiagnostic });
       (prisma.userProgress.findMany as any).mockResolvedValue(new Array(80).fill({ coverageScore: 1 }));
+      (prisma.topic.count as any).mockResolvedValue(100);
+      (prisma.attempt.findMany as any).mockResolvedValue([]);
+      (prisma.mistakeLog.findMany as any).mockResolvedValue([]);
 
       const stats = await AnalyticsService.getOverallStats('user-1');
-      // mastery = 80/95 = ~84%
-      // diagScore = (90+80)/12 = 14.16 (wait, strength map is 0-100, so diagScore is average of that)
-      // Actually my estimateRank formula: (diagScore * 0.4) + (mastery * 0.6)
-      // diagScore = (90+80)/2 = 85 (if only 2 subjects present, but the code divides by length of strengthMap values)
-      // Code: const diagScore = Object.values(diagnosticData.strengthMap || {}).reduce((a, b) => a + b, 0) / 12;
-      // diagScore = 170 / 12 = 14.16
-      // overall = (14.16 * 0.4) + (84 * 0.6) = 5.66 + 50.4 = 56.06 -> "Top 2000"
-      expect(stats.rankEstimation).toBe("Top 2000");
+      // mastery = 80/100 = 80%
+      // diagAvg = (90+80)/12 = 14.16
+      // overall = (14.16 * 0.4) + (80 * 0.6) = 5.66 + 48 = 53.66 -> "Top 5000" (since > 40)
+      expect(stats.rankEstimation).toBe("Top 5000");
+    });
+  });
+
+  describe('getCriticalWeaknesses', () => {
+    it('should identify topics with low accuracy', async () => {
+      (prisma.attempt.findMany as any).mockResolvedValue([
+        { isCorrect: false, pyq: { topicId: 'topic-1' } },
+        { isCorrect: false, pyq: { topicId: 'topic-1' } },
+        { isCorrect: false, pyq: { topicId: 'topic-1' } },
+      ]);
+      (prisma.mistakeLog.findMany as any).mockResolvedValue([]);
+
+      const result = await AnalyticsService.getCriticalWeaknesses('user-1');
+      expect(result).toContain('topic-1');
+    });
+
+    it('should identify topics with high recent mistakes', async () => {
+      (prisma.attempt.findMany as any).mockResolvedValue([]);
+      (prisma.mistakeLog.findMany as any).mockResolvedValue([
+        { pyq: { topicId: 'topic-2' } },
+        { pyq: { topicId: 'topic-2' } },
+        { pyq: { topicId: 'topic-2' } },
+        { pyq: { topicId: 'topic-2' } },
+      ]);
+
+      const result = await AnalyticsService.getCriticalWeaknesses('user-1');
+      expect(result).toContain('topic-2');
     });
   });
 });

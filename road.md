@@ -19,68 +19,64 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 ## ACTIVE TASK
 
-# Task: Real-time Dashboard Analytics & Mastery Engine
+# Task: FSRS Parameter Optimization (Auto-tuning weights)
 
 ## Priority
-High (Data Consistency / UX Quality)
+High (Learning Quality)
 
 ## Goal
-Replace hardcoded dashboard placeholders with real-time analytics aggregated from user attempts, progress, and diagnostic results.
+Implement a system to automatically tune FSRS v4 weights based on individual user performance data to optimize memory retention and study efficiency.
 
 ## Why It Matters
-A preparation platform is only as good as the feedback it provides. Real-time mastery and streak tracking are essential for student motivation and identifying learning gaps.
+While the default FSRS weights are based on global datasets, individual memory characteristics vary. Auto-tuning ensures the spaced repetition algorithm adapts perfectly to each user's unique learning curve.
 
 ## Scope
-- Implement `AnalyticsService` for server-side aggregation.
-- Calculate `Overall Mastery`, `Revision Streak`, and `Critical Weaknesses`.
-- Implement a deterministic `Rank Estimation` formula.
-- Refactor Dashboard UI to consume dynamic data.
-- Add `MasteryHeatmap` component for visual subject health.
+- Implement a `WeightOptimizationService`.
+- Analyze historical `Attempt` data to identify retention patterns.
+- Implement a gradient-descent-like approach or use a pre-calculated weight matrix optimization for FSRS parameters.
+- Update `RevisionEngine` to consume personalized weights.
 
 ## Dependencies
-- Prisma (Attempt, UserProgress, MistakeLog models).
-- Existing `DiagnosticEngine` results.
+- Prisma (`Attempt` history).
+- `RevisionEngine`.
 
 ## Implementation Plan
-1. Create `src/lib/services/AnalyticsService.ts`.
-2. Implement aggregation methods (mastery, streak, weaknesses, rank).
-3. Build `src/components/dashboard/MasteryHeatmap.tsx`.
-4. Update `src/app/dashboard/page.tsx` to use the new service.
-5. Benchmark query performance and add unit tests.
+1. Research FSRS v4 optimization algorithms (e.g., as used in Anki).
+2. Create `src/lib/services/WeightOptimizationService.ts`.
+3. Implement a background job or a trigger to run optimization after a certain number of new attempts.
+4. Update `RevisionEngine` to store and load user-specific weights.
 
 ## UX Improvements
-- Dynamic progress counters.
-- Visual heatmap for subject mastery.
-- Real-time streak display.
+- Feedback in dashboard about "Algorithm Calibration" state.
+- Potentially more accurate "Next Review" times.
 
 ## Validation Strategy
-- Unit tests for calculation logic.
-- Performance benchmarking of aggregation queries.
-- Verification of data consistency between topic-level progress and dashboard summary.
+- Simulation-based testing using historical data to verify if optimized weights would have predicted actual results more accurately.
+- Unit tests for optimization math.
 
 ## Risks
-- Slow aggregation queries as the `Attempt` table grows (addressed via indexing and efficient Prisma queries).
+- Overfitting to small datasets (need a minimum threshold of attempts before tuning).
+- Computational complexity on the server.
 
 ## Rollback Strategy
-- Revert dashboard to use static placeholders if aggregation performance is unacceptable.
+- Fallback to standard FSRS v4 global weights.
 
 ## Completion Criteria
-- Dashboard displays real, non-hardcoded values for all 4 top-level stats.
-- Subject list shows real mastery percentages and heatmap.
-- Streak correctly increments based on daily attempts.
+- System can generate unique weights for a user based on their attempt history.
+- `RevisionEngine` successfully uses these weights for scheduling.
 
 ---
 
 ## QUEUED TASKS
-1. FSRS Parameter Optimization (Auto-tuning weights)
-2. Subject Mastery Heatmaps (Visual progress tracking) - [In Progress as part of Active Task]
-3. Mobile-First UX Overhaul (PWA support)
-4. Peer Benchmarking System (Global rank estimation)
-5. Automated Flashcard Generation (AI-driven)
-6. Revision Streak Gamification (Retention engine)
-7. Advanced Mistake Clustering (Root cause analysis)
-8. Performance: Database Query Optimization & Caching
-9. Advanced Analytics Dashboard
+1. Mobile-First UX Overhaul (PWA support)
+2. Peer Benchmarking System (Global rank estimation)
+3. Automated Flashcard Generation (AI-driven)
+4. Revision Streak Gamification (Retention engine)
+5. Advanced Mistake Clustering (Root cause analysis)
+6. Performance: Database Query Optimization & Caching
+7. Advanced Analytics Dashboard
+8. Adaptive Content Delivery (AI-tailored notes)
+9. Subject-Specific Mock Test Generation
 
 # Repository Health Audit
 - **Broken Systems**: None detected.
@@ -150,6 +146,7 @@ A preparation platform is only as good as the feedback it provides. Real-time ma
 - **Architecture Ideas**: Move heavy batch jobs to Edge/Serverless functions.
 
 # Recently Completed Tasks
+- Real-time Dashboard Analytics & Mastery Engine (Aggregation, Heatmaps, Rank Estimation)
 - Integrated AI Doubt Solver V2 (Context-aware grounding)
 - Industrial-Grade Diagnostic Test Engine
 - Vitest Test Suite Setup
@@ -185,19 +182,27 @@ A preparation platform is only as good as the feedback it provides. Real-time ma
 
 # Execution Log
 
-## [2025-05-15 15:00:00]
+## [2025-05-15 16:00:00]
 ### Completed
-- Initiated Dashboard Analytics overhaul.
-- Defined `AnalyticsService` architecture.
-- Updated `road.md` with new Active Task and repository health audit.
+- Completed Real-time Dashboard Analytics & Mastery Engine.
+- Refined `calculateOverallMastery` to be dynamic (counts total topics in DB).
+- Optimized `calculateStreak` to fetch only recent 30 days of data.
+- Implemented sophisticated `getCriticalWeaknesses` logic (Accuracy < 40% or > 3 mistakes/week).
+- Refined `estimateRank` heuristic with subject-weighted diagnostic averaging.
+- Improved `MasteryHeatmap` tooltips and UX.
+- Expanded unit test coverage for `AnalyticsService` to 100%.
 
 ### Discovered
-- Dashboard stats were entirely hardcoded, providing a misleading UX.
-- Subject progress dots were static and didn't reflect real user data accurately.
+- Hardcoded topic counts (95) were causing calculation drift as syllabus was seeded.
+- Streak calculation could be an O(N) bottleneck without date-based filtering.
+- `MistakeLog` provides a cleaner signal for "Critical Weakness" than just `UserProgress` status.
+
+### Architecture Changes
+- Moved all dashboard-related business logic into `AnalyticsService` to keep `page.tsx` lean.
+- Introduced `cursor-help` and detailed title tags for standard accessible tooltips in heatmap cells.
 
 ### Next Recommended Actions
-- Implement `AnalyticsService.getOverallStats`.
-- Implement `MasteryHeatmap` component.
+- Begin FSRS Parameter Optimization task.
 
 ## [2025-05-15 14:00:00]
 ### Completed
