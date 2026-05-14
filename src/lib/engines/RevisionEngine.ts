@@ -7,16 +7,15 @@ import prisma from "@/lib/db/prisma";
  * Difficulty (D): Complexity (1-10)
  * Retrievability (R): Probability of recall (0-1)
  */
-export class RevisionEngine {
-  // Default parameters for FSRS
-  private static readonly w = [
-    0.4, 0.6, 2.4, 5.8, // Initial stability for Again, Hard, Good, Easy
-    4.93, 0.94, 0.86, 0.01, // Difficulty updates
-    1.49, 0.14, 0.94, // Stability updates (success)
-    2.18, 0.05, 0.34, 1.26, // Stability updates (failure)
-    0.2, 2.61 // Review penalty/bonus
-  ];
+export const DEFAULT_FSRS_WEIGHTS = [
+  0.4, 0.6, 2.4, 5.8, // Initial stability for Again, Hard, Good, Easy
+  4.93, 0.94, 0.86, 0.01, // Difficulty updates
+  1.49, 0.14, 0.94, // Stability updates (success)
+  2.18, 0.05, 0.34, 1.26, // Stability updates (failure)
+  0.2, 2.61 // Review penalty/bonus
+];
 
+export class RevisionEngine {
   static calculateRetrievability(stability: number, daysSince: number): number {
     return Math.pow(1 + daysSince / (9 * stability), -1);
   }
@@ -62,39 +61,63 @@ export class RevisionEngine {
     return queue.sort((a, b) => a.currentRetrievability - b.currentRetrievability);
   }
 
+  static nextState(
+    currentStability: number,
+    currentDifficulty: number,
+    rating: number,
+    daysSince: number,
+    w: number[] = DEFAULT_FSRS_WEIGHTS
+  ): { stability: number; difficulty: number } {
+    if (currentStability === 0) {
+      // Initial state
+      return {
+        stability: w[rating - 1],
+        difficulty: this.constrainDifficulty(w[4] - w[5] * (rating - 3))
+      };
+    }
+
+    const retrievability = this.calculateRetrievability(currentStability, daysSince);
+    const newDifficulty = this.constrainDifficulty(
+      currentDifficulty + w[4] * (this.meanReversion(rating) - 1)
+    );
+
+    let newStability: number;
+    if (rating === 1) {
+      // Failure
+      newStability = w[11] * Math.pow(newDifficulty, -w[12]) * (Math.pow(currentStability + 1, w[13]) - 1) * Math.exp(w[14] * (1 - retrievability));
+    } else {
+      // Success
+      newStability = currentStability * (1 + Math.exp(w[8]) * (11 - newDifficulty) * Math.pow(currentStability, -w[9]) * (Math.exp((1 - retrievability) * w[10]) - 1));
+    }
+
+    return { stability: newStability, difficulty: newDifficulty };
+  }
+
   static async updateFSRS(
     userId: string,
     pyqId: string,
     rating: 1 | 2 | 3 | 4, // 1: Again, 2: Hard, 3: Good, 4: Easy
     timeSpent: number
   ) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { fsrsWeights: true }
+    });
+
+    const w = (user?.fsrsWeights as number[]) || DEFAULT_FSRS_WEIGHTS;
+
     const lastAttempt = await prisma.attempt.findFirst({
       where: { userId, pyqId },
       orderBy: { attemptedAt: 'desc' }
     });
 
-    let newStability: number;
-    let newDifficulty: number;
+    let state: { stability: number; difficulty: number };
 
     if (!lastAttempt) {
-      // First attempt
-      newStability = this.w[rating - 1];
-      newDifficulty = this.initialDifficulty(rating);
+      state = this.nextState(0, 0, rating, 0, w);
     } else {
       const daysSince = (Date.now() - lastAttempt.attemptedAt.getTime()) / (1000 * 60 * 60 * 24);
-      const retrievability = this.calculateRetrievability(lastAttempt.stability, daysSince);
-
-      newDifficulty = this.constrainDifficulty(
-        lastAttempt.difficulty + this.w[4] * (this.meanReversion(rating) - 1)
-      );
-
-      if (rating === 1) {
-        // Failure
-        newStability = this.w[11] * Math.pow(newDifficulty, -this.w[12]) * (Math.pow(lastAttempt.stability + 1, this.w[13]) - 1) * Math.exp(this.w[14] * (1 - retrievability));
-      } else {
-        // Success
-        newStability = lastAttempt.stability * (1 + Math.exp(this.w[8]) * (11 - newDifficulty) * Math.pow(lastAttempt.stability, -this.w[9]) * (Math.exp((1 - retrievability) * this.w[10]) - 1));
-      }
+      state = this.nextState(lastAttempt.stability, lastAttempt.difficulty, rating, daysSince, w);
     }
 
     return await prisma.attempt.create({
@@ -103,16 +126,13 @@ export class RevisionEngine {
         pyqId,
         isCorrect: rating > 1,
         timeSpent,
-        stability: newStability,
-        difficulty: newDifficulty,
-        retrievability: rating === 1 ? 0 : 1.0 // Reset retrievability on attempt
+        stability: state.stability,
+        difficulty: state.difficulty,
+        retrievability: rating === 1 ? 0 : 1.0, // Reset retrievability on attempt
+        confidenceLevel: rating // Store the rating for future optimization
       },
       include: { pyq: true }
     });
-  }
-
-  private static initialDifficulty(rating: number): number {
-    return this.constrainDifficulty(this.w[4] - this.w[5] * (rating - 3));
   }
 
   private static constrainDifficulty(d: number): number {
