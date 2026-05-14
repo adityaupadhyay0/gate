@@ -24,9 +24,9 @@ export default function MasteryHeatmap({ topics }: MasteryHeatmapProps) {
         return (
           <div
             key={topic.id}
-            title={`${topic.name}: ${Math.round(score * 100)}%`}
+            title={`${topic.name} | Mastery: ${Math.round(score * 100)}% | Status: ${status}`}
             className={cn(
-              "w-3 h-3 rounded-sm transition-all duration-300",
+              "w-3 h-3 rounded-sm transition-all duration-300 cursor-help",
               status === "Locked" ? "bg-slate-200" :
               score >= 0.8 ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" :
               score >= 0.5 ? "bg-brand-500 shadow-[0_0_8px_rgba(37,99,235,0.3)]" :

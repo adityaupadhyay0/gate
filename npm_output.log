@@ -1,0 +1,22 @@
+
+> gate-system@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.3
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ✓ Ready in 2.1s
+ ○ Compiling /src/middleware ...
+ ✓ Compiled /src/middleware in 1901ms (210 modules)
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 6.9s (780 modules)
+ ✓ Compiled in 1022ms (287 modules)
+ GET /dashboard 200 in 7985ms
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 4.7s (479 modules)

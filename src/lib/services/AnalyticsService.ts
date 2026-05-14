@@ -34,20 +34,27 @@ export class AnalyticsService {
   }
 
   static async calculateOverallMastery(userId: string): Promise<number> {
-    const progress = await prisma.userProgress.findMany({
-      where: { userId },
-      select: { coverageScore: true }
-    });
+    const [progress, totalTopics] = await Promise.all([
+      prisma.userProgress.findMany({
+        where: { userId },
+        select: { coverageScore: true }
+      }),
+      prisma.topic.count()
+    ]);
 
-    if (progress.length === 0) return 0;
+    if (progress.length === 0 || totalTopics === 0) return 0;
 
     const totalScore = progress.reduce((acc, curr) => acc + curr.coverageScore, 0);
-    return Math.round((totalScore / 95) * 100); // Normalized against 95 core topics
+    return Math.round((totalScore / totalTopics) * 100);
   }
 
   static async calculateStreak(userId: string): Promise<number> {
+    const thirtyDaysAgo = subDays(new Date(), 30);
     const attempts = await prisma.attempt.findMany({
-      where: { userId },
+      where: {
+        userId,
+        attemptedAt: { gte: thirtyDaysAgo }
+      },
       select: { attemptedAt: true },
       orderBy: { attemptedAt: 'desc' }
     });
@@ -84,35 +91,69 @@ export class AnalyticsService {
   }
 
   static async getCriticalWeaknesses(userId: string) {
-    // A topic is critical if accuracy < 40% with at least 3 attempts
-    // OR if it has more than 3 MistakeLogs in the last 7 days
     const sevenDaysAgo = subDays(new Date(), 7);
 
-    // Logic for weak topics would ideally be more complex (accuracy < 40% with at least 3 attempts).
-    // Let's use UserProgress status for simplicity in this MVP+ stage.
-    const failingProgress = await prisma.userProgress.findMany({
-        where: {
-            userId,
-            coverageScore: { lt: 0.3 },
-            status: "InProgress"
-        }
+    // 1. Identify topics with accuracy < 40% (minimum 3 attempts)
+    const attempts = await prisma.attempt.findMany({
+      where: { userId },
+      select: {
+        isCorrect: true,
+        pyq: { select: { topicId: true } }
+      }
     });
 
-    return failingProgress;
+    const topicStats: Record<string, { total: number; correct: number }> = {};
+    attempts.forEach(a => {
+      const topicId = a.pyq.topicId;
+      if (!topicStats[topicId]) topicStats[topicId] = { total: 0, correct: 0 };
+      topicStats[topicId].total++;
+      if (a.isCorrect) topicStats[topicId].correct++;
+    });
+
+    const weakTopicIds = new Set<string>();
+    Object.entries(topicStats).forEach(([topicId, stats]) => {
+      if (stats.total >= 3 && (stats.correct / stats.total) < 0.4) {
+        weakTopicIds.add(topicId);
+      }
+    });
+
+    // 2. Identify topics with > 3 MistakeLogs in the last 7 days
+    const recentMistakes = await prisma.mistakeLog.findMany({
+      where: {
+        userId,
+        loggedAt: { gte: sevenDaysAgo }
+      },
+      select: { pyq: { select: { topicId: true } } }
+    });
+
+    const mistakeCounts: Record<string, number> = {};
+    recentMistakes.forEach(m => {
+      const topicId = m.pyq.topicId;
+      mistakeCounts[topicId] = (mistakeCounts[topicId] || 0) + 1;
+      if (mistakeCounts[topicId] > 3) {
+        weakTopicIds.add(topicId);
+      }
+    });
+
+    return Array.from(weakTopicIds);
   }
 
   private static estimateRank(mastery: number, diagnosticData: any): string {
-    if (!diagnosticData) return "Not Calibrated";
+    if (!diagnosticData || !diagnosticData.strengthMap) return "Not Calibrated";
 
-    const diagScore = Object.values(diagnosticData.strengthMap || {}).reduce((a: any, b: any) => a + b, 0) as number / 12;
+    // Average strength across all 12 core subjects (0-100 scale)
+    const subjectStrengths = Object.values(diagnosticData.strengthMap) as number[];
+    const diagAvg = subjectStrengths.reduce((a, b) => a + b, 0) / 12;
 
-    // Heuristic: (Diagnostic Score * 0.4) + (Syllabus Coverage * 0.6)
-    const overallScore = (diagScore * 0.4) + (mastery * 0.6);
+    // Heuristic: (Diagnostic Average * 0.4) + (Syllabus Coverage * 0.6)
+    // Both are on a 0-100 scale.
+    const overallScore = (diagAvg * 0.4) + (mastery * 0.6);
 
     if (overallScore > 85) return "Top 100";
     if (overallScore > 70) return "Top 500";
-    if (overallScore > 50) return "Top 2000";
-    if (overallScore > 30) return "Top 5000";
-    return "Top 10000+";
+    if (overallScore > 55) return "Top 2000";
+    if (overallScore > 40) return "Top 5000";
+    if (overallScore > 25) return "Top 10000";
+    return "Top 20000+";
   }
 }
