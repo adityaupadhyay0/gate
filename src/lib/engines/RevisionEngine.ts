@@ -9,7 +9,7 @@ import prisma from "@/lib/db/prisma";
  */
 export class RevisionEngine {
   // Default parameters for FSRS
-  private static readonly w = [
+  public static readonly DEFAULT_W = [
     0.4, 0.6, 2.4, 5.8, // Initial stability for Again, Hard, Good, Easy
     4.93, 0.94, 0.86, 0.01, // Difficulty updates
     1.49, 0.14, 0.94, // Stability updates (success)
@@ -17,11 +17,17 @@ export class RevisionEngine {
     0.2, 2.61 // Review penalty/bonus
   ];
 
-  static calculateRetrievability(stability: number, daysSince: number): number {
+  public static calculateRetrievability(stability: number, daysSince: number): number {
     return Math.pow(1 + daysSince / (9 * stability), -1);
   }
 
   static async getQueue(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { fsrsWeights: true }
+    });
+    const weights = (user?.fsrsWeights as number[]) || this.DEFAULT_W;
+
     const attempts = await prisma.attempt.findMany({
       where: { userId },
       include: {
@@ -68,34 +74,23 @@ export class RevisionEngine {
     rating: 1 | 2 | 3 | 4, // 1: Again, 2: Hard, 3: Good, 4: Easy
     timeSpent: number
   ) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { fsrsWeights: true }
+    });
+    const weights = (user?.fsrsWeights as number[]) || this.DEFAULT_W;
+
     const lastAttempt = await prisma.attempt.findFirst({
       where: { userId, pyqId },
       orderBy: { attemptedAt: 'desc' }
     });
 
-    let newStability: number;
-    let newDifficulty: number;
-
-    if (!lastAttempt) {
-      // First attempt
-      newStability = this.w[rating - 1];
-      newDifficulty = this.initialDifficulty(rating);
-    } else {
-      const daysSince = (Date.now() - lastAttempt.attemptedAt.getTime()) / (1000 * 60 * 60 * 24);
-      const retrievability = this.calculateRetrievability(lastAttempt.stability, daysSince);
-
-      newDifficulty = this.constrainDifficulty(
-        lastAttempt.difficulty + this.w[4] * (this.meanReversion(rating) - 1)
-      );
-
-      if (rating === 1) {
-        // Failure
-        newStability = this.w[11] * Math.pow(newDifficulty, -this.w[12]) * (Math.pow(lastAttempt.stability + 1, this.w[13]) - 1) * Math.exp(this.w[14] * (1 - retrievability));
-      } else {
-        // Success
-        newStability = lastAttempt.stability * (1 + Math.exp(this.w[8]) * (11 - newDifficulty) * Math.pow(lastAttempt.stability, -this.w[9]) * (Math.exp((1 - retrievability) * this.w[10]) - 1));
-      }
-    }
+    const nextState = this.nextState(
+      lastAttempt ? { stability: lastAttempt.stability, difficulty: lastAttempt.difficulty } : null,
+      rating,
+      lastAttempt ? (Date.now() - lastAttempt.attemptedAt.getTime()) / (1000 * 60 * 60 * 24) : 0,
+      weights
+    );
 
     return await prisma.attempt.create({
       data: {
@@ -103,23 +98,53 @@ export class RevisionEngine {
         pyqId,
         isCorrect: rating > 1,
         timeSpent,
-        stability: newStability,
-        difficulty: newDifficulty,
-        retrievability: rating === 1 ? 0 : 1.0 // Reset retrievability on attempt
+        stability: nextState.stability,
+        difficulty: nextState.difficulty,
+        retrievability: rating === 1 ? 0 : 1.0, // Reset retrievability on attempt
+        confidenceLevel: rating // Store rating for future optimization
       },
       include: { pyq: true }
     });
   }
 
-  private static initialDifficulty(rating: number): number {
-    return this.constrainDifficulty(this.w[4] - this.w[5] * (rating - 3));
+  /**
+   * Pure function to calculate next FSRS state.
+   * Centralized here to ensure consistency between real-time updates and optimization.
+   */
+  public static nextState(
+    state: { stability: number; difficulty: number } | null,
+    rating: number,
+    daysSince: number,
+    w: number[]
+  ): { stability: number; difficulty: number } {
+    if (!state) {
+      return {
+        stability: w[rating - 1],
+        difficulty: this.constrainDifficulty(w[4] - w[5] * (rating - 3))
+      };
+    }
+
+    const retrievability = this.calculateRetrievability(state.stability, daysSince);
+
+    // Improved difficulty update logic
+    // Mean reversion: rating=3 (Good) is neutral, rating=1 (Again) increases difficulty
+    const newDifficulty = this.constrainDifficulty(
+      state.difficulty + w[6] * ((rating - 3) * -1) // Corrected: failure (1) increases difficulty
+    );
+
+    let newStability: number;
+    if (rating === 1) {
+      // Failure
+      newStability = w[11] * Math.pow(newDifficulty, -w[12]) * (Math.pow(state.stability + 1, w[13]) - 1) * Math.exp(w[14] * (1 - retrievability));
+    } else {
+      // Success
+      newStability = state.stability * (1 + Math.exp(w[8]) * (11 - newDifficulty) * Math.pow(state.stability, -w[9]) * (Math.exp((1 - retrievability) * w[10]) - 1));
+    }
+
+    return { stability: newStability, difficulty: newDifficulty };
   }
 
   private static constrainDifficulty(d: number): number {
     return Math.min(Math.max(d, 1), 10);
-  }
-
-  private static meanReversion(rating: number): number {
-    return (rating - 1) / 3;
   }
 }

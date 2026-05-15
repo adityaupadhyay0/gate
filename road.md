@@ -10,7 +10,7 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 # Current Architecture
 - **Frontend**: Next.js 14 (App Router), Tailwind CSS (Premium UI), Framer Motion (Animations), Lucide React (Icons).
 - **Backend**: Next.js Server Actions, Route Handlers.
-- **Database**: SQLite (via Prisma ORM 6.4.1).
+- **Database**: SQLite (via Prisma ORM 6.4.1); now stores personalized `fsrsWeights` for users.
 - **AI Systems**: Gemini 1.5 Flash (via `@google/generative-ai`).
 - **State Management**: React Server Components + Client-side state where needed.
 - **Infrastructure**: Vercel-ready.
@@ -81,7 +81,7 @@ While the default FSRS weights are based on global datasets, individual memory c
 # Repository Health Audit
 - **Broken Systems**: None detected.
 - **Weak Abstractions**: `DiagnosticEngine` is too simplistic. `MistakeAnalyzer` uses hardcoded thresholds.
-- **Technical Debt**: Dashboard uses hardcoded placeholders for core metrics. Lack of unit tests for many engines.
+- **Technical Debt**: Hardcoded weights in `RevisionEngine` (partially resolved by moving to optimization). Lack of unit tests for many engines.
 - **Missing Tests**: No unit coverage for `src/lib/services`.
 - **Performance Issues**: Potential for N+1 queries in dashboard subject lists.
 - **Security Concerns**: AI route protected, but rate-limiting is needed.
@@ -181,6 +181,35 @@ While the default FSRS weights are based on global datasets, individual memory c
 - [Detailed list suppressed for brevity, to be expanded in future runs]
 
 # Execution Log
+
+## [2025-05-15 18:00:00]
+### Completed
+- Initiated FSRS Parameter Optimization (Auto-tuning weights) system.
+- Extended Prisma schema to support personalized `fsrsWeights` per user.
+- Updated `RevisionEngine` to be ready for dynamic weight injection.
+
+### Architecture Changes
+- Database schema now supports storing learned FSRS v4 parameters in the `User` model.
+
+### Next Recommended Actions
+- Monitor optimization performance and tune convergence parameters.
+
+## [2025-05-15 18:30:00]
+### Completed
+- Refined FSRS weight optimization with learning rate decay and rating-based accuracy.
+- Fixed core bug in `RevisionEngine` difficulty logic (difficulty now increases on failure).
+- Implemented `confidenceLevel` (1-4 rating) persistence in `Attempt` records.
+- Centralized FSRS math in pure `nextState` and `calculateRetrievability` methods.
+
+### Discovered
+- Difficulty update formula was previously inverting performance signal.
+- Binary `isCorrect` was too coarse for high-precision FSRS tuning; now using 1-4 ratings.
+
+### Architecture Changes
+- `RevisionEngine` now exports pure math functions for cross-service consistency.
+
+### Technical Debt
+- Optimization is currently "fire-and-forget" in Server Actions; may need a persistent task queue for larger datasets in serverless environments.
 
 ## [2025-05-15 16:00:00]
 ### Completed
