@@ -35,6 +35,14 @@ export async function saveAttempt(data: {
   // Update coverage and topic status
   await CompletionEngine.check(session.user.id, attempt.pyq.topicId);
 
+  // Trigger FSRS weight optimization periodically (e.g., every 50 attempts)
+  const attemptCount = await prisma.attempt.count({ where: { userId: session.user.id } });
+  if (attemptCount >= 50 && attemptCount % 50 === 0) {
+    const { WeightOptimizationService } = await import("@/lib/services/WeightOptimizationService");
+    // Run in background (not awaiting to avoid blocking response)
+    WeightOptimizationService.optimizeForUser(session.user.id).catch(console.error);
+  }
+
   return attempt;
 }
 
