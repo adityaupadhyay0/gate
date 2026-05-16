@@ -15,7 +15,7 @@ interface MasteryHeatmapProps {
 
 export default function MasteryHeatmap({ topics }: MasteryHeatmapProps) {
   return (
-    <div className="flex flex-wrap gap-1.5 max-w-full">
+    <div className="flex flex-wrap gap-1.5 max-w-full justify-center md:justify-start">
       {topics.map((topic) => {
         const progress = topic.userProgress[0];
         const status = progress?.status || "Locked";

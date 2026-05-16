@@ -19,64 +19,64 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 ## ACTIVE TASK
 
-# Task: FSRS Parameter Optimization (Auto-tuning weights)
+# Task: Peer Benchmarking System (Global rank estimation)
 
 ## Priority
-High (Learning Quality)
+Medium (Analytics/Motivation)
 
 ## Goal
-Implement a system to automatically tune FSRS v4 weights based on individual user performance data to optimize memory retention and study efficiency.
+Implement a global peer benchmarking system that estimates a user's potential GATE rank by comparing their performance against the global community of users.
 
 ## Why It Matters
-While the default FSRS weights are based on global datasets, individual memory characteristics vary. Auto-tuning ensures the spaced repetition algorithm adapts perfectly to each user's unique learning curve.
+Aspirants need to know where they stand relative to the competition. Real-time rank estimation based on actual attempt data provides a powerful motivational signal and helps calibrate study intensity.
 
 ## Scope
-- Implement a `WeightOptimizationService`.
-- Analyze historical `Attempt` data to identify retention patterns.
-- Implement a gradient-descent-like approach or use a pre-calculated weight matrix optimization for FSRS parameters.
-- Update `RevisionEngine` to consume personalized weights.
+- Implement `BenchmarkingService` for aggregate performance comparison.
+- Design a "Global Percentile" visualization for the dashboard.
+- Update `estimateRank` heuristic with real peer percentile data.
+- Add subject-wise percentile breakdowns.
 
 ## Dependencies
-- Prisma (`Attempt` history).
-- `RevisionEngine`.
+- `AnalyticsService`.
+- Historical aggregate data (mocked or real).
 
 ## Implementation Plan
-1. Research FSRS v4 optimization algorithms (e.g., as used in Anki).
-2. Create `src/lib/services/WeightOptimizationService.ts`.
-3. Implement a background job or a trigger to run optimization after a certain number of new attempts.
-4. Update `RevisionEngine` to store and load user-specific weights.
+1. Research percentile calculation methods for large datasets (e.g., T-score or Percentile Rank).
+2. Create `src/lib/services/BenchmarkingService.ts`.
+3. Implement an aggregation job to calculate subject-wise global averages and standard deviations.
+4. Update Dashboard UI to show "Global Standings" section.
 
 ## UX Improvements
-- Feedback in dashboard about "Algorithm Calibration" state.
-- Potentially more accurate "Next Review" times.
+- Interactive "Rank Trajectory" chart.
+- Compare with "Topper Average" overlay on subject health maps.
 
 ## Validation Strategy
-- Simulation-based testing using historical data to verify if optimized weights would have predicted actual results more accurately.
-- Unit tests for optimization math.
+- Unit tests for percentile math.
+- Verification of aggregation query performance.
 
 ## Risks
-- Overfitting to small datasets (need a minimum threshold of attempts before tuning).
-- Computational complexity on the server.
+- Data sparsity for new subjects.
+- Potential privacy concerns (must use anonymous aggregates).
 
 ## Rollback Strategy
-- Fallback to standard FSRS v4 global weights.
+- Revert dashboard to use simple heuristic-based rank estimation.
 
 ## Completion Criteria
-- System can generate unique weights for a user based on their attempt history.
-- `RevisionEngine` successfully uses these weights for scheduling.
+- System can calculate a percentile for a user in each subject.
+- Dashboard displays an estimated global rank based on percentile comparison.
 
 ---
 
 ## QUEUED TASKS
-1. Mobile-First UX Overhaul (PWA support)
-2. Peer Benchmarking System (Global rank estimation)
-3. Automated Flashcard Generation (AI-driven)
-4. Revision Streak Gamification (Retention engine)
-5. Advanced Mistake Clustering (Root cause analysis)
-6. Performance: Database Query Optimization & Caching
-7. Advanced Analytics Dashboard
-8. Adaptive Content Delivery (AI-tailored notes)
-9. Subject-Specific Mock Test Generation
+1. Automated Flashcard Generation (AI-driven)
+2. Revision Streak Gamification (Retention engine)
+3. Advanced Mistake Clustering (Root cause analysis)
+4. Performance: Database Query Optimization & Caching
+5. Advanced Analytics Dashboard
+6. Adaptive Content Delivery (AI-tailored notes)
+7. Subject-Specific Mock Test Generation
+8. Multi-format Notes Export (PDF/Markdown)
+9. Adaptive Mock Test Scaling (Dynamic difficulty)
 
 # Repository Health Audit
 - **Broken Systems**: None detected.
@@ -88,7 +88,7 @@ While the default FSRS weights are based on global datasets, individual memory c
 - **Accessibility Concerns**: Needs a full ARIA audit.
 
 # Learning Engine State
-- **Adaptive Learning**: FSRS v4 integrated in `RevisionEngine`.
+- **Adaptive Learning**: Personalized FSRS v4 auto-tuning active (WeightOptimizationService).
 - **Revision Systems**: Spaced repetition active.
 - **Mastery Tracking**: Topic-level coverage scores.
 - **PYQ Systems**: 100% real GATE questions; no synthetic data.
@@ -146,6 +146,8 @@ While the default FSRS weights are based on global datasets, individual memory c
 - **Architecture Ideas**: Move heavy batch jobs to Edge/Serverless functions.
 
 # Recently Completed Tasks
+- Mobile-First UX Overhaul & PWA Support (Manifest, Service Workers, Responsive Fixes)
+- FSRS Weight Optimization (Coordinate Descent with Learning Rate Decay)
 - Real-time Dashboard Analytics & Mastery Engine (Aggregation, Heatmaps, Rank Estimation)
 - Integrated AI Doubt Solver V2 (Context-aware grounding)
 - Industrial-Grade Diagnostic Test Engine
@@ -166,21 +168,41 @@ While the default FSRS weights are based on global datasets, individual memory c
 - None reported.
 
 # Next 10 Priorities
-1. Implement Real-time Dashboard Analytics
-2. Dashboard Performance Optimization
-3. Subject Heatmap Component
-4. Mobile Responsiveness Audit
-5. ARIA Accessibility Audit
-6. Rate Limiting for AI Routes
-7. Automated Flashcard Service
-8. CI/CD Pipeline Setup
-9. Advanced Mistake Clustering
-10. FSRS Parameter Auto-tuning
+1. Mobile-First UX & PWA Support
+2. Peer Benchmarking System
+3. Automated Flashcard Service
+4. Revision Streak Gamification
+5. Advanced Mistake Clustering
+6. Dashboard Performance Optimization
+7. ARIA Accessibility Audit
+8. Rate Limiting for AI Routes
+9. CI/CD Pipeline Setup
+10. Multi-format Notes Export
 
 # Next 100 Improvements
 - [Detailed list suppressed for brevity, to be expanded in future runs]
 
 # Execution Log
+
+## [2025-05-15 19:30:00]
+### Completed
+- Finalized Mobile-First UX Overhaul & PWA Support.
+- Integrated `@ducanh2912/next-pwa` for robust App Router support.
+- Implemented FSRS Calibration indicators on the Dashboard.
+- Applied responsive padding and alignment fixes to `PYQPlayer` and `MasteryHeatmap`.
+- Updated `AnalyticsService` to track and expose calibration state.
+
+### Architecture Changes
+- `next.config.mjs` now wraps the configuration with PWA logic.
+- `RootLayout` includes manifest and Apple-specific web app metadata.
+
+### Performance Findings
+- PWA caching significantly improves load times for subsequent visits on mobile.
+
+## [2025-05-15 19:00:00]
+### Completed
+- Initiated Mobile-First UX Overhaul & PWA Support.
+- Updated Roadmap intelligence to reflect personalized FSRS engine completion.
 
 ## [2025-05-15 18:00:00]
 ### Completed
