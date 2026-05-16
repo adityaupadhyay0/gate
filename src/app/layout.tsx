@@ -10,6 +10,13 @@ const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakart
 export const metadata: Metadata = {
   title: "GATE CSE Prep | Precision Learning System",
   description: "Designed for Rank 1. Built on Next.js, powered by Gemini AI, and focused on PYQs.",
+  manifest: "/manifest.json",
+  themeColor: "#2563eb",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "GATE AI",
+  },
 };
 
 export default function RootLayout({

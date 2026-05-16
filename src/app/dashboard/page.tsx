@@ -32,11 +32,24 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen pt-32 pb-20 px-6 bg-slate-50/50">
+    <div className="min-h-screen pt-20 md:pt-32 pb-20 px-6 bg-slate-50/50">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
-             <h1 className="text-4xl font-black tracking-tight text-slate-900 mb-2">Command Center</h1>
+             <div className="flex items-center gap-4 mb-2">
+                <h1 className="text-4xl font-black tracking-tight text-slate-900">Command Center</h1>
+                {stats.isCalibrated ? (
+                  <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Personalized Engine Active
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-amber-100">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    Calibrating ({50 - stats.attemptsToCalibration}/50)
+                  </div>
+                )}
+             </div>
              <p className="text-slate-500 font-medium">Real-time health map of your GATE preparation.</p>
           </div>
           <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
