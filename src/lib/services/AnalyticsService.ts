@@ -6,15 +6,18 @@ export interface DashboardStats {
   revisionStreak: number;
   criticalWeaknessesCount: number;
   rankEstimation: string;
+  isCalibrated: boolean;
+  calibrationProgress: number;
 }
 
 export class AnalyticsService {
   static async getOverallStats(userId: string): Promise<DashboardStats> {
-    const [progress, streak, weaknesses, user] = await Promise.all([
+    const [progress, streak, weaknesses, user, attemptCount] = await Promise.all([
       this.calculateOverallMastery(userId),
       this.calculateStreak(userId),
       this.getCriticalWeaknesses(userId),
-      prisma.user.findUnique({ where: { id: userId }, select: { diagnosticResult: true } })
+      prisma.user.findUnique({ where: { id: userId }, select: { diagnosticResult: true, fsrsWeights: true } }),
+      prisma.attempt.count({ where: { userId } })
     ]);
 
     let diagnosticData = null;
@@ -25,11 +28,16 @@ export class AnalyticsService {
     }
     const rankEstimation = this.estimateRank(progress, diagnosticData);
 
+    const isCalibrated = !!user?.fsrsWeights;
+    const calibrationProgress = isCalibrated ? 50 : Math.min(attemptCount, 50);
+
     return {
       overallMastery: progress,
       revisionStreak: streak,
       criticalWeaknessesCount: weaknesses.length,
-      rankEstimation
+      rankEstimation,
+      isCalibrated,
+      calibrationProgress
     };
   }
 

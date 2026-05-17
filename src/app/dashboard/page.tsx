@@ -14,6 +14,8 @@ export default async function DashboardPage() {
   // Fetch real-time analytics
   const stats = await AnalyticsService.getOverallStats(userId);
 
+  const calibrationLabel = stats.isCalibrated ? "Engine Active" : `Calibration: ${stats.calibrationProgress}/50`;
+
   const subjects = await prisma.subject.findMany({
     include: {
       topics: {
@@ -39,10 +41,17 @@ export default async function DashboardPage() {
              <h1 className="text-4xl font-black tracking-tight text-slate-900 mb-2">Command Center</h1>
              <p className="text-slate-500 font-medium">Real-time health map of your GATE preparation.</p>
           </div>
-          <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
+          <div className="flex flex-wrap items-center gap-3 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
              <div className="bg-brand-50 text-brand-600 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 Session: 2025
+             </div>
+             <div className={cn(
+                "px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all",
+                stats.isCalibrated ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-slate-50 text-slate-500"
+             )}>
+                <Zap className={cn("w-4 h-4", stats.isCalibrated ? "fill-emerald-600" : "")} />
+                {calibrationLabel}
              </div>
              <Link href="/dashboard/rank-mode" className="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-brand-600 transition-colors">
                 Optimizing for Rank 1
