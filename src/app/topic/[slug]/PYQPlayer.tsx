@@ -60,6 +60,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
         });
     } catch (e) {
         console.error("Failed to save attempt:", e);
+        setRating(null);
     } finally {
         setIsSubmitting(false);
     }
@@ -213,14 +214,16 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
                  >
                     Submit Answer
                  </button>
-              ) : !rating ? (
+              ) : (!rating || isSubmitting) ? (
                  <div className="flex items-center gap-2">
-                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest mr-4">How was the recall?</p>
+                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest mr-4">
+                       {isSubmitting ? 'Saving Attempt...' : 'How was the recall?'}
+                    </p>
                     {[
-                       { label: 'Again', val: 1, color: 'hover:bg-rose-500 hover:border-rose-500' },
-                       { label: 'Hard', val: 2, color: 'hover:bg-orange-500 hover:border-orange-500' },
-                       { label: 'Good', val: 3, color: 'hover:bg-emerald-500 hover:border-emerald-500' },
-                       { label: 'Easy', val: 4, color: 'hover:bg-brand-600 hover:border-brand-600' }
+                       { label: 'Again', val: 1, color: 'hover:bg-rose-500 hover:border-rose-500', active: 'bg-rose-500 border-rose-500 text-white' },
+                       { label: 'Hard', val: 2, color: 'hover:bg-orange-500 hover:border-orange-500', active: 'bg-orange-500 border-orange-500 text-white' },
+                       { label: 'Good', val: 3, color: 'hover:bg-emerald-500 hover:border-emerald-500', active: 'bg-emerald-500 border-emerald-500 text-white' },
+                       { label: 'Easy', val: 4, color: 'hover:bg-brand-600 hover:border-brand-600', active: 'bg-brand-600 border-brand-600 text-white' }
                     ].map((r) => (
                        <button
                           key={r.val}
@@ -229,7 +232,8 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
                           className={cn(
                              "px-5 py-3 rounded-xl border border-white/10 bg-white/5 text-xs font-black uppercase tracking-widest text-slate-400 transition-all",
                              r.color,
-                             "hover:text-white"
+                             "hover:text-white",
+                             rating === r.val && r.active
                           )}
                        >
                           {r.label}

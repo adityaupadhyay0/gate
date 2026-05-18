@@ -23,7 +23,7 @@ export async function saveAttempt(data: {
   }
 
   // Use FSRS to update memory state
-  const rating = data.isCorrect ? (data.confidenceLevel! >= 4 ? 4 : 3) : 1;
+  const rating = data.confidenceLevel || (data.isCorrect ? 3 : 1);
   const { RevisionEngine } = await import("@/lib/engines/RevisionEngine");
   const attempt = await RevisionEngine.updateFSRS(
     session.user.id,
