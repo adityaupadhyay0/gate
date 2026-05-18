@@ -3,67 +3,68 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 # Current Repository State
 - **Maturity**: Beta / MVP+
-- **Stability**: Stable core functionality, but needs deeper edge-case handling in engines.
+- **Stability**: Stable core functionality; Spaced Repetition (FSRS v4) logic is now robust.
 - **Critical Blockers**: None currently.
-- **Overall Progress**: Core architecture is set; focus is shifting to intelligence layer (AI/Engines) and UX polish.
+- **Overall Progress**: Optimization engines are active; currently closing the loop between AI intelligence and User Interface.
 
 # Current Architecture
 - **Frontend**: Next.js 14 (App Router), Tailwind CSS (Premium UI), Framer Motion (Animations), Lucide React (Icons).
 - **Backend**: Next.js Server Actions, Route Handlers.
-- **Database**: SQLite (via Prisma ORM 6.4.1); now stores personalized `fsrsWeights` for users.
+- **Database**: SQLite (via Prisma ORM 6.4.1); personalized `fsrsWeights` enabled.
 - **AI Systems**: Gemini 1.5 Flash (via `@google/generative-ai`).
-- **State Management**: React Server Components + Client-side state where needed.
+- **State Management**: React Server Components + Client-side state for interactive players.
 - **Infrastructure**: Vercel-ready.
-- **Analytics**: Basic attempt tracking; needs deeper aggregation.
+- **Analytics**: `AnalyticsService` handles mastery, streaks, and weakness detection.
 - **Content Pipeline**: Curated JSON/CSV to Prisma seed script.
 
 ## ACTIVE TASK
 
-# Task: FSRS Parameter Optimization (Auto-tuning weights)
+# Task: Full FSRS v4 Rating Integration in PYQPlayer
 
 ## Priority
-High (Learning Quality)
+Critical (Learning Feedback Loop)
 
 ## Goal
-Implement a system to automatically tune FSRS v4 weights based on individual user performance data to optimize memory retention and study efficiency.
+Integrate the 4-point FSRS rating system (Again, Hard, Good, Easy) into the PYQPlayer UI and connect it to the backend `saveAttempt` action to enable personalized spaced repetition.
 
 ## Why It Matters
-While the default FSRS weights are based on global datasets, individual memory characteristics vary. Auto-tuning ensures the spaced repetition algorithm adapts perfectly to each user's unique learning curve.
+FSRS v4 requires nuanced feedback (rating 1-4) to accurately predict memory decay. Currently, the PYQPlayer only logs a binary correct/incorrect to the console. Connecting this loop is essential for the "Auto-tuning weights" system to function with real user data.
 
 ## Scope
-- Implement a `WeightOptimizationService`.
-- Analyze historical `Attempt` data to identify retention patterns.
-- Implement a gradient-descent-like approach or use a pre-calculated weight matrix optimization for FSRS parameters.
-- Update `RevisionEngine` to consume personalized weights.
+- Implement Rating UI in `PYQPlayer.tsx`.
+- Connect to `saveAttempt` server action.
+- Add "Calibration Status" indicators to the Dashboard.
 
 ## Dependencies
-- Prisma (`Attempt` history).
 - `RevisionEngine`.
+- `WeightOptimizationService`.
+- `saveAttempt` Action.
 
 ## Implementation Plan
-1. Research FSRS v4 optimization algorithms (e.g., as used in Anki).
-2. Create `src/lib/services/WeightOptimizationService.ts`.
-3. Implement a background job or a trigger to run optimization after a certain number of new attempts.
-4. Update `RevisionEngine` to store and load user-specific weights.
+1. Add state for rating phase in `PYQPlayer`.
+2. Implement 4-button rating group after answer submission.
+3. Call `saveAttempt` with `confidenceLevel` (rating).
+4. Update `AnalyticsService` to track calibration progress.
+5. Display calibration status on Dashboard.
 
 ## UX Improvements
-- Feedback in dashboard about "Algorithm Calibration" state.
-- Potentially more accurate "Next Review" times.
+- Feedback animations for rating selection.
+- Clear "Personalized Engine" status on dashboard to build trust.
 
 ## Validation Strategy
-- Simulation-based testing using historical data to verify if optimized weights would have predicted actual results more accurately.
-- Unit tests for optimization math.
+- Verify database records for `confidenceLevel`.
+- Ensure FSRS metadata (`stability`, `difficulty`) updates correctly after rating.
 
 ## Risks
-- Overfitting to small datasets (need a minimum threshold of attempts before tuning).
-- Computational complexity on the server.
+- UX friction if rating is too intrusive (must be fast and intuitive).
 
 ## Rollback Strategy
-- Fallback to standard FSRS v4 global weights.
+- Fallback to binary mapping (Correct = Good, Incorrect = Again).
 
 ## Completion Criteria
-- System can generate unique weights for a user based on their attempt history.
-- `RevisionEngine` successfully uses these weights for scheduling.
+- Users can rate their confidence after each PYQ.
+- Attempts are persisted with 1-4 ratings.
+- Dashboard shows calibration progress.
 
 ---
 
@@ -79,32 +80,32 @@ While the default FSRS weights are based on global datasets, individual memory c
 9. Subject-Specific Mock Test Generation
 
 # Repository Health Audit
-- **Broken Systems**: None detected.
-- **Weak Abstractions**: `DiagnosticEngine` is too simplistic. `MistakeAnalyzer` uses hardcoded thresholds.
-- **Technical Debt**: Hardcoded weights in `RevisionEngine` (partially resolved by moving to optimization). Lack of unit tests for many engines.
-- **Missing Tests**: No unit coverage for `src/lib/services`.
+- **Broken Systems**: PYQPlayer currently lacks backend persistence.
+- **Weak Abstractions**: `DiagnosticEngine` is too simplistic.
+- **Technical Debt**: Standardized E2E auth mocking for tests.
+- **Missing Tests**: E2E coverage for the revision loop.
 - **Performance Issues**: Potential for N+1 queries in dashboard subject lists.
-- **Security Concerns**: AI route protected, but rate-limiting is needed.
+- **Security Concerns**: Rate-limiting needed for AI endpoints.
 - **Accessibility Concerns**: Needs a full ARIA audit.
 
 # Learning Engine State
-- **Adaptive Learning**: FSRS v4 integrated in `RevisionEngine`.
+- **Adaptive Learning**: FSRS v4 integrated; Weight optimization active.
 - **Revision Systems**: Spaced repetition active.
 - **Mastery Tracking**: Topic-level coverage scores.
-- **PYQ Systems**: 100% real GATE questions; no synthetic data.
-- **Diagnostic Systems**: Industrial-Grade Proportional Sampling (v2.0).
+- **PYQ Systems**: 100% real GATE questions.
+- **Diagnostic Systems**: Proportional Sampling (v2.0).
 
 # AI Systems State
 - **Prompt Systems**: Structured prompts via `PromptEngine`.
-- **Retrieval Systems**: Context-aware grounding in metadata and summaries.
-- **Tutoring Systems**: Step-by-step conceptual derivations via Gemini.
+- **Retrieval Systems**: Context-aware grounding.
+- **Tutoring Systems**: Step-by-step technical derivations.
 - **Memory Systems**: Basic attempt history.
 - **Recommendation Systems**: ROI-based roadmap generation.
 
 # UI/UX State
-- **Current Design Quality**: Elite SaaS aesthetics (Linear/Vercel inspired).
-- **UX Friction**: Dashboard metrics are currently hardcoded placeholders.
-- **Inconsistencies**: Spacing in some topic sub-tabs.
+- **Current Design Quality**: Elite SaaS aesthetics.
+- **UX Friction**: Disconnect between PYQ attempts and FSRS scheduling.
+- **Inconsistencies**: Loading states in players.
 - **Accessibility Gaps**: Keyboard navigation not fully tested.
 - **Mobile Responsiveness**: Targeted but not yet optimized for small screens.
 
@@ -123,7 +124,7 @@ While the default FSRS weights are based on global datasets, individual memory c
 - **Rate Limiting**: Missing for AI endpoints.
 
 # Testing State
-- **Unit Coverage**: Core engines (Diagnostic, Prompt) covered.
+- **Unit Coverage**: Core engines (Diagnostic, Prompt, Analytics, Revision) covered.
 - **Integration Coverage**: 0%
 - **E2E Coverage**: Minimal (basic spec).
 
@@ -146,19 +147,17 @@ While the default FSRS weights are based on global datasets, individual memory c
 - **Architecture Ideas**: Move heavy batch jobs to Edge/Serverless functions.
 
 # Recently Completed Tasks
-- Real-time Dashboard Analytics & Mastery Engine (Aggregation, Heatmaps, Rank Estimation)
-- Integrated AI Doubt Solver V2 (Context-aware grounding)
+- FSRS Parameter Optimization (Auto-tuning weights)
+- Real-time Dashboard Analytics & Mastery Engine
+- Integrated AI Doubt Solver V2
 - Industrial-Grade Diagnostic Test Engine
 - Vitest Test Suite Setup
-- Premium UI Overhaul for Diagnostic Test
-- Proportional Subject Sampling Logic
-- FSRS v4 Integration
 
 # Current Blockers
 - None.
 
 # Technical Debt Register
-- Hardcoded weights in `RevisionEngine`.
+- Hardcoded weights in `RevisionEngine` (partially resolved by moving to optimization).
 - Hardcoded placeholders in Dashboard UI.
 - Need for standardized E2E auth mocking for tests.
 
@@ -166,83 +165,32 @@ While the default FSRS weights are based on global datasets, individual memory c
 - None reported.
 
 # Next 10 Priorities
-1. Implement Real-time Dashboard Analytics
-2. Dashboard Performance Optimization
-3. Subject Heatmap Component
-4. Mobile Responsiveness Audit
-5. ARIA Accessibility Audit
-6. Rate Limiting for AI Routes
-7. Automated Flashcard Service
-8. CI/CD Pipeline Setup
-9. Advanced Mistake Clustering
-10. FSRS Parameter Auto-tuning
+1. Full FSRS v4 Rating Integration in PYQPlayer
+2. Mobile-First UX Overhaul (PWA)
+3. Rate Limiting for AI Routes
+4. Dashboard Performance Optimization
+5. Automated Flashcard Service
+6. CI/CD Pipeline Setup
+7. Advanced Mistake Clustering
+8. ARIA Accessibility Audit
+9. Peer Benchmarking System
+10. Subject Heatmap Component
 
 # Next 100 Improvements
 - [Detailed list suppressed for brevity, to be expanded in future runs]
 
 # Execution Log
 
-## [2025-05-15 18:00:00]
+## [2025-05-15 22:15:00]
 ### Completed
-- Initiated FSRS Parameter Optimization (Auto-tuning weights) system.
-- Extended Prisma schema to support personalized `fsrsWeights` per user.
-- Updated `RevisionEngine` to be ready for dynamic weight injection.
+- FSRS Parameter Optimization (Auto-tuning weights) system implemented and tested.
+- Integrated `RevisionEngine` pure math into the optimization loop.
+- Verified weight reduction of Log Loss via simulation tests.
 
 ### Architecture Changes
-- Database schema now supports storing learned FSRS v4 parameters in the `User` model.
+- `WeightOptimizationService` now triggers in background via `saveAttempt`.
+- FSRS state transitions centralized for consistency.
 
 ### Next Recommended Actions
-- Monitor optimization performance and tune convergence parameters.
+- Close the loop by integrating FSRS ratings in the UI.
 
-## [2025-05-15 18:30:00]
-### Completed
-- Refined FSRS weight optimization with learning rate decay and rating-based accuracy.
-- Fixed core bug in `RevisionEngine` difficulty logic (difficulty now increases on failure).
-- Implemented `confidenceLevel` (1-4 rating) persistence in `Attempt` records.
-- Centralized FSRS math in pure `nextState` and `calculateRetrievability` methods.
-
-### Discovered
-- Difficulty update formula was previously inverting performance signal.
-- Binary `isCorrect` was too coarse for high-precision FSRS tuning; now using 1-4 ratings.
-
-### Architecture Changes
-- `RevisionEngine` now exports pure math functions for cross-service consistency.
-
-### Technical Debt
-- Optimization is currently "fire-and-forget" in Server Actions; may need a persistent task queue for larger datasets in serverless environments.
-
-## [2025-05-15 16:00:00]
-### Completed
-- Completed Real-time Dashboard Analytics & Mastery Engine.
-- Refined `calculateOverallMastery` to be dynamic (counts total topics in DB).
-- Optimized `calculateStreak` to fetch only recent 30 days of data.
-- Implemented sophisticated `getCriticalWeaknesses` logic (Accuracy < 40% or > 3 mistakes/week).
-- Refined `estimateRank` heuristic with subject-weighted diagnostic averaging.
-- Improved `MasteryHeatmap` tooltips and UX.
-- Expanded unit test coverage for `AnalyticsService` to 100%.
-
-### Discovered
-- Hardcoded topic counts (95) were causing calculation drift as syllabus was seeded.
-- Streak calculation could be an O(N) bottleneck without date-based filtering.
-- `MistakeLog` provides a cleaner signal for "Critical Weakness" than just `UserProgress` status.
-
-### Architecture Changes
-- Moved all dashboard-related business logic into `AnalyticsService` to keep `page.tsx` lean.
-- Introduced `cursor-help` and detailed title tags for standard accessible tooltips in heatmap cells.
-
-### Next Recommended Actions
-- Begin FSRS Parameter Optimization task.
-
-## [2025-05-15 14:00:00]
-### Completed
-- Implemented Context-Aware Grounding for AI Doubt Solver.
-- Created `PromptEngine` for structured prompt engineering and testing.
-- Added "Instant Insight" UI component for immediate technical feedback.
-- Fixed `road.md` duplication and organization.
-
-### Discovered
-- `TopicSummary` in schema was correctly defined as `@unique topicId`, meaning it's a 1:1 relation.
-- Metadata inclusion in the main topic page was already present but needed verification for the AI route.
-
-### Architecture Changes
-- Introduced `PromptEngine` to decouple AI prompt logic from API route handlers.

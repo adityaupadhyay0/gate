@@ -11,6 +11,7 @@ vi.mock('../../db/prisma', () => ({
     attempt: {
       findMany: vi.fn(),
       groupBy: vi.fn(),
+      count: vi.fn(),
     },
     mistakeLog: {
       findMany: vi.fn(),

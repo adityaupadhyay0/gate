@@ -16,12 +16,15 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ScientificCalculator from "@/components/ScientificCalculator";
+import { saveAttempt } from "@/lib/actions/attempts";
 
 export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug: string }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [rating, setRating] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [startTime, setStartTime] = useState(Date.now());
   const [timer, setTimer] = useState(0);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
@@ -42,9 +45,24 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
     const correct = selectedOption === currentPYQ.answer;
     setIsCorrect(correct);
     setShowExplanation(true);
+  };
 
-    // In real app, call Server Action to log attempt
-    console.log(`Attempt logged: ${currentPYQ.id}, Correct: ${correct}, Time: ${timer}s`);
+  const handleRate = async (value: number) => {
+    setRating(value);
+    setIsSubmitting(true);
+    try {
+        await saveAttempt({
+            pyqId: currentPYQ.id,
+            userAnswer: selectedOption!,
+            isCorrect: isCorrect!,
+            timeSpent: timer,
+            confidenceLevel: value
+        });
+    } catch (e) {
+        console.error("Failed to save attempt:", e);
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   const nextQuestion = () => {
@@ -58,6 +76,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
     setSelectedOption(null);
     setShowExplanation(false);
     setIsCorrect(null);
+    setRating(null);
     setStartTime(Date.now());
     setTimer(0);
     setAiExplanation(null);
@@ -194,6 +213,29 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
                  >
                     Submit Answer
                  </button>
+              ) : !rating ? (
+                 <div className="flex items-center gap-2">
+                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest mr-4">How was the recall?</p>
+                    {[
+                       { label: 'Again', val: 1, color: 'hover:bg-rose-500 hover:border-rose-500' },
+                       { label: 'Hard', val: 2, color: 'hover:bg-orange-500 hover:border-orange-500' },
+                       { label: 'Good', val: 3, color: 'hover:bg-emerald-500 hover:border-emerald-500' },
+                       { label: 'Easy', val: 4, color: 'hover:bg-brand-600 hover:border-brand-600' }
+                    ].map((r) => (
+                       <button
+                          key={r.val}
+                          disabled={isSubmitting}
+                          onClick={() => handleRate(r.val)}
+                          className={cn(
+                             "px-5 py-3 rounded-xl border border-white/10 bg-white/5 text-xs font-black uppercase tracking-widest text-slate-400 transition-all",
+                             r.color,
+                             "hover:text-white"
+                          )}
+                       >
+                          {r.label}
+                       </button>
+                    ))}
+                 </div>
               ) : (
                  <button
                   onClick={nextQuestion}
