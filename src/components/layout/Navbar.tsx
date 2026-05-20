@@ -1,14 +1,22 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
-import { Target, Repeat, LayoutDashboard, LogOut, ChevronRight } from "lucide-react";
+import { Target, Repeat, LayoutDashboard, LogOut, ChevronRight, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Close mobile menu when pathname changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   const navItems = [
     { name: "Roadmap", href: "/roadmap", icon: Target },
@@ -48,19 +56,27 @@ export default function Navbar() {
 
         <div className="flex items-center gap-4">
           {session ? (
-            <div className="flex items-center gap-4">
-              <div className="hidden lg:block text-right">
-                <p className="text-xs font-black uppercase tracking-widest text-slate-400">Aspirant</p>
-                <p className="text-sm font-bold text-slate-900">{session.user?.name}</p>
+            <>
+              <div className="flex items-center gap-4">
+                <div className="hidden lg:block text-right">
+                  <p className="text-xs font-black uppercase tracking-widest text-slate-400">Aspirant</p>
+                  <p className="text-sm font-bold text-slate-900">{session.user?.name}</p>
+                </div>
+                <div className="h-10 w-[1px] bg-slate-100 hidden lg:block"></div>
+                <button
+                  onClick={() => signOut()}
+                  className="btn-secondary hidden md:flex h-11 px-4 text-slate-400 hover:text-red-500 hover:border-red-100 hover:bg-red-50"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
               </div>
-              <div className="h-10 w-[1px] bg-slate-100 hidden lg:block"></div>
               <button
-                onClick={() => signOut()}
-                className="btn-secondary h-11 px-4 text-slate-400 hover:text-red-500 hover:border-red-100 hover:bg-red-50"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="md:hidden w-11 h-11 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-600 hover:bg-brand-50 hover:text-brand-600 transition-colors"
               >
-                <LogOut className="w-5 h-5" />
+                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
-            </div>
+            </>
           ) : (
             <Link href="/onboarding/test" className="btn-primary h-12 px-6 text-sm">
               Get Started <ChevronRight className="w-4 h-4" />
@@ -68,6 +84,54 @@ export default function Navbar() {
           )}
         </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="md:hidden absolute top-28 left-6 right-6 bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 p-8 z-40 overflow-hidden"
+          >
+            <div className="flex flex-col gap-3">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-4 px-6 py-5 rounded-2xl text-base font-black transition-all",
+                    pathname === item.href
+                      ? "bg-brand-600 text-white shadow-glow"
+                      : "text-slate-500 bg-slate-50 hover:bg-slate-100 hover:text-slate-900"
+                  )}
+                >
+                  <item.icon className="w-5 h-5" />
+                  {item.name}
+                </Link>
+              ))}
+              <div className="h-px bg-slate-100 my-2" />
+              <div className="flex items-center justify-between px-6 py-4 bg-slate-50 rounded-2xl">
+                 <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 font-bold">
+                       {session?.user?.name?.[0]}
+                    </div>
+                    <div>
+                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Aspirant</p>
+                       <p className="text-sm font-bold text-slate-900">{session?.user?.name}</p>
+                    </div>
+                 </div>
+                 <button
+                    onClick={() => signOut()}
+                    className="w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-red-500 transition-colors"
+                 >
+                    <LogOut className="w-5 h-5" />
+                 </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }
