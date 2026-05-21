@@ -5,88 +5,57 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 - **Maturity**: Beta / MVP+
 - **Stability**: Stable core functionality; Spaced Repetition (FSRS v4) logic is now robust.
 - **Critical Blockers**: None currently.
-- **Overall Progress**: Optimization engines are active; currently closing the loop between AI intelligence and User Interface. Rating integration is the next critical step.
+- **Overall Progress**: Mobile-first overhaul complete. PWA support integrated. FSRS loop fully functional in UI.
 
 # Current Architecture
 - **Frontend**: Next.js 14 (App Router), Tailwind CSS (Premium UI), Framer Motion (Animations), Lucide React (Icons).
 - **Backend**: Next.js Server Actions, Route Handlers.
-- **Database**: SQLite (via Prisma ORM 6.4.1); personalized `fsrsWeights` enabled.
+- **Database**: SQLite (via Prisma ORM 6.4.1).
 - **AI Systems**: Gemini 1.5 Flash (via `@google/generative-ai`).
-- **State Management**: React Server Components + Client-side state for interactive players.
+- **State Management**: React Server Components + Client-side state.
 - **Infrastructure**: Vercel-ready.
 - **Analytics**: `AnalyticsService` handles mastery, streaks, and weakness detection.
 - **Content Pipeline**: Curated JSON/CSV to Prisma seed script.
 
 ## ACTIVE TASK
 
-# Task: Full FSRS v4 Rating Integration in PYQPlayer
+# Task: Rate Limiting for AI Routes
 
 ## Priority
-Critical (Learning Feedback Loop)
+Medium (Security/Infrastructure)
 
 ## Goal
-Integrate the 4-point FSRS rating system (Again, Hard, Good, Easy) into the PYQPlayer UI and connect it to the backend `saveAttempt` action to enable personalized spaced repetition.
+Implement rate limiting for `/api/ai/explain` and other AI-related endpoints to prevent abuse and manage API costs.
 
 ## Why It Matters
-FSRS v4 requires nuanced feedback (rating 1-4) to accurately predict memory decay. Currently, the PYQPlayer only logs a binary correct/incorrect to the console. Connecting this loop is essential for the "Auto-tuning weights" system to function with real user data.
+AI inference is expensive and vulnerable to denial-of-service or automated scraping if not throttled.
 
 ## Scope
-- Implement Rating UI in `PYQPlayer.tsx`.
-- Connect to `saveAttempt` server action.
-- Add "Calibration Status" indicators to the Dashboard.
-
-## Dependencies
-- `RevisionEngine`.
-- `WeightOptimizationService`.
-- `saveAttempt` Action.
-
-## Implementation Plan
-1. Update `road.md` with current execution context.
-2. Modify `saveAttempt` server action to handle 1-4 FSRS ratings instead of binary mapping.
-3. Update `PYQPlayer` UI to show active states for ratings and prevent skipping.
-4. Run regression tests.
-5. Update `road.md` with execution log.
-
-## UX Improvements
-- Feedback animations for rating selection.
-- Clear "Personalized Engine" status on dashboard to build trust.
-
-## Validation Strategy
-- Verify database records for `confidenceLevel`.
-- Ensure FSRS metadata (`stability`, `difficulty`) updates correctly after rating.
-
-## Risks
-- UX friction if rating is too intrusive (must be fast and intuitive).
-
-## Rollback Strategy
-- Fallback to binary mapping (Correct = Good, Incorrect = Again).
-
-## Completion Criteria
-- Users can rate their confidence after each PYQ.
-- Attempts are persisted with 1-4 ratings.
-- Dashboard shows calibration progress.
+- Implement a middleware or utility for rate limiting.
+- Apply to AI route handlers.
+- Return 429 Too Many Requests when limits are exceeded.
 
 ---
 
 ## QUEUED TASKS
-1. Mobile-First UX Overhaul (PWA support)
-2. Peer Benchmarking System (Global rank estimation)
-3. Automated Flashcard Generation (AI-driven)
-4. Revision Streak Gamification (Retention engine)
-5. Advanced Mistake Clustering (Root cause analysis)
-6. Performance: Database Query Optimization & Caching
-7. Advanced Analytics Dashboard
-8. Adaptive Content Delivery (AI-tailored notes)
-9. Subject-Specific Mock Test Generation
+1. Peer Benchmarking System (Global rank estimation)
+2. Automated Flashcard Generation (AI-driven)
+3. Revision Streak Gamification (Retention engine)
+4. Advanced Mistake Clustering (Root cause analysis)
+5. Performance: Database Query Optimization & Caching
+6. Advanced Analytics Dashboard
+7. Adaptive Content Delivery (AI-tailored notes)
+8. Subject-Specific Mock Test Generation
+9. Global Search (Command Palette)
 
 # Repository Health Audit
-- **Broken Systems**: PYQPlayer currently lacks backend persistence.
+- **Broken Systems**: None.
 - **Weak Abstractions**: `DiagnosticEngine` is too simplistic.
 - **Technical Debt**: Standardized E2E auth mocking for tests.
 - **Missing Tests**: E2E coverage for the revision loop.
 - **Performance Issues**: Potential for N+1 queries in dashboard subject lists.
 - **Security Concerns**: Rate-limiting needed for AI endpoints.
-- **Accessibility Concerns**: Needs a full ARIA audit.
+- **Accessibility Concerns**: Keyboard navigation needs audit.
 
 # Learning Engine State
 - **Adaptive Learning**: FSRS v4 integrated; Weight optimization active.
@@ -104,16 +73,16 @@ FSRS v4 requires nuanced feedback (rating 1-4) to accurately predict memory deca
 
 # UI/UX State
 - **Current Design Quality**: Elite SaaS aesthetics.
-- **UX Friction**: Disconnect between PYQ attempts and FSRS scheduling.
+- **UX Friction**: Improved mobile navigation and layout.
 - **Inconsistencies**: Loading states in players.
-- **Accessibility Gaps**: Keyboard navigation not fully tested.
-- **Mobile Responsiveness**: Targeted but not yet optimized for small screens.
+- **Accessibility Gaps**: Keyboard navigation and screen reader support need audit.
+- **Mobile Responsiveness**: High (Optimized).
 
 # Performance State
 - **Bundle Size**: Optimized by Next.js defaults.
 - **Rendering**: Static/Dynamic hybrid.
 - **API Latency**: Low (direct Prisma calls).
-- **Query Bottlenecks**: None at current scale; monitoring aggregation performance.
+- **Query Bottlenecks**: None at current scale.
 - **Caching**: Minimal.
 
 # Security State
@@ -121,7 +90,7 @@ FSRS v4 requires nuanced feedback (rating 1-4) to accurately predict memory deca
 - **Validation Coverage**: Zod/Prisma validation.
 - **Vulnerabilities**: None known.
 - **Secrets Handling**: `.env.example` provided.
-- **Rate Limiting**: Missing for AI endpoints.
+- **Rate Limiting**: Critical missing piece for AI.
 
 # Testing State
 - **Unit Coverage**: Core engines (Diagnostic, Prompt, Analytics, Revision) covered.
@@ -144,9 +113,9 @@ FSRS v4 requires nuanced feedback (rating 1-4) to accurately predict memory deca
 - **Product Ideas**: "Rank Mode" toggle for intense prep.
 - **Educational Ideas**: Active Recall prompts after reading notes.
 - **AI Improvements**: Use RAG for more accurate book-chapter recommendations.
-- **Architecture Ideas**: Move heavy batch jobs to Edge/Serverless functions.
 
 # Recently Completed Tasks
+- Mobile-First UX Overhaul (PWA support)
 - Full FSRS v4 Rating Integration in PYQPlayer
 - FSRS Parameter Optimization (Auto-tuning weights)
 - Real-time Dashboard Analytics & Mastery Engine
@@ -158,7 +127,6 @@ FSRS v4 requires nuanced feedback (rating 1-4) to accurately predict memory deca
 - None.
 
 # Technical Debt Register
-- Hardcoded weights in `RevisionEngine` (partially resolved by moving to optimization).
 - Hardcoded placeholders in Dashboard UI.
 - Need for standardized E2E auth mocking for tests.
 
@@ -166,19 +134,19 @@ FSRS v4 requires nuanced feedback (rating 1-4) to accurately predict memory deca
 - None reported.
 
 # Next 10 Priorities
-1. Full FSRS v4 Rating Integration in PYQPlayer
-2. Mobile-First UX Overhaul (PWA)
-3. Rate Limiting for AI Routes
-4. Dashboard Performance Optimization
-5. Automated Flashcard Service
-6. CI/CD Pipeline Setup
-7. Advanced Mistake Clustering
-8. ARIA Accessibility Audit
-9. Peer Benchmarking System
-10. Subject Heatmap Component
+1. Rate Limiting for AI Routes
+2. Dashboard Performance Optimization
+3. Automated Flashcard Service
+4. CI/CD Pipeline Setup
+5. Advanced Mistake Clustering
+6. ARIA Accessibility Audit
+7. Peer Benchmarking System
+8. Subject Heatmap Component
+9. Global Search (Command Palette)
+10. ROI-Based Content Generation
 
 # Next 100 Improvements
-- [Detailed list suppressed for brevity, to be expanded in future runs]
+- [Detailed list suppressed for brevity]
 
 # Execution Log
 
@@ -188,13 +156,6 @@ FSRS v4 requires nuanced feedback (rating 1-4) to accurately predict memory deca
 - Integrated `RevisionEngine` pure math into the optimization loop.
 - Verified weight reduction of Log Loss via simulation tests.
 
-### Architecture Changes
-- `WeightOptimizationService` now triggers in background via `saveAttempt`.
-- FSRS state transitions centralized for consistency.
-
-### Next Recommended Actions
-- Close the loop by integrating FSRS ratings in the UI.
-
 ## [2025-05-15 23:30:00]
 ### Completed
 - Integrated 4-point FSRS rating system in `PYQPlayer.tsx`.
@@ -202,12 +163,22 @@ FSRS v4 requires nuanced feedback (rating 1-4) to accurately predict memory deca
 - Added active UI states and persistence feedback for ratings.
 - Verified system stability via regression tests (16/16 passed).
 
+## [2025-05-16 01:20:00]
+### Completed
+- Implemented Mobile-First UX Overhaul and PWA support.
+- Added `manifest.ts`, `robots.ts` and PWA icons.
+- Created responsive mobile navigation with hamburger menu in `Navbar.tsx`.
+- Optimized `PYQPlayer.tsx` and Dashboard `page.tsx` for mobile viewports.
+- Updated `.gitignore` to prevent log pollution.
+- Verified via unit tests and Playwright mobile screenshots.
+
 ### Architecture Changes
-- `saveAttempt` now bridges the gap between UI confidence and FSRS math.
+- PWA metadata integrated into root layout.
+- Mobile navigation logic added to shared Layout components.
 
 ### UX Findings
-- The "Saving Attempt..." state reduces user anxiety during network latency.
-- Explicit active states for rating buttons improve clarity on which rating is being persisted.
+- The 2x2 grid for FSRS ratings on mobile significantly improves hit accuracy compared to a single row.
+- Mobile menu overlay provides a clean, focused navigation experience on small screens.
 
 ### Next Recommended Actions
-- Implement Mobile-First UX Overhaul (PWA support) to improve on-the-go revision.
+- Implement rate limiting for AI endpoints to secure infrastructure.

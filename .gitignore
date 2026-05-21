@@ -45,3 +45,6 @@ next-env.d.ts
 *.db
 *.db-journal
 next.log
+
+# logs
+*.log
