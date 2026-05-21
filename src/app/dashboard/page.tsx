@@ -34,14 +34,14 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen pt-32 pb-20 px-6 bg-slate-50/50">
+    <div className="min-h-screen pt-32 pb-20 px-4 md:px-6 bg-slate-50/50">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 md:mb-12">
           <div>
-             <h1 className="text-4xl font-black tracking-tight text-slate-900 mb-2">Command Center</h1>
-             <p className="text-slate-500 font-medium">Real-time health map of your GATE preparation.</p>
+             <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 mb-2">Command Center</h1>
+             <p className="text-slate-500 font-medium text-sm md:text-base">Real-time health map of your GATE preparation.</p>
           </div>
-          <div className="flex flex-wrap items-center gap-3 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
              <div className="bg-brand-50 text-brand-600 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 Session: 2025
@@ -59,15 +59,15 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-12">
            {dashboardMetrics.map((stat, i) => (
-             <div key={i} className="glass-card p-6 flex items-center gap-5">
+             <div key={i} className="glass-card p-4 md:p-6 flex flex-col md:flex-row md:items-center gap-3 md:gap-5">
                 <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center", stat.bg, stat.color)}>
                    <stat.icon className="w-7 h-7" />
                 </div>
                 <div>
-                   <p className="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">{stat.label}</p>
-                   <p className="text-2xl font-black text-slate-900">{stat.value}</p>
+                   <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 mb-1">{stat.label}</p>
+                   <p className="text-xl md:text-2xl font-black text-slate-900">{stat.value}</p>
                 </div>
              </div>
            ))}

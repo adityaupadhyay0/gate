@@ -1,14 +1,22 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
-import { Target, Repeat, LayoutDashboard, LogOut, ChevronRight } from "lucide-react";
+import { Target, Repeat, LayoutDashboard, LogOut, ChevronRight, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   const navItems = [
     { name: "Roadmap", href: "/roadmap", icon: Target },
@@ -56,7 +64,7 @@ export default function Navbar() {
               <div className="h-10 w-[1px] bg-slate-100 hidden lg:block"></div>
               <button
                 onClick={() => signOut()}
-                className="btn-secondary h-11 px-4 text-slate-400 hover:text-red-500 hover:border-red-100 hover:bg-red-50"
+                className="hidden md:flex btn-secondary h-11 px-4 text-slate-400 hover:text-red-500 hover:border-red-100 hover:bg-red-50"
               >
                 <LogOut className="w-5 h-5" />
               </button>
@@ -66,8 +74,51 @@ export default function Navbar() {
               Get Started <ChevronRight className="w-4 h-4" />
             </Link>
           )}
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden w-11 h-11 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600"
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="md:hidden mt-4 bg-white/90 backdrop-blur-2xl border border-white/20 shadow-2xl rounded-[2.5rem] p-6 space-y-4"
+          >
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-4 p-5 rounded-2xl text-lg font-black transition-all",
+                  pathname === item.href
+                    ? "bg-brand-600 text-white shadow-glow"
+                    : "text-slate-500 bg-slate-50 border border-slate-100"
+                )}
+              >
+                <item.icon className="w-6 h-6" />
+                {item.name}
+              </Link>
+            ))}
+            <button
+              onClick={() => signOut()}
+              className="w-full flex items-center gap-4 p-5 rounded-2xl text-lg font-black text-red-500 bg-red-50 border border-red-100"
+            >
+              <LogOut className="w-6 h-6" />
+              Sign Out
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }

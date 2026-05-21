@@ -150,16 +150,16 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
         </div>
 
         {/* Question Area */}
-        <div className="p-12 min-h-[400px]">
+        <div className="p-6 md:p-12 min-h-[300px] md:min-h-[400px]">
            <AnimatePresence mode="wait">
              <motion.div
                key={currentPYQ.id}
                initial={{ opacity: 0, y: 10 }}
                animate={{ opacity: 1, y: 0 }}
                exit={{ opacity: 0, y: -10 }}
-               className="space-y-12"
+               className="space-y-8 md:space-y-12"
              >
-                <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight">
+                <h2 className="text-xl md:text-3xl font-bold text-white leading-tight">
                    {currentPYQ.question}
                 </h2>
 
@@ -204,47 +204,49 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
         </div>
 
         {/* Footer Actions */}
-        <div className="px-10 py-8 border-t border-white/5 bg-white/5 flex items-center justify-between">
-           <div className="flex gap-4">
+        <div className="px-6 md:px-10 py-6 md:py-8 border-t border-white/5 bg-white/5 flex flex-col md:flex-row md:items-center justify-between gap-6">
+           <div className="flex flex-wrap gap-4">
               {!showExplanation ? (
                  <button
                   onClick={handleSubmit}
                   disabled={!selectedOption}
-                  className="btn-primary h-14 px-10 bg-brand-600 hover:bg-brand-500"
+                  className="btn-primary h-14 px-10 w-full md:w-auto bg-brand-600 hover:bg-brand-500"
                  >
                     Submit Answer
                  </button>
               ) : (!rating || isSubmitting) ? (
-                 <div className="flex items-center gap-2">
-                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest mr-4">
+                 <div className="flex flex-col gap-4 w-full">
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
                        {isSubmitting ? 'Saving Attempt...' : 'How was the recall?'}
                     </p>
-                    {[
-                       { label: 'Again', val: 1, color: 'hover:bg-rose-500 hover:border-rose-500', active: 'bg-rose-500 border-rose-500 text-white' },
-                       { label: 'Hard', val: 2, color: 'hover:bg-orange-500 hover:border-orange-500', active: 'bg-orange-500 border-orange-500 text-white' },
-                       { label: 'Good', val: 3, color: 'hover:bg-emerald-500 hover:border-emerald-500', active: 'bg-emerald-500 border-emerald-500 text-white' },
-                       { label: 'Easy', val: 4, color: 'hover:bg-brand-600 hover:border-brand-600', active: 'bg-brand-600 border-brand-600 text-white' }
-                    ].map((r) => (
-                       <button
-                          key={r.val}
-                          disabled={isSubmitting}
-                          onClick={() => handleRate(r.val)}
-                          className={cn(
-                             "px-5 py-3 rounded-xl border border-white/10 bg-white/5 text-xs font-black uppercase tracking-widest text-slate-400 transition-all",
-                             r.color,
-                             "hover:text-white",
-                             rating === r.val && r.active
-                          )}
-                       >
-                          {r.label}
-                       </button>
-                    ))}
+                    <div className="grid grid-cols-2 md:flex items-center gap-2">
+                      {[
+                        { label: 'Again', val: 1, color: 'hover:bg-rose-500 hover:border-rose-500', active: 'bg-rose-500 border-rose-500 text-white' },
+                        { label: 'Hard', val: 2, color: 'hover:bg-orange-500 hover:border-orange-500', active: 'bg-orange-500 border-orange-500 text-white' },
+                        { label: 'Good', val: 3, color: 'hover:bg-emerald-500 hover:border-emerald-500', active: 'bg-emerald-500 border-emerald-500 text-white' },
+                        { label: 'Easy', val: 4, color: 'hover:bg-brand-600 hover:border-brand-600', active: 'bg-brand-600 border-brand-600 text-white' }
+                      ].map((r) => (
+                        <button
+                            key={r.val}
+                            disabled={isSubmitting}
+                            onClick={() => handleRate(r.val)}
+                            className={cn(
+                              "px-5 py-3 rounded-xl border border-white/10 bg-white/5 text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 transition-all",
+                              r.color,
+                              "hover:text-white",
+                              rating === r.val && r.active
+                            )}
+                        >
+                            {r.label}
+                        </button>
+                      ))}
+                    </div>
                  </div>
               ) : (
                  <button
                   onClick={nextQuestion}
                   disabled={currentIndex === pyqs.length - 1}
-                  className="btn-primary h-14 px-10 bg-emerald-600 hover:bg-emerald-500"
+                  className="btn-primary h-14 px-10 w-full md:w-auto bg-emerald-600 hover:bg-emerald-500"
                  >
                     Next Question <ArrowRight className="w-5 h-5" />
                  </button>
