@@ -19,52 +19,54 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 ## ACTIVE TASK
 
-# Task: Mobile-First UX Overhaul (PWA support)
+# Task: Rate Limiting for AI Routes
 
 ## Priority
-High (Accessibility & Retention)
+High (Cost Control & Security)
 
 ## Goal
-Transform the platform into a production-grade Progressive Web App (PWA) with a mobile-first UI, ensuring seamless learning on the go.
+Implement a robust server-side rate limiting mechanism for AI-powered routes to prevent API credit exhaustion and protect against automated abuse.
 
 ## Why It Matters
-A large portion of GATE aspirants study during commutes or in short breaks. PWA support and mobile optimization are critical for maintaining high retention and providing a native-like experience without the friction of app stores.
+AI model inference (Gemini 1.5 Flash) incurs costs and has rate limits. Without per-user quotas, a single malicious or runaway client could deplete the system's API credits, disrupting service for all users.
 
 ## Scope
-- PWA Configuration (`manifest.ts`, icons).
-- Responsive Navigation (Mobile hamburger menu).
-- Mobile-optimized `PYQPlayer` (Touch-friendly targets, 2x2 rating grid).
-- Responsive Dashboard layout adjustments.
+- Database schema update to track request counts (`RateLimit` model).
+- `RateLimitService` for checking and incrementing quotas.
+- Integration into `/api/ai/explain` route.
+- Unit tests for the rate limiting logic.
 
 ## Dependencies
-- Framer Motion for mobile animations.
-- Next.js Metadata API for PWA.
+- Prisma for database persistence.
+- Next.js Route Handlers for implementation.
 
 ## Implementation Plan
-1. Configure PWA manifest and assets.
-2. Implement mobile-responsive Navbar with animated drawer.
-3. Refactor `PYQPlayer` for better mobile ergonomics.
-4. Optimize Dashboard grid and spacing for small screens.
-5. Verify across responsive breakpoints.
+1. Add `RateLimit` model to `prisma/schema.prisma`.
+2. Sync database schema using `prisma db push`.
+3. Implement `RateLimitService.ts` in `src/lib/services`.
+4. Integrate `RateLimitService` into the AI explanation API.
+5. Add unit tests for `RateLimitService`.
+6. Verify with manual and automated tests.
 
 ## UX Improvements
-- Smooth mobile transitions.
-- High-contrast touch targets.
-- Minimalist mobile navigation.
+- Clear error messages when rate limits are exceeded (HTTP 429).
+- Prevents system-wide downtime due to credit exhaustion.
 
 ## Validation Strategy
-- Audit via Chrome DevTools (Lighthouse PWA).
-- Manual breakpoint testing.
+- Unit tests for window reset logic and count increments.
+- Manual verification using multiple rapid requests.
 
 ## Risks
-- Complex layout regressions on desktop.
+- False positives for power users (mitigated by generous daily limits).
+- Database overhead for rate limit checks (mitigated by simple indexed lookups).
 
 ## Rollback Strategy
-- Revert to standard responsive Tailwind classes.
+- Disable the rate limit check in the API route.
 
 ## Completion Criteria
-- Platform is installable as a PWA.
-- All core flows (Roadmap, Player, Dashboard) are fully functional and aesthetic on mobile (375px+).
+- Requests to `/api/ai/explain` are limited per user (e.g., 20/day).
+- Exceeding the limit returns a 429 status with a clear message.
+- Logic is verified by tests.
 
 ---
 
@@ -85,7 +87,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Technical Debt**: Standardized E2E auth mocking for tests.
 - **Missing Tests**: E2E coverage for the revision loop.
 - **Performance Issues**: Potential for N+1 queries in dashboard subject lists.
-- **Security Concerns**: Rate-limiting needed for AI endpoints.
+- **Security Concerns**: Rate-limiting needed for AI endpoints (Active).
 - **Accessibility Concerns**: Needs a full ARIA audit.
 
 # Learning Engine State
@@ -121,7 +123,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Validation Coverage**: Zod/Prisma validation.
 - **Vulnerabilities**: None known.
 - **Secrets Handling**: `.env.example` provided.
-- **Rate Limiting**: Missing for AI endpoints.
+- **Rate Limiting**: Implementation in progress.
 
 # Testing State
 - **Unit Coverage**: Core engines covered.
@@ -182,36 +184,6 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 
 # Execution Log
 
-## [2025-05-15 22:15:00]
-### Completed
-- FSRS Parameter Optimization (Auto-tuning weights) system implemented and tested.
-- Integrated `RevisionEngine` pure math into the optimization loop.
-- Verified weight reduction of Log Loss via simulation tests.
-
-### Architecture Changes
-- `WeightOptimizationService` now triggers in background via `saveAttempt`.
-- FSRS state transitions centralized for consistency.
-
-### Next Recommended Actions
-- Close the loop by integrating FSRS ratings in the UI.
-
-## [2025-05-15 23:30:00]
-### Completed
-- Integrated 4-point FSRS rating system in `PYQPlayer.tsx`.
-- Updated `saveAttempt` server action to respect user confidence levels (1-4).
-- Added active UI states and persistence feedback for ratings.
-- Verified system stability via regression tests (16/16 passed).
-
-### Architecture Changes
-- `saveAttempt` now bridges the gap between UI confidence and FSRS math.
-
-### UX Findings
-- The "Saving Attempt..." state reduces user anxiety during network latency.
-- Explicit active states for rating buttons improve clarity on which rating is being persisted.
-
-### Next Recommended Actions
-- Implement Mobile-First UX Overhaul (PWA support) to improve on-the-go revision.
-
 ## [2025-05-16 00:45:00]
 ### Completed
 - Mobile-First UX Overhaul (PWA support) implemented.
@@ -234,3 +206,8 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 
 ### Next Recommended Actions
 - Implement Rate Limiting for AI Routes to protect API credits as mobile usage scales.
+
+## [2025-05-16 02:00:00]
+### Active
+- Implementing Rate Limiting for AI Routes.
+- Defined `RateLimit` model and `RateLimitService`.
