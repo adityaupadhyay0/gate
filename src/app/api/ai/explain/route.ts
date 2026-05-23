@@ -3,14 +3,39 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
 import prisma from "@/lib/db/prisma";
 import { PromptEngine } from "@/lib/engines/PromptEngine";
+import { RateLimitService } from "@/lib/services/RateLimitService";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: Request) {
   // Session check to prevent unauthorized usage and cost drain
   const session = await auth();
-  if (!session?.user) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Rate Limiting: 20 AI explanations per 24 hours
+  const { allowed, remaining, resetAt } = await RateLimitService.checkLimit(
+    session.user.id,
+    "ai-explain",
+    20
+  );
+
+  if (!allowed) {
+    return NextResponse.json(
+      {
+        error: "Daily AI limit reached. Try again later.",
+        resetAt: resetAt.toISOString()
+      },
+      {
+        status: 429,
+        headers: {
+          'X-RateLimit-Limit': '20',
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': resetAt.getTime().toString()
+        }
+      }
+    );
   }
 
   try {
