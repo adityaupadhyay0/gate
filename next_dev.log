@@ -1,0 +1,80 @@
+
+> gate-system@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.3
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ✓ Ready in 1913ms
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 1327ms (179 modules)
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(rsc)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(rsc)/./node_modules/@auth/core/index.js:91:95)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:53446
+    at async e_.execute (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:44747)
+    at async e_.handle (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:54700)
+    at async doRender (/app/node_modules/next/dist/server/base-server.js:1377:42)
+    at async cacheEntry.responseCache.get.routeKind (/app/node_modules/next/dist/server/base-server.js:1587:40)
+ GET /api/auth/signin 500 in 2011ms
+ ○ Compiling /src/middleware ...
+ ✓ Compiled /src/middleware in 1228ms (210 modules)
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(middleware)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(middleware)/./node_modules/@auth/core/index.js:91:95)
+ ○ Compiling /topic/[slug] ...
+ ✓ Compiled /topic/[slug] in 10s (1781 modules)
+ ✓ Compiled in 1447ms (708 modules)
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(rsc)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(rsc)/./node_modules/@auth/core/index.js:91:95)
+ GET /topic/asymptotic-analysis 404 in 12743ms
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(rsc)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(rsc)/./node_modules/@auth/core/index.js:91:95)
+    at async /app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:53446
+    at async e_.execute (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:44747)
+    at async e_.handle (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:54700)
+    at async doRender (/app/node_modules/next/dist/server/base-server.js:1377:42)
+    at async cacheEntry.responseCache.get.routeKind (/app/node_modules/next/dist/server/base-server.js:1587:40)
+ GET /api/auth/session 500 in 103ms
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(rsc)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(rsc)/./node_modules/@auth/core/index.js:91:95)
+    at async /app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:53446
+    at async e_.execute (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:44747)
+    at async e_.handle (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:54700)
+    at async doRender (/app/node_modules/next/dist/server/base-server.js:1377:42)
+    at async cacheEntry.responseCache.get.routeKind (/app/node_modules/next/dist/server/base-server.js:1587:40)
+ GET /api/auth/session 500 in 87ms
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(rsc)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(rsc)/./node_modules/@auth/core/index.js:91:95)
+    at async /app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:53446
+    at async e_.execute (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:44747)
+    at async e_.handle (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:54700)
+    at async doRender (/app/node_modules/next/dist/server/base-server.js:1377:42)
+    at async cacheEntry.responseCache.get.routeKind (/app/node_modules/next/dist/server/base-server.js:1587:40)
+ GET /api/auth/session 500 in 89ms
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(rsc)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(rsc)/./node_modules/@auth/core/index.js:91:95)
+    at async /app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:53446
+    at async e_.execute (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:44747)
+    at async e_.handle (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:54700)
+    at async doRender (/app/node_modules/next/dist/server/base-server.js:1377:42)
+    at async cacheEntry.responseCache.get.routeKind (/app/node_modules/next/dist/server/base-server.js:1587:40)
+ GET /api/auth/session 500 in 83ms
+ ○ Compiling /api/ai/explain ...
+ ✓ Compiled /api/ai/explain in 761ms (1066 modules)
+[31m[auth][error][0m MissingSecret: Please define a `secret`. Read more at https://errors.authjs.dev#missingsecret
+    at assertConfig (webpack-internal:///(rsc)/./node_modules/@auth/core/lib/utils/assert.js:66:16)
+    at Auth (webpack-internal:///(rsc)/./node_modules/@auth/core/index.js:91:95)
+ POST /api/ai/explain 401 in 892ms

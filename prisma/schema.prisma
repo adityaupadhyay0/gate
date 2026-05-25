@@ -23,6 +23,7 @@ model User {
   mistakeLogs        MistakeLog[]
   sessions           Session[]
   progress           UserProgress[]
+  rateLimits         RateLimit[]
 }
 
 model Account {
@@ -199,4 +200,15 @@ model MistakeClassificationRule {
   mistakeType        String
   rootCause          String
   precomputedAt      DateTime @default(now())
+}
+
+model RateLimit {
+  id      String   @id @default(cuid())
+  userId  String
+  key     String
+  count   Int      @default(0)
+  resetAt DateTime
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
 }
