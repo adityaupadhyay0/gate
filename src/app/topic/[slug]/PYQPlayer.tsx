@@ -97,9 +97,14 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
             })
         });
         const data = await resp.json();
+        if (!resp.ok) {
+            setAiExplanation(data.error || "Failed to generate explanation");
+            return;
+        }
         setAiExplanation(data.explanation);
     } catch (e) {
         console.error(e);
+        setAiExplanation("An unexpected error occurred. Please try again later.");
     } finally {
         setIsAiLoading(false);
     }
