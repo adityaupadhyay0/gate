@@ -97,7 +97,11 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
             })
         });
         const data = await resp.json();
-        setAiExplanation(data.explanation);
+        if (resp.status === 429) {
+            setAiExplanation(data.error || "Daily AI explanation limit reached");
+        } else {
+            setAiExplanation(data.explanation);
+        }
     } catch (e) {
         console.error(e);
     } finally {
