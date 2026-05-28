@@ -85,6 +85,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
 
   const getAiHelp = async () => {
     setIsAiLoading(true);
+    setAiExplanation(null);
     try {
         const resp = await fetch('/api/ai/explain', {
             method: 'POST',
@@ -97,9 +98,14 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
             })
         });
         const data = await resp.json();
-        setAiExplanation(data.explanation);
+        if (!resp.ok) {
+            setAiExplanation(data.error || "Failed to generate explanation. Please try again.");
+        } else {
+            setAiExplanation(data.explanation);
+        }
     } catch (e) {
         console.error(e);
+        setAiExplanation("A network error occurred. Please check your connection.");
     } finally {
         setIsAiLoading(false);
     }
