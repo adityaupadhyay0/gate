@@ -97,9 +97,15 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
             })
         });
         const data = await resp.json();
-        setAiExplanation(data.explanation);
+
+        if (!resp.ok) {
+            setAiExplanation(data.error || "Failed to generate explanation");
+        } else {
+            setAiExplanation(data.explanation);
+        }
     } catch (e) {
         console.error(e);
+        setAiExplanation("A network error occurred. Please try again.");
     } finally {
         setIsAiLoading(false);
     }
