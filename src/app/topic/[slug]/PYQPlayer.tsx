@@ -97,7 +97,11 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
             })
         });
         const data = await resp.json();
-        setAiExplanation(data.explanation);
+        if (data.error) {
+            setAiExplanation(data.error);
+        } else {
+            setAiExplanation(data.explanation);
+        }
     } catch (e) {
         console.error(e);
     } finally {
