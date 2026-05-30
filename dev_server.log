@@ -1,0 +1,107 @@
+
+> gate-system@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.3
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ✓ Ready in 1972ms
+ ○ Compiling / ...
+ ✓ Compiled / in 6.7s (1415 modules)
+ HEAD / 200 in 7100ms
+ ✓ Compiled in 673ms (693 modules)
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 1497ms (854 modules)
+ GET /api/auth/signin 200 in 2599ms
+ GET /api/auth/signin 200 in 30ms
+ GET /api/auth/signin 200 in 30ms
+ POST /api/auth/callback/credentials 302 in 77ms
+ GET / 200 in 227ms
+ GET /api/auth/session 200 in 54ms
+ GET /api/auth/session 200 in 31ms
+ GET /api/auth/session 200 in 42ms
+ GET /api/auth/session 200 in 32ms
+ ○ Compiling /src/middleware ...
+ ✓ Compiled /src/middleware in 1493ms (210 modules)
+ ○ Compiling /topic/[slug] ...
+ ✓ Compiled /topic/[slug] in 2.4s (1763 modules)
+ ⨯ src/app/topic/[slug]/PYQPlayer.tsx (34:41) @ options
+ ⨯ TypeError: Cannot read properties of undefined (reading 'options')
+    at PYQPlayer (./src/app/topic/[slug]/PYQPlayer.tsx:41:43)
+digest: "2910682497"
+[0m [90m 32 |[39m[0m
+[0m [90m 33 |[39m   [36mconst[39m currentPYQ [33m=[39m pyqs[currentIndex][33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 34 |[39m   [36mconst[39m options [33m=[39m [33mJSON[39m[33m.[39mparse(currentPYQ[33m.[39moptions [33m||[39m [32m'[]'[39m)[33m;[39m[0m
+[0m [90m    |[39m                                         [31m[1m^[22m[39m[0m
+[0m [90m 35 |[39m[0m
+[0m [90m 36 |[39m   useEffect(() [33m=>[39m {[0m
+[0m [90m 37 |[39m     [36mconst[39m interval [33m=[39m setInterval(() [33m=>[39m {[0m
+ GET /topic/propositional-logic 500 in 3692ms
+ GET /api/auth/signin 200 in 53ms
+ POST /api/auth/callback/credentials 302 in 56ms
+ GET / 200 in 116ms
+ GET /api/auth/session 200 in 48ms
+ GET /api/auth/session 200 in 17ms
+ GET /api/auth/session 200 in 42ms
+ GET /api/auth/session 200 in 20ms
+ ⨯ src/app/topic/[slug]/PYQPlayer.tsx (34:41) @ options
+ ⨯ TypeError: Cannot read properties of undefined (reading 'options')
+    at PYQPlayer (./src/app/topic/[slug]/PYQPlayer.tsx:41:43)
+digest: "2910682497"
+[0m [90m 32 |[39m[0m
+[0m [90m 33 |[39m   [36mconst[39m currentPYQ [33m=[39m pyqs[currentIndex][33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 34 |[39m   [36mconst[39m options [33m=[39m [33mJSON[39m[33m.[39mparse(currentPYQ[33m.[39moptions [33m||[39m [32m'[]'[39m)[33m;[39m[0m
+[0m [90m    |[39m                                         [31m[1m^[22m[39m[0m
+[0m [90m 35 |[39m[0m
+[0m [90m 36 |[39m   useEffect(() [33m=>[39m {[0m
+[0m [90m 37 |[39m     [36mconst[39m interval [33m=[39m setInterval(() [33m=>[39m {[0m
+ GET /topic/propositional-logic 500 in 105ms
+ GET /api/auth/signin 200 in 34ms
+ POST /api/auth/callback/credentials 302 in 59ms
+ GET / 200 in 92ms
+ GET /api/auth/session 200 in 50ms
+ GET /api/auth/session 200 in 14ms
+ GET /api/auth/session 200 in 16ms
+ GET /api/auth/session 200 in 21ms
+ GET /topic/asymptotic-analysis 200 in 87ms
+ GET /api/auth/session 200 in 37ms
+ GET /api/auth/session 200 in 15ms
+ GET /api/auth/session 200 in 38ms
+ GET /api/auth/session 200 in 15ms
+ ○ Compiling /api/ai/explain ...
+ ✓ Compiled /api/ai/explain in 937ms (1075 modules)
+AI Explanation Error: GoogleGenerativeAIFetchError: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [403 Forbidden] Method doesn't allow unregistered callers (callers without established identity). Please use API Key or other form of API consumer identity to call this API.
+    at handleResponseNotOk (webpack-internal:///(rsc)/./node_modules/@google/generative-ai/dist/index.mjs:455:11)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async makeRequest (webpack-internal:///(rsc)/./node_modules/@google/generative-ai/dist/index.mjs:424:9)
+    at async generateContent (webpack-internal:///(rsc)/./node_modules/@google/generative-ai/dist/index.mjs:888:22)
+    at async POST (webpack-internal:///(rsc)/./src/app/api/ai/explain/route.ts:76:24)
+    at async /app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:53446
+    at async e_.execute (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:44747)
+    at async e_.handle (/app/node_modules/next/dist/compiled/next-server/app-route.runtime.dev.js:6:54700)
+    at async doRender (/app/node_modules/next/dist/server/base-server.js:1377:42)
+    at async cacheEntry.responseCache.get.routeKind (/app/node_modules/next/dist/server/base-server.js:1599:28)
+    at async DevServer.renderToResponseWithComponentsImpl (/app/node_modules/next/dist/server/base-server.js:1507:28)
+    at async DevServer.renderPageComponent (/app/node_modules/next/dist/server/base-server.js:1924:24)
+    at async DevServer.renderToResponseImpl (/app/node_modules/next/dist/server/base-server.js:1962:32)
+    at async DevServer.pipeImpl (/app/node_modules/next/dist/server/base-server.js:920:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/app/node_modules/next/dist/server/next-server.js:272:17)
+    at async DevServer.handleRequestImpl (/app/node_modules/next/dist/server/base-server.js:816:17)
+    at async /app/node_modules/next/dist/server/dev/next-dev-server.js:339:20
+    at async Span.traceAsyncFn (/app/node_modules/next/dist/trace/trace.js:154:20)
+    at async DevServer.handleRequest (/app/node_modules/next/dist/server/dev/next-dev-server.js:336:24)
+    at async invokeRender (/app/node_modules/next/dist/server/lib/router-server.js:174:21)
+    at async handleRequest (/app/node_modules/next/dist/server/lib/router-server.js:353:24)
+    at async requestHandlerImpl (/app/node_modules/next/dist/server/lib/router-server.js:377:13)
+    at async Server.requestListener (/app/node_modules/next/dist/server/lib/start-server.js:141:13) {
+  status: 403,
+  statusText: 'Forbidden',
+  errorDetails: undefined
+}
+ POST /api/ai/explain 500 in 1122ms
