@@ -19,52 +19,52 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 ## ACTIVE TASK
 
-# Task: Mobile-First UX Overhaul (PWA support)
+# Task: Rate Limiting for AI Routes
 
 ## Priority
-High (Accessibility & Retention)
+Critical (Cost Control & Security)
 
 ## Goal
-Transform the platform into a production-grade Progressive Web App (PWA) with a mobile-first UI, ensuring seamless learning on the go.
+Implement a robust rate-limiting system for AI-powered features, starting with the explanation route, to prevent abuse and manage API costs.
 
 ## Why It Matters
-A large portion of GATE aspirants study during commutes or in short breaks. PWA support and mobile optimization are critical for maintaining high retention and providing a native-like experience without the friction of app stores.
+As the platform scales, uncontrolled access to AI endpoints (Gemini 1.5 Flash) can lead to significant cost spikes and potential service disruption. Rate limiting ensures fair usage and protects the platform's sustainability.
 
 ## Scope
-- PWA Configuration (`manifest.ts`, icons).
-- Responsive Navigation (Mobile hamburger menu).
-- Mobile-optimized `PYQPlayer` (Touch-friendly targets, 2x2 rating grid).
-- Responsive Dashboard layout adjustments.
+- Database-backed rate limiting (Prisma/SQLite).
+- 24-hour windowed usage tracking.
+- API route integration with standard headers (`X-RateLimit-*`).
+- Frontend error handling for rate-limited states.
 
 ## Dependencies
-- Framer Motion for mobile animations.
-- Next.js Metadata API for PWA.
+- Prisma ORM.
+- `date-fns` for time calculations.
 
 ## Implementation Plan
-1. Configure PWA manifest and assets.
-2. Implement mobile-responsive Navbar with animated drawer.
-3. Refactor `PYQPlayer` for better mobile ergonomics.
-4. Optimize Dashboard grid and spacing for small screens.
-5. Verify across responsive breakpoints.
+1. Add `RateLimit` model to Prisma schema.
+2. Implement `RateLimitService` with atomic `upsert` logic.
+3. Integrate service into `/api/ai/explain`.
+4. Handle 429 errors in `PYQPlayer` UI.
+5. Verify with unit and integration tests.
 
 ## UX Improvements
-- Smooth mobile transitions.
-- High-contrast touch targets.
-- Minimalist mobile navigation.
+- Clear, informative error messages when limits are reached.
+- Transparent usage tracking via headers.
 
 ## Validation Strategy
-- Audit via Chrome DevTools (Lighthouse PWA).
-- Manual breakpoint testing.
+- Unit tests for `RateLimitService`.
+- Manual verification of 429 responses and headers.
 
 ## Risks
-- Complex layout regressions on desktop.
+- Database contention on high-concurrency (mitigated by atomic `upsert`).
 
 ## Rollback Strategy
-- Revert to standard responsive Tailwind classes.
+- Disable rate-limit check in the API route handler.
 
 ## Completion Criteria
-- Platform is installable as a PWA.
-- All core flows (Roadmap, Player, Dashboard) are fully functional and aesthetic on mobile (375px+).
+- AI explanation requests are limited to 20 per 24 hours per user.
+- API returns 429 status and correct headers when limit is exceeded.
+- UI displays a graceful message for rate-limited users.
 
 ---
 
@@ -147,6 +147,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Architecture Ideas**: Move heavy batch jobs to Edge/Serverless functions.
 
 # Recently Completed Tasks
+- Rate Limiting for AI Routes (20 req/24h limit)
 - Mobile-First UX Overhaul (PWA support)
 - Full FSRS v4 Rating Integration in PYQPlayer
 - FSRS Parameter Optimization (Auto-tuning weights)
@@ -234,3 +235,22 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 
 ### Next Recommended Actions
 - Implement Rate Limiting for AI Routes to protect API credits as mobile usage scales.
+
+## [2025-05-16 02:30:00]
+### Completed
+- Rate Limiting for AI Routes (20 req/24h limit) implemented.
+- `RateLimit` Prisma model added for persistent usage tracking.
+- `RateLimitService` created for atomic usage increments and rolling window resets.
+- `/api/ai/explain` integrated with rate limiting and `X-RateLimit-*` headers.
+- `PYQPlayer` UI updated to handle 429 errors gracefully.
+- Verified with unit tests (19/19 passed total).
+
+### Architecture Changes
+- New `RateLimit` model in schema.
+- API response headers now include rate limit metadata for budget tracking.
+
+### UX Findings
+- Informative error messages in the explanation area maintain the "Instant Insight" flow while notifying the user of limits.
+
+### Performance Findings
+- Atomic `upsert` in `RateLimitService` prevents race conditions without heavy locking.
