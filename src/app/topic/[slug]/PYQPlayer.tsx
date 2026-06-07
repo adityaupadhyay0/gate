@@ -28,6 +28,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
   const [startTime, setStartTime] = useState(Date.now());
   const [timer, setTimer] = useState(0);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+  const [aiErrorCode, setAiErrorCode] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
   const currentPYQ = pyqs[currentIndex];
@@ -81,6 +82,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
     setStartTime(Date.now());
     setTimer(0);
     setAiExplanation(null);
+    setAiErrorCode(null);
   };
 
   const getAiHelp = async () => {
@@ -97,9 +99,16 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
             })
         });
         const data = await resp.json();
-        setAiExplanation(data.explanation);
+        if (data.error) {
+            setAiExplanation(data.error);
+            setAiErrorCode(data.code || 'UNKNOWN_ERROR');
+        } else {
+            setAiExplanation(data.explanation);
+            setAiErrorCode(null);
+        }
     } catch (e) {
         console.error(e);
+        setAiExplanation("An unexpected error occurred. Please try again.");
     } finally {
         setIsAiLoading(false);
     }
@@ -280,8 +289,12 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
                     <BrainCircuit className="w-5 h-5 md:w-6 md:h-6" />
                  </div>
                  <div>
-                    <h3 className="text-lg md:text-xl font-black">Technical Derivation</h3>
-                    <p className="text-[10px] font-bold text-brand-400 uppercase tracking-widest">Gemini 1.5 Pro Analysis</p>
+                    <h3 className="text-lg md:text-xl font-black">
+                      {aiErrorCode === "RATE_LIMIT_EXCEEDED" ? "Limit Reached" : "Technical Derivation"}
+                    </h3>
+                    <p className="text-[10px] font-bold text-brand-400 uppercase tracking-widest">
+                      {aiErrorCode === "RATE_LIMIT_EXCEEDED" ? "Usage Policy" : "Gemini 1.5 Pro Analysis"}
+                    </p>
                  </div>
                  <button onClick={() => setAiExplanation(null)} className="ml-auto text-slate-500 hover:text-white">
                     <XCircle className="w-6 h-6" />
