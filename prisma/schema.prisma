@@ -23,6 +23,18 @@ model User {
   mistakeLogs        MistakeLog[]
   sessions           Session[]
   progress           UserProgress[]
+  rateLimits         RateLimit[]
+}
+
+model RateLimit {
+  id        String   @id @default(cuid())
+  userId    String
+  key       String   // e.g., 'ai_explain'
+  count     Int      @default(0)
+  resetAt   DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
 }
 
 model Account {
