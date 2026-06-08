@@ -1,0 +1,50 @@
+
+> gate-system@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.3
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ✓ Ready in 1988ms
+ ○ Compiling / ...
+ ✓ Compiled / in 7.7s (1415 modules)
+ HEAD / 200 in 8084ms
+ ✓ Compiled in 724ms (693 modules)
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 1802ms (854 modules)
+ GET /api/auth/signin 200 in 3020ms
+ POST /api/auth/callback/credentials 302 in 91ms
+ GET / 200 in 243ms
+ GET /api/auth/session 200 in 60ms
+ GET /api/auth/session 200 in 44ms
+ GET /api/auth/session 200 in 19ms
+ GET /api/auth/session 200 in 36ms
+ ○ Compiling /src/middleware ...
+ ✓ Compiled /src/middleware in 1108ms (210 modules)
+ ○ Compiling /topic/[slug] ...
+ ✓ Compiled /topic/[slug] in 2.2s (1763 modules)
+ GET /topic/asymptotic-analysis 404 in 3633ms
+ GET /api/auth/session 200 in 50ms
+ GET /api/auth/session 200 in 25ms
+ GET /api/auth/session 200 in 20ms
+ GET /api/auth/session 200 in 18ms
+ GET /topic/asymptotic-analysis 404 in 66ms
+ GET /api/auth/signin 200 in 39ms
+ POST /api/auth/callback/credentials 302 in 58ms
+ GET / 200 in 83ms
+ GET /api/auth/session 200 in 53ms
+ GET /api/auth/session 200 in 20ms
+ GET /api/auth/session 200 in 17ms
+ GET /api/auth/session 200 in 44ms
+ GET /topic/asymptotic-analysis 200 in 114ms
+ GET /api/auth/session 200 in 36ms
+ GET /api/auth/session 200 in 13ms
+ GET /api/auth/session 200 in 36ms
+ GET /api/auth/session 200 in 13ms
+[?25h
