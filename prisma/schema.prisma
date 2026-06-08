@@ -21,6 +21,7 @@ model User {
   accounts           Account[]
   attempts           Attempt[]
   mistakeLogs        MistakeLog[]
+  rateLimits         RateLimit[]
   sessions           Session[]
   progress           UserProgress[]
 }
@@ -76,8 +77,8 @@ model Topic {
   difficultyTier  String            @default("Foundational")
   pyqs            PYQ[]
   subject         Subject           @relation(fields: [subjectId], references: [id])
-  prerequisites   TopicDependency[] @relation("PrerequisiteTopic")
   dependencies    TopicDependency[] @relation("DependentTopic")
+  prerequisites   TopicDependency[] @relation("PrerequisiteTopic")
   resources       TopicResource?
   summaries       TopicSummary?
   userProgress    UserProgress[]
@@ -89,8 +90,8 @@ model TopicDependency {
   id             String @id @default(cuid())
   topicId        String
   prerequisiteId String
-  prerequisite   Topic  @relation("PrerequisiteTopic", fields: [prerequisiteId], references: [id])
   topic          Topic  @relation("DependentTopic", fields: [topicId], references: [id])
+  prerequisite   Topic  @relation("PrerequisiteTopic", fields: [prerequisiteId], references: [id])
 
   @@unique([topicId, prerequisiteId])
 }
@@ -156,8 +157,8 @@ model UserProgress {
   status        String   @default("Locked")
   coverageScore Float    @default(0)
   lastStudiedAt DateTime @default(now())
-  topic         Topic    @relation(fields: [topicId], references: [id])
   user          User     @relation(fields: [userId], references: [id])
+  topic         Topic    @relation(fields: [topicId], references: [id])
 
   @@unique([userId, topicId])
 }
@@ -176,8 +177,8 @@ model Attempt {
   personalDifficulty Float    @default(0.5)
   confidenceLevel    Int?
   attemptedAt        DateTime @default(now())
-  pyq                PYQ      @relation(fields: [pyqId], references: [id])
   user               User     @relation(fields: [userId], references: [id])
+  pyq                PYQ      @relation(fields: [pyqId], references: [id])
 }
 
 model MistakeLog {
@@ -188,8 +189,8 @@ model MistakeLog {
   confidenceBefore Int      @default(3)
   timeSpent        Int
   loggedAt         DateTime @default(now())
-  pyq              PYQ      @relation(fields: [pyqId], references: [id])
   user             User     @relation(fields: [userId], references: [id])
+  pyq              PYQ      @relation(fields: [pyqId], references: [id])
 }
 
 model MistakeClassificationRule {
@@ -199,4 +200,17 @@ model MistakeClassificationRule {
   mistakeType        String
   rootCause          String
   precomputedAt      DateTime @default(now())
+}
+
+model RateLimit {
+  id        String   @id @default(cuid())
+  userId    String
+  key       String
+  count     Int      @default(0)
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
 }
