@@ -146,7 +146,7 @@ export default function DiagnosticTestClient({ questions }: { questions: any[] }
 
             <div className="flex justify-between items-center mt-16 pt-8 border-t border-slate-50">
               <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
-                Double-check your intuition. Accuracy > Speed.
+                Double-check your intuition. Accuracy &gt; Speed.
               </p>
               <button
                 onClick={() => handleAnswer(null)}
