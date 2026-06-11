@@ -5,7 +5,7 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 - **Maturity**: Beta / MVP+
 - **Stability**: Stable core functionality; Spaced Repetition (FSRS v4) logic is now robust.
 - **Critical Blockers**: None.
-- **Overall Progress**: Optimization engines are active; Mobile-First UX and PWA support now complete. The platform is ready for broader adoption and data-driven scaling.
+- **Overall Progress**: Optimization engines are active; Mobile-First UX and PWA support complete. Rate limiting implemented for AI routes.
 
 # Current Architecture
 - **Frontend**: Next.js 14 (App Router), Tailwind CSS (Premium UI), Framer Motion (Animations), Lucide React (Icons).
@@ -19,65 +19,61 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 ## ACTIVE TASK
 
-# Task: Mobile-First UX Overhaul (PWA support)
+# Task: Peer Benchmarking System (Global rank estimation)
 
 ## Priority
-High (Accessibility & Retention)
+Medium (Motivation & Realism)
 
 ## Goal
-Transform the platform into a production-grade Progressive Web App (PWA) with a mobile-first UI, ensuring seamless learning on the go.
+Implement a global ranking system that allows users to see their estimated rank relative to the entire aspirant pool.
 
 ## Why It Matters
-A large portion of GATE aspirants study during commutes or in short breaks. PWA support and mobile optimization are critical for maintaining high retention and providing a native-like experience without the friction of app stores.
+GATE is a highly competitive exam where relative performance is everything. Providing a realistic rank estimate based on community data significantly increases user engagement and provides a necessary reality check.
 
 ## Scope
-- PWA Configuration (`manifest.ts`, icons).
-- Responsive Navigation (Mobile hamburger menu).
-- Mobile-optimized `PYQPlayer` (Touch-friendly targets, 2x2 rating grid).
-- Responsive Dashboard layout adjustments.
+- Aggregated performance metrics across all users.
+- Percentile calculation for mastery and accuracy.
+- "Global Rank" display on Dashboard.
+- Subject-specific percentile breakdown.
 
 ## Dependencies
-- Framer Motion for mobile animations.
-- Next.js Metadata API for PWA.
+- `AnalyticsService` extensions for global aggregation.
 
 ## Implementation Plan
-1. Configure PWA manifest and assets.
-2. Implement mobile-responsive Navbar with animated drawer.
-3. Refactor `PYQPlayer` for better mobile ergonomics.
-4. Optimize Dashboard grid and spacing for small screens.
-5. Verify across responsive breakpoints.
+1. Design schema for anonymous performance snapshots.
+2. Implement background job to aggregate global stats.
+3. Update `AnalyticsService` to compare user data against global benchmarks.
+4. Build "Global Insights" section in the Dashboard.
 
 ## UX Improvements
-- Smooth mobile transitions.
-- High-contrast touch targets.
-- Minimalist mobile navigation.
+- Visual percentile rankings.
+- "You are in the Top X%" badges.
 
 ## Validation Strategy
-- Audit via Chrome DevTools (Lighthouse PWA).
-- Manual breakpoint testing.
+- Unit tests for percentile math.
+- Load testing for aggregation queries.
 
 ## Risks
-- Complex layout regressions on desktop.
+- Skewed data from a small early user base.
 
 ## Rollback Strategy
-- Revert to standard responsive Tailwind classes.
+- Hide global stats until a sufficient data threshold is met.
 
 ## Completion Criteria
-- Platform is installable as a PWA.
-- All core flows (Roadmap, Player, Dashboard) are fully functional and aesthetic on mobile (375px+).
+- Users see a "Global Rank Estimate" and percentile on their dashboard.
 
 ---
 
 ## QUEUED TASKS
-1. Peer Benchmarking System (Global rank estimation)
-2. Automated Flashcard Generation (AI-driven)
-3. Revision Streak Gamification (Retention engine)
-4. Advanced Mistake Clustering (Root cause analysis)
-5. Performance: Database Query Optimization & Caching
-6. Advanced Analytics Dashboard
-7. Adaptive Content Delivery (AI-tailored notes)
-8. Subject-Specific Mock Test Generation
-9. Multi-device State Sync (Reliability audit)
+1. Automated Flashcard Generation (AI-driven)
+2. Revision Streak Gamification (Retention engine)
+3. Advanced Mistake Clustering (Root cause analysis)
+4. Performance: Database Query Optimization & Caching
+5. Advanced Analytics Dashboard
+6. Adaptive Content Delivery (AI-tailored notes)
+7. Subject-Specific Mock Test Generation
+8. Multi-device State Sync (Reliability audit)
+9. Collaborative Study Groups (Peer learning)
 
 # Repository Health Audit
 - **Broken Systems**: None.
@@ -121,7 +117,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Validation Coverage**: Zod/Prisma validation.
 - **Vulnerabilities**: None known.
 - **Secrets Handling**: `.env.example` provided.
-- **Rate Limiting**: Missing for AI endpoints.
+- **Rate Limiting**: Implemented for AI routes (20 req/24h per user).
 
 # Testing State
 - **Unit Coverage**: Core engines covered.
@@ -147,6 +143,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Architecture Ideas**: Move heavy batch jobs to Edge/Serverless functions.
 
 # Recently Completed Tasks
+- AI Route Rate Limiting (20 req/24h)
 - Mobile-First UX Overhaul (PWA support)
 - Full FSRS v4 Rating Integration in PYQPlayer
 - FSRS Parameter Optimization (Auto-tuning weights)
@@ -181,6 +178,26 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - [Detailed list suppressed for brevity, to be expanded in future runs]
 
 # Execution Log
+
+## [2025-05-16 02:00:00]
+### Completed
+- AI Route Rate Limiting implemented for `/api/ai/explain`.
+- `RateLimitService` created for persistent usage tracking.
+- Database schema updated with `RateLimit` model.
+- `PYQPlayer` UI updated to handle 429 status and display quota enforcement alerts.
+- Fixed `DiagnosticTestClient.tsx` build issue (unescaped `>`).
+- Verified with unit tests and visual confirmation via Playwright.
+
+### Architecture Changes
+- New `RateLimit` table in SQLite.
+- Standardized `X-RateLimit-*` headers for AI routes.
+
+### UX Findings
+- The "Limit Reached" card provides clear feedback and prevents user frustration from "silent" failures.
+- Red theme for quota errors contrasts well with the standard brand colors, emphasizing enforcement.
+
+### Next Recommended Actions
+- Proceed with Peer Benchmarking System to leverage the growing dataset.
 
 ## [2025-05-15 22:15:00]
 ### Completed
