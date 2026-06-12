@@ -28,6 +28,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
   const [startTime, setStartTime] = useState(Date.now());
   const [timer, setTimer] = useState(0);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
   const currentPYQ = pyqs[currentIndex];
@@ -81,10 +82,12 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
     setStartTime(Date.now());
     setTimer(0);
     setAiExplanation(null);
+    setAiError(null);
   };
 
   const getAiHelp = async () => {
     setIsAiLoading(true);
+    setAiError(null);
     try {
         const resp = await fetch('/api/ai/explain', {
             method: 'POST',
@@ -96,10 +99,22 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
                 userAnswer: selectedOption
             })
         });
+
         const data = await resp.json();
+
+        if (resp.status === 429) {
+            setAiError(data.error || "Daily limit reached. Please try again later.");
+            return;
+        }
+
+        if (!resp.ok) {
+            throw new Error(data.error || "Failed to generate explanation");
+        }
+
         setAiExplanation(data.explanation);
-    } catch (e) {
+    } catch (e: any) {
         console.error(e);
+        setAiError(e.message || "An unexpected error occurred.");
     } finally {
         setIsAiLoading(false);
     }
@@ -289,6 +304,31 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
               </div>
               <div className="prose prose-invert max-w-none font-medium leading-relaxed text-slate-300 text-sm md:text-base">
                  {aiExplanation.split('\n').map((line, i) => <p key={i}>{line}</p>)}
+              </div>
+           </motion.div>
+         )}
+
+         {aiError && (
+           <motion.div
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             exit={{ opacity: 0, y: 20 }}
+             className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 flex items-start gap-4"
+           >
+              <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center shrink-0">
+                <XCircle className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h4 className="text-red-400 text-[10px] font-black uppercase tracking-widest mb-1">Limit Reached</h4>
+                <p className="text-white font-bold leading-relaxed text-sm md:text-base">
+                  {aiError}
+                </p>
+                <button
+                  onClick={() => setAiError(null)}
+                  className="mt-2 text-[10px] text-red-400 underline uppercase tracking-widest font-black"
+                >
+                  Dismiss
+                </button>
               </div>
            </motion.div>
          )}
