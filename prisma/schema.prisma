@@ -22,6 +22,7 @@ model User {
   attempts           Attempt[]
   mistakeLogs        MistakeLog[]
   sessions           Session[]
+  rateLimits         RateLimit[]
   progress           UserProgress[]
 }
 
@@ -190,6 +191,17 @@ model MistakeLog {
   loggedAt         DateTime @default(now())
   pyq              PYQ      @relation(fields: [pyqId], references: [id])
   user             User     @relation(fields: [userId], references: [id])
+}
+
+model RateLimit {
+  id        String   @id @default(cuid())
+  userId    String
+  key       String
+  count     Int      @default(0)
+  resetAt   DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
 }
 
 model MistakeClassificationRule {
