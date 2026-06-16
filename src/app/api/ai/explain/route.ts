@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
 import prisma from "@/lib/db/prisma";
 import { PromptEngine } from "@/lib/engines/PromptEngine";
+import { RateLimitService } from "@/lib/services/RateLimitService";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
@@ -14,7 +15,24 @@ export async function POST(req: Request) {
   }
 
   try {
+    const userId = (session.user as { id: string }).id;
     const { pyqId, question, options, answer, userAnswer } = await req.json();
+
+    // Rate Limit Check & Increment (Atomic-ish)
+    const { isAllowed, remaining, resetAt } = await RateLimitService.checkAndIncrement(userId, 'ai_explain', 20, 24);
+
+    const headers = {
+      'X-RateLimit-Limit': '20',
+      'X-RateLimit-Remaining': remaining.toString(),
+      'X-RateLimit-Reset': Math.floor(resetAt.getTime() / 1000).toString(),
+    };
+
+    if (!isAllowed) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded. You have 20 requests per 24 hours." },
+        { status: 429, headers }
+      );
+    }
 
     // Fetch grounded context from DB
     let metadata = null;
@@ -50,7 +68,7 @@ export async function POST(req: Request) {
     const result = await model.generateContent(prompt);
     const explanation = result.response.text();
 
-    return NextResponse.json({ explanation });
+    return NextResponse.json({ explanation }, { headers });
   } catch (error) {
     console.error("AI Explanation Error:", error);
     return NextResponse.json({ error: "Failed to generate explanation" }, { status: 500 });
