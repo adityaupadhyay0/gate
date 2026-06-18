@@ -28,6 +28,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
   const [startTime, setStartTime] = useState(Date.now());
   const [timer, setTimer] = useState(0);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
   const currentPYQ = pyqs[currentIndex];
@@ -81,10 +82,12 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
     setStartTime(Date.now());
     setTimer(0);
     setAiExplanation(null);
+    setAiError(null);
   };
 
   const getAiHelp = async () => {
     setIsAiLoading(true);
+    setAiError(null);
     try {
         const resp = await fetch('/api/ai/explain', {
             method: 'POST',
@@ -96,10 +99,22 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
                 userAnswer: selectedOption
             })
         });
+
         const data = await resp.json();
+
+        if (resp.status === 429) {
+            setAiError(data.error);
+            return;
+        }
+
+        if (!resp.ok) {
+            throw new Error(data.error || "Failed to generate explanation");
+        }
+
         setAiExplanation(data.explanation);
-    } catch (e) {
+    } catch (e: any) {
         console.error(e);
+        setAiError(e.message || "An unexpected error occurred");
     } finally {
         setIsAiLoading(false);
     }
@@ -291,6 +306,28 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
                  {aiExplanation.split('\n').map((line, i) => <p key={i}>{line}</p>)}
               </div>
            </motion.div>
+         )}
+
+         {aiError && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="premium-card p-6 md:p-8 bg-slate-900 border-rose-500/30 text-white"
+            >
+               <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-rose-500/20 border border-rose-500/40 rounded-2xl flex items-center justify-center text-rose-500 shrink-0">
+                     <BrainCircuit className="w-6 h-6" />
+                  </div>
+                  <div className="flex-1">
+                     <h4 className="text-[10px] font-black text-rose-500 uppercase tracking-[0.2em] mb-1">Limit Reached</h4>
+                     <p className="text-sm md:text-base font-bold text-slate-200">{aiError}</p>
+                  </div>
+                  <button onClick={() => setAiError(null)} className="text-slate-500 hover:text-white transition-colors">
+                     <XCircle className="w-6 h-6" />
+                  </button>
+               </div>
+            </motion.div>
          )}
       </AnimatePresence>
 
