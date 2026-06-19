@@ -29,6 +29,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
   const [timer, setTimer] = useState(0);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const currentPYQ = pyqs[currentIndex];
   const options = JSON.parse(currentPYQ.options || '[]');
@@ -81,10 +82,14 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
     setStartTime(Date.now());
     setTimer(0);
     setAiExplanation(null);
+    setAiError(null);
   };
 
   const getAiHelp = async () => {
     setIsAiLoading(true);
+    setAiError(null);
+    setAiExplanation(null);
+
     try {
         const resp = await fetch('/api/ai/explain', {
             method: 'POST',
@@ -96,17 +101,29 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
                 userAnswer: selectedOption
             })
         });
+
         const data = await resp.json();
+
+        if (resp.status === 429) {
+          setAiError(data.error);
+          return;
+        }
+
+        if (!resp.ok) {
+          throw new Error(data.error || "Failed to generate explanation");
+        }
+
         setAiExplanation(data.explanation);
-    } catch (e) {
+    } catch (e: any) {
         console.error(e);
+        setAiError(e.message || "An unexpected error occurred");
     } finally {
         setIsAiLoading(false);
     }
   };
 
   return (
-    <div className="space-y-6 md:space-y-8">
+    <div className="space-y-6 md:space-y-8 pb-20">
       {/* Instant Insight - Grounded Metadata */}
       {showExplanation && currentPYQ.metadata?.oneLineExplanation && (
         <motion.div
@@ -268,28 +285,62 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
       </div>
 
       <AnimatePresence>
-         {aiExplanation && (
+         {(aiExplanation || aiError) && (
            <motion.div
              initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
              exit={{ opacity: 0, y: 20 }}
-             className="premium-card p-6 md:p-10 bg-slate-900 border-brand-500/30 text-white"
+             className={cn(
+               "premium-card p-6 md:p-10 bg-slate-900 text-white overflow-hidden relative",
+               aiError ? "border-rose-500/30" : "border-brand-500/30"
+             )}
            >
+              {aiError && <div className="absolute top-0 left-0 w-full h-1 bg-rose-500/50" />}
+
               <div className="flex items-center gap-3 mb-6 md:mb-8">
-                 <div className="w-8 h-8 md:w-10 md:h-10 bg-brand-500 rounded-lg md:rounded-xl flex items-center justify-center text-white shrink-0">
+                 <div className={cn(
+                   "w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center text-white shrink-0",
+                   aiError ? "bg-rose-500" : "bg-brand-500"
+                 )}>
                     <BrainCircuit className="w-5 h-5 md:w-6 md:h-6" />
                  </div>
                  <div>
-                    <h3 className="text-lg md:text-xl font-black">Technical Derivation</h3>
-                    <p className="text-[10px] font-bold text-brand-400 uppercase tracking-widest">Gemini 1.5 Pro Analysis</p>
+                    <h3 className="text-lg md:text-xl font-black">{aiError ? 'Limit Reached' : 'Technical Derivation'}</h3>
+                    <p className={cn(
+                      "text-[10px] font-bold uppercase tracking-widest",
+                      aiError ? "text-rose-400" : "text-brand-400"
+                    )}>
+                      {aiError ? 'USAGE PROTECTION' : 'Gemini 1.5 Flash Analysis'}
+                    </p>
                  </div>
-                 <button onClick={() => setAiExplanation(null)} className="ml-auto text-slate-500 hover:text-white">
+                 <button
+                  onClick={() => { setAiExplanation(null); setAiError(null); }}
+                  className="ml-auto text-slate-500 hover:text-white transition-colors"
+                 >
                     <XCircle className="w-6 h-6" />
                  </button>
               </div>
-              <div className="prose prose-invert max-w-none font-medium leading-relaxed text-slate-300 text-sm md:text-base">
-                 {aiExplanation.split('\n').map((line, i) => <p key={i}>{line}</p>)}
-              </div>
+
+              {aiExplanation && (
+                <div className="prose prose-invert max-w-none font-medium leading-relaxed text-slate-300 text-sm md:text-base">
+                   {aiExplanation.split('\n').map((line, i) => <p key={i}>{line}</p>)}
+                </div>
+              )}
+
+              {aiError && (
+                <div className="flex flex-col items-center text-center py-6 md:py-10">
+                   <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mb-6 border border-rose-500/20">
+                      <Timer className="w-8 h-8 text-rose-500" />
+                   </div>
+                   <h4 className="text-xl font-bold mb-2 text-rose-100">Daily AI Budget Exhausted</h4>
+                   <p className="text-slate-400 max-w-md mx-auto leading-relaxed mb-8">
+                      {aiError}
+                   </p>
+                   <div className="p-4 bg-white/5 rounded-2xl border border-white/5 text-xs text-slate-500 font-medium">
+                      We limit AI features to ensure high availability for all serious aspirants during peak hours.
+                   </div>
+                </div>
+              )}
            </motion.div>
          )}
       </AnimatePresence>
