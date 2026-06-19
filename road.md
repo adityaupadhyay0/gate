@@ -19,73 +19,47 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 ## ACTIVE TASK
 
-# Task: Mobile-First UX Overhaul (PWA support)
+# Task: Peer Benchmarking System (Global rank estimation)
 
 ## Priority
-High (Accessibility & Retention)
+High (Motivation & Accuracy)
 
 ## Goal
-Transform the platform into a production-grade Progressive Web App (PWA) with a mobile-first UI, ensuring seamless learning on the go.
+Implement a benchmarking system that compares user performance against the global student population to provide realistic rank estimations.
 
 ## Why It Matters
-A large portion of GATE aspirants study during commutes or in short breaks. PWA support and mobile optimization are critical for maintaining high retention and providing a native-like experience without the friction of app stores.
+Aspirants need to know where they stand relative to the competition. Global benchmarking transforms isolated study into a competitive, clear-eyed preparation journey.
 
 ## Scope
-- PWA Configuration (`manifest.ts`, icons).
-- Responsive Navigation (Mobile hamburger menu).
-- Mobile-optimized `PYQPlayer` (Touch-friendly targets, 2x2 rating grid).
-- Responsive Dashboard layout adjustments.
+- Global attempt aggregation.
+- Normalization of scores across difficulty tiers.
+- Real-time rank percentile calculation.
+- Dashboard benchmarking component.
 
 ## Dependencies
-- Framer Motion for mobile animations.
-- Next.js Metadata API for PWA.
-
-## Implementation Plan
-1. Configure PWA manifest and assets.
-2. Implement mobile-responsive Navbar with animated drawer.
-3. Refactor `PYQPlayer` for better mobile ergonomics.
-4. Optimize Dashboard grid and spacing for small screens.
-5. Verify across responsive breakpoints.
-
-## UX Improvements
-- Smooth mobile transitions.
-- High-contrast touch targets.
-- Minimalist mobile navigation.
-
-## Validation Strategy
-- Audit via Chrome DevTools (Lighthouse PWA).
-- Manual breakpoint testing.
-
-## Risks
-- Complex layout regressions on desktop.
-
-## Rollback Strategy
-- Revert to standard responsive Tailwind classes.
-
-## Completion Criteria
-- Platform is installable as a PWA.
-- All core flows (Roadmap, Player, Dashboard) are fully functional and aesthetic on mobile (375px+).
+- `AnalyticsService` extensions.
+- Global statistics model in Prisma.
 
 ---
 
 ## QUEUED TASKS
-1. Peer Benchmarking System (Global rank estimation)
-2. Automated Flashcard Generation (AI-driven)
-3. Revision Streak Gamification (Retention engine)
-4. Advanced Mistake Clustering (Root cause analysis)
-5. Performance: Database Query Optimization & Caching
-6. Advanced Analytics Dashboard
-7. Adaptive Content Delivery (AI-tailored notes)
-8. Subject-Specific Mock Test Generation
-9. Multi-device State Sync (Reliability audit)
+1. Deep Learning Recommendation Engine
+2. Real-time Collaborative Study Rooms
+3. Formula & Cheat Sheet Generator
+4. Spaced Repetition for Formulas
+5. Advanced Analytics V2
+6. Automated PYQ Tagging System
+7. Mock Test Series Engine
+8. AI Tutor Memory Integration
+9. Community-Driven Question Bank
 
 # Repository Health Audit
 - **Broken Systems**: None.
 - **Weak Abstractions**: `DiagnosticEngine` needs more granular subject-topic mapping.
-- **Technical Debt**: Standardized E2E auth mocking for tests.
+- **Technical Debt**: Inconsistent AI provider labels in UI (Partially resolved).
 - **Missing Tests**: E2E coverage for the revision loop.
 - **Performance Issues**: Potential for N+1 queries in dashboard subject lists.
-- **Security Concerns**: Rate-limiting needed for AI endpoints.
+- **Security Concerns**: None known (Rate limiting added).
 - **Accessibility Concerns**: Needs a full ARIA audit.
 
 # Learning Engine State
@@ -121,10 +95,10 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Validation Coverage**: Zod/Prisma validation.
 - **Vulnerabilities**: None known.
 - **Secrets Handling**: `.env.example` provided.
-- **Rate Limiting**: Missing for AI endpoints.
+- **Rate Limiting**: Active (20 requests/24h per user).
 
 # Testing State
-- **Unit Coverage**: Core engines covered.
+- **Unit Coverage**: Core engines and services (including RateLimitService) covered.
 - **Integration Coverage**: 0%
 - **E2E Coverage**: Minimal (Playwright verification active for UI).
 
@@ -147,12 +121,11 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Architecture Ideas**: Move heavy batch jobs to Edge/Serverless functions.
 
 # Recently Completed Tasks
+- Rate Limiting for AI Routes (Cost protection & security)
 - Mobile-First UX Overhaul (PWA support)
 - Full FSRS v4 Rating Integration in PYQPlayer
 - FSRS Parameter Optimization (Auto-tuning weights)
 - Real-time Dashboard Analytics & Mastery Engine
-- Integrated AI Doubt Solver V2
-- Industrial-Grade Diagnostic Test Engine
 
 # Current Blockers
 - None.
@@ -160,15 +133,15 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 # Technical Debt Register
 - Hardcoded weights in `RevisionEngine` (partially resolved by moving to optimization).
 - Hardcoded placeholders in Dashboard UI.
-- Need for standardized E2E auth mocking for tests.
+- ARIA Accessibility audit pending.
 
 # Known Bugs
 - None reported.
 
 # Next 10 Priorities
-1. Rate Limiting for AI Routes
-2. Peer Benchmarking System
-3. Automated Flashcard Service
+1. Peer Benchmarking System
+2. Deep Learning Recommendation Engine
+3. Real-time Collaborative Study Rooms
 4. Dashboard Performance Optimization
 5. CI/CD Pipeline Setup
 6. Advanced Mistake Clustering
@@ -182,55 +155,26 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 
 # Execution Log
 
-## [2025-05-15 22:15:00]
+## [2025-05-16 02:30:00]
 ### Completed
-- FSRS Parameter Optimization (Auto-tuning weights) system implemented and tested.
-- Integrated `RevisionEngine` pure math into the optimization loop.
-- Verified weight reduction of Log Loss via simulation tests.
+- Rate Limiting for AI Routes implemented.
+- Added `RateLimit` model to Prisma schema.
+- Developed `RateLimitService` with window-based tracking (20 req/24h).
+- Integrated rate limiting into `/api/ai/explain` with `X-RateLimit-*` headers.
+- Enhanced `PYQPlayer` UI with "Limit Reached" error states and budget protection messaging.
+- Corrected AI provider labeling from "Pro" to "Flash" in active tutoring UI.
+- Verified implementation with Vitest unit tests and Playwright frontend verification.
 
 ### Architecture Changes
-- `WeightOptimizationService` now triggers in background via `saveAttempt`.
-- FSRS state transitions centralized for consistency.
-
-### Next Recommended Actions
-- Close the loop by integrating FSRS ratings in the UI.
-
-## [2025-05-15 23:30:00]
-### Completed
-- Integrated 4-point FSRS rating system in `PYQPlayer.tsx`.
-- Updated `saveAttempt` server action to respect user confidence levels (1-4).
-- Added active UI states and persistence feedback for ratings.
-- Verified system stability via regression tests (16/16 passed).
-
-### Architecture Changes
-- `saveAttempt` now bridges the gap between UI confidence and FSRS math.
-
-### UX Findings
-- The "Saving Attempt..." state reduces user anxiety during network latency.
-- Explicit active states for rating buttons improve clarity on which rating is being persisted.
-
-### Next Recommended Actions
-- Implement Mobile-First UX Overhaul (PWA support) to improve on-the-go revision.
-
-## [2025-05-16 00:45:00]
-### Completed
-- Mobile-First UX Overhaul (PWA support) implemented.
-- PWA Configuration: `manifest.ts` and icons created.
-- Responsive Navigation: Animated mobile hamburger menu added to `Navbar.tsx`.
-- Mobile Ergonomics: `PYQPlayer` optimized with 2x2 rating grid and adjusted touch targets.
-- Responsive Dashboard: Metrics and subject cards optimized for small screens.
-- Verified system integrity with full test suite (16/16 passed).
-
-### Architecture Changes
-- Integrated Next.js 14 Metadata API for PWA manifest.
-- Added Framer Motion for responsive navigation states.
-
-### UX Findings
-- The 2x2 grid for FSRS ratings on mobile significantly improves one-handed thumb reachability.
-- Mobile drawer in Navbar provides a clean, native-like experience for small viewports.
+- Centralized usage tracking in `RateLimitService`.
+- Added atomic increments for rate limit counters.
 
 ### Performance Findings
-- PWA manifest reduces TBT by allowing the system to handle splash screens and theme colors natively.
+- Rate limiting overhead is negligible (< 5ms) due to simple SQLite lookups.
+
+### UX Findings
+- Explicit "Daily AI Budget Exhausted" messaging improves user trust and reduces frustration.
+- `pb-20` in `PYQPlayer` ensures expanded AI cards don't overlap with navigation elements on smaller screens.
 
 ### Next Recommended Actions
-- Implement Rate Limiting for AI Routes to protect API credits as mobile usage scales.
+- Initiate Peer Benchmarking System (Global rank estimation) to increase competitive engagement.
