@@ -28,6 +28,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
   const [startTime, setStartTime] = useState(Date.now());
   const [timer, setTimer] = useState(0);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
   const currentPYQ = pyqs[currentIndex];
@@ -81,10 +82,12 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
     setStartTime(Date.now());
     setTimer(0);
     setAiExplanation(null);
+    setAiError(null);
   };
 
   const getAiHelp = async () => {
     setIsAiLoading(true);
+    setAiError(null);
     try {
         const resp = await fetch('/api/ai/explain', {
             method: 'POST',
@@ -97,9 +100,21 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
             })
         });
         const data = await resp.json();
+
+        if (resp.status === 429) {
+          setAiError(data.error);
+          return;
+        }
+
+        if (!resp.ok) {
+          setAiError("Failed to generate AI explanation. Please try again.");
+          return;
+        }
+
         setAiExplanation(data.explanation);
     } catch (e) {
         console.error(e);
+        setAiError("Connection error. Could not reach AI service.");
     } finally {
         setIsAiLoading(false);
     }
@@ -268,28 +283,53 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
       </div>
 
       <AnimatePresence>
-         {aiExplanation && (
+         {(aiExplanation || aiError) && (
            <motion.div
              initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
              exit={{ opacity: 0, y: 20 }}
-             className="premium-card p-6 md:p-10 bg-slate-900 border-brand-500/30 text-white"
+             className={cn(
+               "premium-card p-6 md:p-10 bg-slate-900 border-brand-500/30 text-white",
+               aiError && "border-amber-500/50"
+             )}
            >
               <div className="flex items-center gap-3 mb-6 md:mb-8">
-                 <div className="w-8 h-8 md:w-10 md:h-10 bg-brand-500 rounded-lg md:rounded-xl flex items-center justify-center text-white shrink-0">
+                 <div className={cn(
+                   "w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center text-white shrink-0",
+                   aiError ? "bg-amber-500" : "bg-brand-500"
+                 )}>
                     <BrainCircuit className="w-5 h-5 md:w-6 md:h-6" />
                  </div>
                  <div>
-                    <h3 className="text-lg md:text-xl font-black">Technical Derivation</h3>
-                    <p className="text-[10px] font-bold text-brand-400 uppercase tracking-widest">Gemini 1.5 Pro Analysis</p>
+                    <h3 className="text-lg md:text-xl font-black">
+                      {aiError ? "Limit Reached" : "Technical Derivation"}
+                    </h3>
+                    <p className={cn(
+                      "text-[10px] font-bold uppercase tracking-widest",
+                      aiError ? "text-amber-400" : "text-brand-400"
+                    )}>
+                      {aiError ? "Usage Protection" : "Gemini 1.5 Pro Analysis"}
+                    </p>
                  </div>
-                 <button onClick={() => setAiExplanation(null)} className="ml-auto text-slate-500 hover:text-white">
+                 <button
+                  onClick={() => { setAiExplanation(null); setAiError(null); }}
+                  className="ml-auto text-slate-500 hover:text-white"
+                 >
                     <XCircle className="w-6 h-6" />
                  </button>
               </div>
-              <div className="prose prose-invert max-w-none font-medium leading-relaxed text-slate-300 text-sm md:text-base">
-                 {aiExplanation.split('\n').map((line, i) => <p key={i}>{line}</p>)}
-              </div>
+
+              {aiError ? (
+                <div className="p-4 md:p-6 bg-amber-500/10 border border-amber-500/20 rounded-2xl">
+                  <p className="text-amber-200 font-bold text-sm md:text-base leading-relaxed">
+                    {aiError}
+                  </p>
+                </div>
+              ) : (
+                <div className="prose prose-invert max-w-none font-medium leading-relaxed text-slate-300 text-sm md:text-base">
+                  {aiExplanation?.split('\n').map((line, i) => <p key={i}>{line}</p>)}
+                </div>
+              )}
            </motion.div>
          )}
       </AnimatePresence>

@@ -19,52 +19,52 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 ## ACTIVE TASK
 
-# Task: Mobile-First UX Overhaul (PWA support)
+# Task: Rate Limiting for AI Routes
 
 ## Priority
-High (Accessibility & Retention)
+High (Cost Control & Security)
 
 ## Goal
-Transform the platform into a production-grade Progressive Web App (PWA) with a mobile-first UI, ensuring seamless learning on the go.
+Implement a robust, window-based rate limiting system for AI-powered endpoints (e.g., `/api/ai/explain`) to prevent abuse and manage API costs.
 
 ## Why It Matters
-A large portion of GATE aspirants study during commutes or in short breaks. PWA support and mobile optimization are critical for maintaining high retention and providing a native-like experience without the friction of app stores.
+AI calls are expensive. Without rate limiting, a single user or bot could exhaust the platform's API credits rapidly. This is a critical security and financial requirement for any production AI application.
 
 ## Scope
-- PWA Configuration (`manifest.ts`, icons).
-- Responsive Navigation (Mobile hamburger menu).
-- Mobile-optimized `PYQPlayer` (Touch-friendly targets, 2x2 rating grid).
-- Responsive Dashboard layout adjustments.
+- Database-backed `RateLimit` model.
+- `RateLimitService` for window-based usage tracking.
+- Integration into AI API routes with standard headers.
+- Graceful UI handling of rate-limit errors in `PYQPlayer`.
 
 ## Dependencies
-- Framer Motion for mobile animations.
-- Next.js Metadata API for PWA.
+- Prisma (Database persistence).
+- Date-fns (Window calculations).
 
 ## Implementation Plan
-1. Configure PWA manifest and assets.
-2. Implement mobile-responsive Navbar with animated drawer.
-3. Refactor `PYQPlayer` for better mobile ergonomics.
-4. Optimize Dashboard grid and spacing for small screens.
-5. Verify across responsive breakpoints.
+1. Define `RateLimit` model in Prisma.
+2. Create `RateLimitService` with atomic `upsert` logic.
+3. Apply rate limiting middleware/logic to `/api/ai/explain`.
+4. Update `PYQPlayer` to display descriptive "Limit Reached" states.
+5. Verify via unit tests and mocked API responses.
 
 ## UX Improvements
-- Smooth mobile transitions.
-- High-contrast touch targets.
-- Minimalist mobile navigation.
+- Clear communication of remaining quota.
+- Non-intrusive "Limit Reached" UI blocks that don't break the player flow.
 
 ## Validation Strategy
-- Audit via Chrome DevTools (Lighthouse PWA).
-- Manual breakpoint testing.
+- Unit tests for window resets.
+- Manual verification of 429 status codes and headers.
 
 ## Risks
-- Complex layout regressions on desktop.
+- Race conditions during high-frequency increments (mitigated by atomic DB operations).
 
 ## Rollback Strategy
-- Revert to standard responsive Tailwind classes.
+- Remove `RateLimitService` calls from routes.
 
 ## Completion Criteria
-- Platform is installable as a PWA.
-- All core flows (Roadmap, Player, Dashboard) are fully functional and aesthetic on mobile (375px+).
+- AI routes return 429 when limit (20 req/24h) is reached.
+- API responses include `X-RateLimit-*` headers.
+- `PYQPlayer` displays "USAGE PROTECTION" error when limited.
 
 ---
 
@@ -85,7 +85,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Technical Debt**: Standardized E2E auth mocking for tests.
 - **Missing Tests**: E2E coverage for the revision loop.
 - **Performance Issues**: Potential for N+1 queries in dashboard subject lists.
-- **Security Concerns**: Rate-limiting needed for AI endpoints.
+- **Security Concerns**: Rate-limiting missing for AI endpoints (In Progress).
 - **Accessibility Concerns**: Needs a full ARIA audit.
 
 # Learning Engine State
@@ -181,6 +181,25 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - [Detailed list suppressed for brevity, to be expanded in future runs]
 
 # Execution Log
+
+## [2025-05-16 02:30:00]
+### Completed
+- Rate Limiting for AI Routes fully implemented (20 requests / 24 hours).
+- Database-backed tracking via `RateLimit` model and atomic `upsert` logic.
+- Integrated standard `X-RateLimit-*` headers in API responses.
+- Premium UI feedback in `PYQPlayer` for limited states (Usage Protection).
+- Fixed static optimization issues in `DiagnosticTestClient.tsx` (escaped JSX tokens).
+- Verified via unit tests (RateLimitService) and visual inspection.
+
+### Architecture Changes
+- Centralized rate limiting logic in `RateLimitService`.
+- Added `RateLimit` model to Prisma schema.
+
+### UX Findings
+- The amber-themed "Limit Reached" UI provides clear, non-punitive feedback to users, preserving the premium feel.
+
+### Performance Findings
+- Atomic database updates minimize the performance overhead of tracking usage.
 
 ## [2025-05-15 22:15:00]
 ### Completed
