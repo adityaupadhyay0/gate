@@ -19,7 +19,73 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 ## ACTIVE TASK
 
-# Task: Mobile-First UX Overhaul (PWA support)
+# Task: Peer Benchmarking System (Global rank estimation)
+
+## Priority
+High (Competitive Edge)
+
+## Goal
+Implement a global benchmarking system that estimates a student's potential GATE rank based on their mastery scores, attempt accuracy, and FSRS-derived memory stability relative to the entire user base.
+
+## Why It Matters
+GATE is a highly competitive relative exam. Aspirants need to know where they stand globally to adjust their prep intensity. Providing a real-time rank estimation increases engagement and provides a clear ROI for using the platform.
+
+## Scope
+- Aggregation engine for global user metrics.
+- Percentile calculation logic in `AnalyticsService`.
+- "Global Standing" component on the Dashboard.
+- Subject-wise percentile breakdowns.
+
+## Dependencies
+- Optimized Prisma queries for large-scale aggregation.
+- `AnalyticsService` extensions.
+
+## Implementation Plan
+1. Research percentile calculation algorithms suitable for live updates.
+2. Implement `AnalyticsService.getGlobalBenchmarking`.
+3. Create Dashboard UI for rank estimation and percentile cards.
+4. Add subject-wise benchmarking views.
+5. Verify with simulated multi-user data.
+
+## UX Improvements
+- Cinematic "Rank Reveal" animation.
+- Visual heatmap comparing user mastery to average.
+
+## Validation Strategy
+- Unit tests for percentile math.
+- Stress test aggregation queries.
+
+## Risks
+- Performance bottlenecks on large user datasets.
+
+## Rollback Strategy
+- Feature flag or cached static benchmarking.
+
+## Completion Criteria
+- User can see an estimated rank/percentile on the Dashboard.
+- Subject-wise standing is clearly visible.
+
+---
+
+## QUEUED TASKS
+1. Automated Flashcard Generation (AI-driven)
+2. Revision Streak Gamification (Retention engine)
+3. Advanced Mistake Clustering (Root cause analysis)
+4. Performance: Database Query Optimization & Caching
+5. Advanced Analytics Dashboard
+6. Adaptive Content Delivery (AI Tailored notes)
+7. Subject-Specific Mock Test Generation
+8. Multi-device State Sync (Reliability audit)
+9. Automated PYQ Tagging System (Content pipeline)
+
+# Repository Health Audit
+- **Broken Systems**: None.
+- **Weak Abstractions**: `DiagnosticEngine` needs more granular subject-topic mapping.
+- **Technical Debt**: Standardized E2E auth mocking for tests.
+- **Missing Tests**: E2E coverage for the revision loop.
+- **Performance Issues**: Potential for N+1 queries in dashboard subject lists.
+- **Security Concerns**: None (Rate limiting implemented for AI endpoints).
+- **Accessibility Concerns**: Needs a full ARIA audit.
 
 ## Priority
 High (Accessibility & Retention)
@@ -147,6 +213,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Architecture Ideas**: Move heavy batch jobs to Edge/Serverless functions.
 
 # Recently Completed Tasks
+- AI Route Rate Limiting (20 requests/24h)
 - Mobile-First UX Overhaul (PWA support)
 - Full FSRS v4 Rating Integration in PYQPlayer
 - FSRS Parameter Optimization (Auto-tuning weights)
@@ -166,9 +233,9 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - None reported.
 
 # Next 10 Priorities
-1. Rate Limiting for AI Routes
-2. Peer Benchmarking System
-3. Automated Flashcard Service
+1. Peer Benchmarking System
+2. Automated Flashcard Service
+3. Revision Streak Gamification
 4. Dashboard Performance Optimization
 5. CI/CD Pipeline Setup
 6. Advanced Mistake Clustering
@@ -234,3 +301,25 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 
 ### Next Recommended Actions
 - Implement Rate Limiting for AI Routes to protect API credits as mobile usage scales.
+
+## [2025-05-16 02:30:00]
+### Completed
+- AI Route Rate Limiting (20 requests/24h) implemented and verified.
+- Created `RateLimitService` with atomic increment logic and window-based resets.
+- Integrated rate limiting into `/api/ai/explain` with standard headers.
+- Enhanced `PYQPlayer` UI to handle 429 status codes with a cinematic 'Limit Reached' block.
+- Added comprehensive unit tests for `RateLimitService` (4/4 passed).
+
+### Architecture Changes
+- Added `RateLimit` model to Prisma schema for persistent tracking.
+- `RateLimitService` uses a safe retry loop to handle potential race conditions during record creation.
+
+### UX Findings
+- Explicit "USAGE PROTECTION" labeling and reset time information reduce user frustration when limits are reached.
+- The use of `Gemini 1.5 Flash` for explanations (clearly labeled in UI) ensures faster response times and cost efficiency.
+
+### AI Improvements
+- Rate limiting protects generative AI budget while ensuring fair access for all users.
+
+### Next Recommended Actions
+- Implement Peer Benchmarking System to provide global rank estimation.
