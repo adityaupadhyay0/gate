@@ -29,6 +29,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
   const [timer, setTimer] = useState(0);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const currentPYQ = pyqs[currentIndex];
   const options = JSON.parse(currentPYQ.options || '[]');
@@ -81,10 +82,12 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
     setStartTime(Date.now());
     setTimer(0);
     setAiExplanation(null);
+    setAiError(null);
   };
 
   const getAiHelp = async () => {
     setIsAiLoading(true);
+    setAiError(null);
     try {
         const resp = await fetch('/api/ai/explain', {
             method: 'POST',
@@ -96,10 +99,22 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
                 userAnswer: selectedOption
             })
         });
+
+        if (resp.status === 429) {
+          const data = await resp.json();
+          setAiError(data.error);
+          return;
+        }
+
+        if (!resp.ok) {
+          throw new Error('Failed to fetch AI explanation');
+        }
+
         const data = await resp.json();
         setAiExplanation(data.explanation);
     } catch (e) {
         console.error(e);
+        setAiError("Something went wrong. Please try again.");
     } finally {
         setIsAiLoading(false);
     }
@@ -281,7 +296,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
                  </div>
                  <div>
                     <h3 className="text-lg md:text-xl font-black">Technical Derivation</h3>
-                    <p className="text-[10px] font-bold text-brand-400 uppercase tracking-widest">Gemini 1.5 Pro Analysis</p>
+                    <p className="text-[10px] font-bold text-brand-400 uppercase tracking-widest">Gemini 1.5 Flash Analysis</p>
                  </div>
                  <button onClick={() => setAiExplanation(null)} className="ml-auto text-slate-500 hover:text-white">
                     <XCircle className="w-6 h-6" />
@@ -291,6 +306,31 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
                  {aiExplanation.split('\n').map((line, i) => <p key={i}>{line}</p>)}
               </div>
            </motion.div>
+         )}
+
+         {aiError && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-rose-500/10 border border-rose-500/30 rounded-3xl p-6 md:p-8 flex items-center gap-6"
+            >
+              <div className="w-12 h-12 md:w-14 md:h-14 bg-rose-500 rounded-2xl flex items-center justify-center shrink-0">
+                 <BrainCircuit className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                 <h4 className="text-rose-400 text-[10px] font-black uppercase tracking-widest mb-1">Limit Reached</h4>
+                 <p className="text-white font-bold text-sm md:text-base">
+                    {aiError}
+                 </p>
+              </div>
+              <button
+                onClick={() => setAiError(null)}
+                className="ml-auto p-2 hover:bg-white/5 rounded-xl transition-colors"
+              >
+                 <XCircle className="w-6 h-6 text-slate-500" />
+              </button>
+            </motion.div>
          )}
       </AnimatePresence>
 

@@ -19,52 +19,55 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 ## ACTIVE TASK
 
-# Task: Mobile-First UX Overhaul (PWA support)
+# Task: Rate Limiting for AI Routes
 
 ## Priority
-High (Accessibility & Retention)
+Critical (Cost Control & Security)
 
 ## Goal
-Transform the platform into a production-grade Progressive Web App (PWA) with a mobile-first UI, ensuring seamless learning on the go.
+Protect the platform from API credit exhaustion and potential abuse by implementing a robust rate-limiting system for all AI-powered routes.
 
 ## Why It Matters
-A large portion of GATE aspirants study during commutes or in short breaks. PWA support and mobile optimization are critical for maintaining high retention and providing a native-like experience without the friction of app stores.
+Generative AI calls (Gemini 1.5) incur costs and have rate limits. Without per-user limits, a single malicious or runaway user could exhaust the platform's credits, impacting all students.
 
 ## Scope
-- PWA Configuration (`manifest.ts`, icons).
-- Responsive Navigation (Mobile hamburger menu).
-- Mobile-optimized `PYQPlayer` (Touch-friendly targets, 2x2 rating grid).
-- Responsive Dashboard layout adjustments.
+- Database-backed `RateLimit` model.
+- `RateLimitService` for window-based usage tracking (24h).
+- Integration with `/api/ai/explain` route.
+- UI feedback for "Limit Reached" states in `PYQPlayer`.
 
 ## Dependencies
-- Framer Motion for mobile animations.
-- Next.js Metadata API for PWA.
+- Prisma (SQLite) for persistence.
+- `date-fns` for time management.
 
 ## Implementation Plan
-1. Configure PWA manifest and assets.
-2. Implement mobile-responsive Navbar with animated drawer.
-3. Refactor `PYQPlayer` for better mobile ergonomics.
-4. Optimize Dashboard grid and spacing for small screens.
-5. Verify across responsive breakpoints.
+1. Define `RateLimit` model in Prisma.
+2. Create `RateLimitService` with `checkAndIncrement` logic.
+3. Centralize AI configuration (Model names, limit thresholds).
+4. Integrate service into AI route handlers.
+5. Implement "Limit Reached" UI state in `PYQPlayer`.
 
 ## UX Improvements
-- Smooth mobile transitions.
-- High-contrast touch targets.
-- Minimalist mobile navigation.
+- Clear, empathetic messaging when limits are reached.
+- Visual countdown or "reset time" indication.
+- Prevent button-mashing during AI generation.
 
 ## Validation Strategy
-- Audit via Chrome DevTools (Lighthouse PWA).
-- Manual breakpoint testing.
+- Unit tests for `RateLimitService`.
+- Playwright E2E tests mocking 429 responses.
+- Manual verification of headers (`X-RateLimit-*`).
 
 ## Risks
-- Complex layout regressions on desktop.
+- False positives blocking legitimate heavy users.
+- Database contention on high-concurrency usage (mitigated by SQLite/Prisma upsert).
 
 ## Rollback Strategy
-- Revert to standard responsive Tailwind classes.
+- Disable rate-limit check in route handlers.
 
 ## Completion Criteria
-- Platform is installable as a PWA.
-- All core flows (Roadmap, Player, Dashboard) are fully functional and aesthetic on mobile (375px+).
+- Users are limited to 20 AI requests per 24 hours.
+- 429 status code returned with proper headers when limited.
+- UI gracefully handles and displays the limit state.
 
 ---
 
@@ -147,6 +150,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Architecture Ideas**: Move heavy batch jobs to Edge/Serverless functions.
 
 # Recently Completed Tasks
+- Rate Limiting for AI Routes (Cost Control & Security)
 - Mobile-First UX Overhaul (PWA support)
 - Full FSRS v4 Rating Integration in PYQPlayer
 - FSRS Parameter Optimization (Auto-tuning weights)
@@ -166,16 +170,16 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - None reported.
 
 # Next 10 Priorities
-1. Rate Limiting for AI Routes
-2. Peer Benchmarking System
-3. Automated Flashcard Service
-4. Dashboard Performance Optimization
-5. CI/CD Pipeline Setup
-6. Advanced Mistake Clustering
-7. ARIA Accessibility Audit
-8. Subject Heatmap Component
-9. Global Search & Quick Navigation
-10. Multi-device State Sync
+1. Peer Benchmarking System
+2. Automated Flashcard Service
+3. Dashboard Performance Optimization
+4. CI/CD Pipeline Setup
+5. Advanced Mistake Clustering
+6. ARIA Accessibility Audit
+7. Subject Heatmap Component
+8. Global Search & Quick Navigation
+9. Multi-device State Sync
+10. Deep Learning Recommendation Engine
 
 # Next 100 Improvements
 - [Detailed list suppressed for brevity, to be expanded in future runs]
@@ -234,3 +238,27 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 
 ### Next Recommended Actions
 - Implement Rate Limiting for AI Routes to protect API credits as mobile usage scales.
+
+## [2025-05-16 02:30:00]
+### Completed
+- Rate Limiting for AI Routes (Cost Control & Security) implemented.
+- Database: `RateLimit` model added to Prisma for per-user usage tracking.
+- Service: `RateLimitService` created for window-based (24h) atomic increments.
+- API: Integrated rate limiting in `/api/ai/explain` with `X-RateLimit-*` headers.
+- UI: Added polished "Limit Reached" feedback in `PYQPlayer.tsx`.
+- Refined `DiagnosticTestClient.tsx` to resolve Next.js build errors (JSX parsing).
+- Verified with unit tests (20/20 pass) and Playwright E2E mocking.
+
+### Architecture Changes
+- Centralized AI configuration in `src/lib/config/ai.ts`.
+- Atomic rate limiting prevents concurrent bypass in distributed environments.
+
+### UX Findings
+- Clear, descriptive error messages ("Too many requests. Please try again later.") improve user understanding when limits are hit.
+- Polished "Limit Reached" UI block maintains the premium aesthetic of the platform.
+
+### Performance Findings
+- Prisma `upsert` and `update` (atomic increment) ensure minimal overhead on SQLite.
+
+### Next Recommended Actions
+- Implement Peer Benchmarking System to drive global competition.
