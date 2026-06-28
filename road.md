@@ -19,65 +19,65 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 ## ACTIVE TASK
 
-# Task: Mobile-First UX Overhaul (PWA support)
+# Task: Peer Benchmarking System (Global rank estimation)
 
 ## Priority
-High (Accessibility & Retention)
+Medium (Retention & Gamification)
 
 ## Goal
-Transform the platform into a production-grade Progressive Web App (PWA) with a mobile-first UI, ensuring seamless learning on the go.
+Implement a real-time benchmarking system that allows users to see their progress relative to the entire cohort of GATE aspirants on the platform.
 
 ## Why It Matters
-A large portion of GATE aspirants study during commutes or in short breaks. PWA support and mobile optimization are critical for maintaining high retention and providing a native-like experience without the friction of app stores.
+Aspirants need to know "where they stand" in the competitive landscape. Peer benchmarking provides the psychological drive to improve and validates their preparation progress against realistic global standards.
 
 ## Scope
-- PWA Configuration (`manifest.ts`, icons).
-- Responsive Navigation (Mobile hamburger menu).
-- Mobile-optimized `PYQPlayer` (Touch-friendly targets, 2x2 rating grid).
-- Responsive Dashboard layout adjustments.
+- Global leaderboard logic (Mastery-based).
+- Percentile calculation for each subject and overall.
+- "Rank Estimation" widget based on historical GATE data.
+- Comparison metrics (User vs. Top 10% vs. Average).
 
 ## Dependencies
-- Framer Motion for mobile animations.
-- Next.js Metadata API for PWA.
+- `AnalyticsService` for underlying mastery data.
+- Periodic aggregation jobs or optimized aggregate queries.
 
 ## Implementation Plan
-1. Configure PWA manifest and assets.
-2. Implement mobile-responsive Navbar with animated drawer.
-3. Refactor `PYQPlayer` for better mobile ergonomics.
-4. Optimize Dashboard grid and spacing for small screens.
-5. Verify across responsive breakpoints.
+1. Design efficient aggregation queries for global mastery stats.
+2. Implement percentile calculation logic in `AnalyticsService`.
+3. Build a "Global Standings" component for the Dashboard.
+4. Integrate rank estimation logic based on mastery percentiles.
+5. Verify performance with simulated large datasets.
 
 ## UX Improvements
-- Smooth mobile transitions.
-- High-contrast touch targets.
-- Minimalist mobile navigation.
+- Visual comparison charts (Radar or Bar).
+- Achievement badges for reaching certain percentiles (e.g., Top 1%).
 
 ## Validation Strategy
-- Audit via Chrome DevTools (Lighthouse PWA).
-- Manual breakpoint testing.
+- Load testing with simulated 10k+ users.
+- Verification of percentile math accuracy.
 
 ## Risks
-- Complex layout regressions on desktop.
+- Performance bottlenecks on large user tables.
+- Data privacy (anonymized rankings).
 
 ## Rollback Strategy
-- Revert to standard responsive Tailwind classes.
+- Feature flag to disable benchmarking dashboard.
 
 ## Completion Criteria
-- Platform is installable as a PWA.
-- All core flows (Roadmap, Player, Dashboard) are fully functional and aesthetic on mobile (375px+).
+- User can see their global percentile on the dashboard.
+- Global rank estimate is updated based on topic mastery.
 
 ---
 
 ## QUEUED TASKS
-1. Peer Benchmarking System (Global rank estimation)
-2. Automated Flashcard Generation (AI-driven)
-3. Revision Streak Gamification (Retention engine)
-4. Advanced Mistake Clustering (Root cause analysis)
-5. Performance: Database Query Optimization & Caching
-6. Advanced Analytics Dashboard
-7. Adaptive Content Delivery (AI-tailored notes)
-8. Subject-Specific Mock Test Generation
-9. Multi-device State Sync (Reliability audit)
+1. Automated Flashcard Generation (AI-driven)
+2. Revision Streak Gamification (Retention engine)
+3. Advanced Mistake Clustering (Root cause analysis)
+4. Performance: Database Query Optimization & Caching
+5. Advanced Analytics Dashboard
+6. Adaptive Content Delivery (AI-tailored notes)
+7. Subject-Specific Mock Test Generation
+8. Multi-device State Sync (Reliability audit)
+9. Deep Learning Recommendation Engine (V2)
 
 # Repository Health Audit
 - **Broken Systems**: None.
@@ -85,7 +85,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Technical Debt**: Standardized E2E auth mocking for tests.
 - **Missing Tests**: E2E coverage for the revision loop.
 - **Performance Issues**: Potential for N+1 queries in dashboard subject lists.
-- **Security Concerns**: Rate-limiting needed for AI endpoints.
+- **Security Concerns**: Rate-limiting for AI routes (20 req/24h).
 - **Accessibility Concerns**: Needs a full ARIA audit.
 
 # Learning Engine State
@@ -98,7 +98,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 # AI Systems State
 - **Prompt Systems**: Structured prompts via `PromptEngine`.
 - **Retrieval Systems**: Context-aware grounding.
-- **Tutoring Systems**: Step-by-step technical derivations.
+- **Tutoring Systems**: Step-by-step technical derivations (Gemini 1.5 Flash).
 - **Memory Systems**: Basic attempt history.
 - **Recommendation Systems**: ROI-based roadmap generation.
 
@@ -121,7 +121,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Validation Coverage**: Zod/Prisma validation.
 - **Vulnerabilities**: None known.
 - **Secrets Handling**: `.env.example` provided.
-- **Rate Limiting**: Missing for AI endpoints.
+- **Rate Limiting**: Active for AI routes (20 req/24h).
 
 # Testing State
 - **Unit Coverage**: Core engines covered.
@@ -147,6 +147,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Architecture Ideas**: Move heavy batch jobs to Edge/Serverless functions.
 
 # Recently Completed Tasks
+- Rate Limiting for AI Routes
 - Mobile-First UX Overhaul (PWA support)
 - Full FSRS v4 Rating Integration in PYQPlayer
 - FSRS Parameter Optimization (Auto-tuning weights)
@@ -166,21 +167,51 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - None reported.
 
 # Next 10 Priorities
-1. Rate Limiting for AI Routes
-2. Peer Benchmarking System
-3. Automated Flashcard Service
-4. Dashboard Performance Optimization
-5. CI/CD Pipeline Setup
-6. Advanced Mistake Clustering
-7. ARIA Accessibility Audit
-8. Subject Heatmap Component
-9. Global Search & Quick Navigation
-10. Multi-device State Sync
+1. Peer Benchmarking System
+2. Automated Flashcard Service
+3. Dashboard Performance Optimization
+4. CI/CD Pipeline Setup
+5. Advanced Mistake Clustering
+6. ARIA Accessibility Audit
+7. Subject Heatmap Component
+8. Global Search & Quick Navigation
+9. Multi-device State Sync
+10. Spaced Repetition for Formulas
 
 # Next 100 Improvements
 - [Detailed list suppressed for brevity, to be expanded in future runs]
 
 # Execution Log
+
+## [2025-05-16 02:15:00]
+### Completed
+- Rate Limiting for AI Routes fully implemented and verified.
+- Database: Added `RateLimit` model with unique constraint on `[userId, key]`.
+- Service: Implemented `RateLimitService` with atomic `upsert` and window-based resets.
+- API: Integrated rate check into `/api/ai/explain` with `X-RateLimit-*` headers and 429 status.
+- UI: Updated `PYQPlayer` with a "Limit Reached" state (rose-colored USAGE PROTECTION block).
+- Performance: Centralized AI config in `src/lib/config/ai.ts` for easier management.
+- Verified: All unit tests passed; E2E manual verification of 429 UI successful.
+
+### Architecture Changes
+- `RateLimitService` now acts as a gatekeeper for all expensive AI server routes.
+- Response headers now standardly include usage quotas for client-side budget tracking.
+
+### UX Findings
+- The rose-colored "Limit Reached" block provides strong visual feedback without being jarring.
+- Explicitly showing the reset time helps manage user expectations for daily quotas.
+
+### Next Recommended Actions
+- Implement Peer Benchmarking System to drive competitive engagement.
+
+## [2025-05-16 01:30:00]
+### Completed
+- Initiated Rate Limiting for AI Routes task.
+- Audited repository for existing rate-limiting logic (none found).
+- Defined implementation strategy for database-backed windowed limits.
+
+### Next Recommended Actions
+- Implement `RateLimit` model in Prisma.
 
 ## [2025-05-15 22:15:00]
 ### Completed
