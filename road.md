@@ -19,65 +19,64 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 ## ACTIVE TASK
 
-# Task: Mobile-First UX Overhaul (PWA support)
+# Task: Automated Flashcard Generation (AI-driven)
 
 ## Priority
-High (Accessibility & Retention)
+High (Retention Engine)
 
 ## Goal
-Transform the platform into a production-grade Progressive Web App (PWA) with a mobile-first UI, ensuring seamless learning on the go.
+Develop an AI-powered service that automatically generates high-quality flashcards (Anki-style) from PYQs and topic summaries.
 
 ## Why It Matters
-A large portion of GATE aspirants study during commutes or in short breaks. PWA support and mobile optimization are critical for maintaining high retention and providing a native-like experience without the friction of app stores.
+Active recall is the most effective way to memorize GATE formulas and concepts. Automating flashcard creation reduces the friction for students to start practicing active recall.
 
 ## Scope
-- PWA Configuration (`manifest.ts`, icons).
-- Responsive Navigation (Mobile hamburger menu).
-- Mobile-optimized `PYQPlayer` (Touch-friendly targets, 2x2 rating grid).
-- Responsive Dashboard layout adjustments.
+- `FlashcardService` using Gemini for card extraction.
+- Database model for `Flashcard` and `FlashcardReview`.
+- UI for flashcard review (Front/Back flip interaction).
+- Integration with FSRS for scheduling.
 
 ## Dependencies
-- Framer Motion for mobile animations.
-- Next.js Metadata API for PWA.
+- Gemini 1.5 Flash for generation.
+- `RevisionEngine` for FSRS scheduling.
 
 ## Implementation Plan
-1. Configure PWA manifest and assets.
-2. Implement mobile-responsive Navbar with animated drawer.
-3. Refactor `PYQPlayer` for better mobile ergonomics.
-4. Optimize Dashboard grid and spacing for small screens.
-5. Verify across responsive breakpoints.
+1. Define Prisma models for Flashcards.
+2. Implement AI generation logic in `FlashcardService`.
+3. Build the Flashcard Player UI with Framer Motion.
+4. Integrate with the existing revision loop.
+5. Add unit tests for generation and scheduling.
 
 ## UX Improvements
-- Smooth mobile transitions.
-- High-contrast touch targets.
-- Minimalist mobile navigation.
+- Smooth 3D flip animations for cards.
+- Quick-rate buttons (Again, Hard, Good, Easy).
 
 ## Validation Strategy
-- Audit via Chrome DevTools (Lighthouse PWA).
-- Manual breakpoint testing.
+- Manual audit of AI-generated cards for technical accuracy.
+- Playwright E2E for flip interaction.
 
 ## Risks
-- Complex layout regressions on desktop.
+- Low-quality or hallucinatory card generation (mitigated by strict prompt constraints).
 
 ## Rollback Strategy
-- Revert to standard responsive Tailwind classes.
+- Disable AI generation and allow manual card entry only.
 
 ## Completion Criteria
-- Platform is installable as a PWA.
-- All core flows (Roadmap, Player, Dashboard) are fully functional and aesthetic on mobile (375px+).
+- Users can trigger flashcard generation for a topic.
+- Flashcards are reviewable in a specialized UI.
 
 ---
 
 ## QUEUED TASKS
-1. Peer Benchmarking System (Global rank estimation)
-2. Automated Flashcard Generation (AI-driven)
-3. Revision Streak Gamification (Retention engine)
-4. Advanced Mistake Clustering (Root cause analysis)
-5. Performance: Database Query Optimization & Caching
-6. Advanced Analytics Dashboard
-7. Adaptive Content Delivery (AI-tailored notes)
-8. Subject-Specific Mock Test Generation
-9. Multi-device State Sync (Reliability audit)
+1. Revision Streak Gamification (Retention engine)
+2. Revision Streak Gamification (Retention engine)
+3. Advanced Mistake Clustering (Root cause analysis)
+4. Performance: Database Query Optimization & Caching
+5. Advanced Analytics Dashboard
+6. Adaptive Content Delivery (AI-tailored notes)
+7. Subject-Specific Mock Test Generation
+8. Multi-device State Sync (Reliability audit)
+9. Automated Revision Notes Generation (AI-driven)
 
 # Repository Health Audit
 - **Broken Systems**: None.
@@ -147,7 +146,9 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Architecture Ideas**: Move heavy batch jobs to Edge/Serverless functions.
 
 # Recently Completed Tasks
+- Peer Benchmarking System (Global rank estimation)
 - Mobile-First UX Overhaul (PWA support)
+- Rate Limiting for AI Routes (Protection layer)
 - Full FSRS v4 Rating Integration in PYQPlayer
 - FSRS Parameter Optimization (Auto-tuning weights)
 - Real-time Dashboard Analytics & Mastery Engine
@@ -234,3 +235,26 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 
 ### Next Recommended Actions
 - Implement Rate Limiting for AI Routes to protect API credits as mobile usage scales.
+
+## [2025-05-16 02:15:00]
+### Completed
+- Peer Benchmarking System (Global rank estimation) implemented.
+- Created `PeerBenchmarkingService` for relative percentile and rank calculations.
+- Integrated peer stats into `AnalyticsService` and Dashboard UI.
+- Added `formatOrdinal` utility for grammatically correct rank displays (1st, 2nd, etc.).
+- Resolved JSX parsing errors in `DiagnosticTestClient.tsx` (escaped raw `>`).
+- Verified with unit tests and visual Playwright screenshots.
+
+### Architecture Changes
+- New unified score model: `(Diagnostic Avg * 0.4) + (Syllabus Coverage * 0.6)`.
+- `AnalyticsService` now aggregates cross-user data via `PeerService`.
+
+### Performance Findings
+- Current SQLite implementation fetches all users; for >10k users, this should move to a cached aggregate or background job.
+
+### UX Findings
+- Visualizing "Peer Avg" alongside personal mastery provides immediate context and motivation.
+- Correct ordinal formatting (e.g., 99th vs 99st) significantly improves perceived platform quality.
+
+### Next Recommended Actions
+- Implement Automated Flashcard Generation to deepen active recall capabilities.

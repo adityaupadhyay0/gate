@@ -3,9 +3,9 @@ import { auth } from "@/lib/auth/auth";
 import prisma from "@/lib/db/prisma";
 import { AnalyticsService } from "@/lib/services/AnalyticsService";
 import MasteryHeatmap from "@/components/dashboard/MasteryHeatmap";
-import { Activity, Flame, ShieldAlert, TrendingUp, Zap, Calendar } from "lucide-react";
+import { Activity, Flame, ShieldAlert, TrendingUp, Zap, Calendar, Users, Target, BarChart3 } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn, formatOrdinal } from "@/lib/utils";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -30,7 +30,7 @@ export default async function DashboardPage() {
     { label: "Overall Mastery", value: `${stats.overallMastery}%`, icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
     { label: "Revision Streak", value: `${stats.revisionStreak} Days`, icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
     { label: "Critical Weaknesses", value: `${stats.criticalWeaknessesCount} Topics`, icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
-    { label: "Rank Estimation", value: stats.rankEstimation, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
+    { label: "Percentile", value: stats.peerStats ? formatOrdinal(stats.peerStats.percentile) : "Calibrating...", icon: Target, color: "text-emerald-500", bg: "bg-emerald-50" },
   ];
 
   return (
@@ -72,6 +72,62 @@ export default async function DashboardPage() {
              </div>
            ))}
         </div>
+
+        {stats.peerStats && (
+          <div className="mb-8 md:mb-12">
+             <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 mb-6 flex items-center gap-3">
+                <Users className="w-5 h-5 md:w-6 md:h-6 text-brand-500" />
+                Peer Benchmarking
+             </h2>
+
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="premium-card p-6 border-l-4 border-l-emerald-500">
+                   <div className="flex items-center gap-3 mb-4">
+                      <TrendingUp className="w-5 h-5 text-emerald-500" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Global Standing</span>
+                   </div>
+                   <p className="text-3xl font-black text-slate-900 mb-1">{stats.rankEstimation}</p>
+                   <p className="text-sm text-slate-500 font-medium">Rank #{stats.peerStats.rank} of {stats.peerStats.totalUsers} aspirants</p>
+                </div>
+
+                <div className="premium-card p-6 border-l-4 border-l-brand-500">
+                   <div className="flex items-center gap-3 mb-4">
+                      <BarChart3 className="w-5 h-5 text-brand-500" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mastery vs. Peers</span>
+                   </div>
+                   <div className="flex items-end gap-4">
+                      <div>
+                         <p className="text-3xl font-black text-brand-600">{stats.overallMastery}%</p>
+                         <p className="text-[10px] font-bold text-slate-400 uppercase">You</p>
+                      </div>
+                      <div className="h-10 w-px bg-slate-100 mb-2"></div>
+                      <div>
+                         <p className="text-3xl font-black text-slate-400">{stats.peerStats.averageMastery}%</p>
+                         <p className="text-[10px] font-bold text-slate-400 uppercase">Peer Avg</p>
+                      </div>
+                   </div>
+                </div>
+
+                <div className="premium-card p-6 border-l-4 border-l-orange-500">
+                   <div className="flex items-center gap-3 mb-4">
+                      <Zap className="w-5 h-5 text-orange-500" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Diagnostic Strength</span>
+                   </div>
+                   <div className="flex items-end gap-4">
+                      <div>
+                         <p className="text-3xl font-black text-orange-600">{Math.round(stats.peerStats.percentile)}%</p>
+                         <p className="text-[10px] font-bold text-slate-400 uppercase">Percentile</p>
+                      </div>
+                      <div className="h-10 w-px bg-slate-100 mb-2"></div>
+                      <div>
+                         <p className="text-3xl font-black text-slate-400">{stats.peerStats.averageDiagnosticScore}%</p>
+                         <p className="text-[10px] font-bold text-slate-400 uppercase">Peer Avg</p>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+        )}
 
         <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 mb-6 md:mb-8 flex items-center gap-3">
            <Zap className="w-5 h-5 md:w-6 md:h-6 text-brand-500" />
