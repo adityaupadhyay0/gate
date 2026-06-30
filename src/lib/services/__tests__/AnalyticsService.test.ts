@@ -19,6 +19,7 @@ vi.mock('../../db/prisma', () => ({
     },
     user: {
       findUnique: vi.fn(),
+      findMany: vi.fn(),
     },
     topic: {
       count: vi.fn(),
@@ -106,6 +107,11 @@ describe('AnalyticsService', () => {
         strengthMap: { "Algo": 90, "OS": 80 }
       });
       (prisma.user.findUnique as any).mockResolvedValue({ diagnosticResult: mockDiagnostic });
+      (prisma.user.findMany as any).mockResolvedValue([{
+        id: 'user-1',
+        diagnosticResult: mockDiagnostic,
+        progress: new Array(80).fill({ coverageScore: 1 })
+      }]);
       (prisma.userProgress.findMany as any).mockResolvedValue(new Array(80).fill({ coverageScore: 1 }));
       (prisma.topic.count as any).mockResolvedValue(100);
       (prisma.attempt.findMany as any).mockResolvedValue([]);

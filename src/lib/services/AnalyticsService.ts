@@ -1,5 +1,6 @@
 import prisma from "@/lib/db/prisma";
 import { startOfDay, subDays, differenceInDays } from "date-fns";
+import { PeerBenchmarkingService, GlobalStats } from "./PeerService";
 
 export interface DashboardStats {
   overallMastery: number;
@@ -8,16 +9,18 @@ export interface DashboardStats {
   rankEstimation: string;
   isCalibrated: boolean;
   calibrationProgress: number;
+  peerStats: GlobalStats | null;
 }
 
 export class AnalyticsService {
   static async getOverallStats(userId: string): Promise<DashboardStats> {
-    const [progress, streak, weaknesses, user, attemptCount] = await Promise.all([
+    const [progress, streak, weaknesses, user, attemptCount, peerStats] = await Promise.all([
       this.calculateOverallMastery(userId),
       this.calculateStreak(userId),
       this.getCriticalWeaknesses(userId),
       prisma.user.findUnique({ where: { id: userId }, select: { diagnosticResult: true, fsrsWeights: true } }),
-      prisma.attempt.count({ where: { userId } })
+      prisma.attempt.count({ where: { userId } }),
+      PeerBenchmarkingService.getGlobalStats(userId)
     ]);
 
     let diagnosticData = null;
@@ -37,7 +40,8 @@ export class AnalyticsService {
       criticalWeaknessesCount: weaknesses.length,
       rankEstimation,
       isCalibrated,
-      calibrationProgress
+      calibrationProgress,
+      peerStats
     };
   }
 
