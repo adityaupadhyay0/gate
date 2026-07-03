@@ -1,5 +1,7 @@
 import prisma from "@/lib/db/prisma";
 import { startOfDay, subDays, differenceInDays } from "date-fns";
+import { PeerBenchmarkingService } from "./PeerBenchmarkingService";
+import { formatOrdinal } from "../utils";
 
 export interface DashboardStats {
   overallMastery: number;
@@ -8,16 +10,18 @@ export interface DashboardStats {
   rankEstimation: string;
   isCalibrated: boolean;
   calibrationProgress: number;
+  percentile?: number;
 }
 
 export class AnalyticsService {
   static async getOverallStats(userId: string): Promise<DashboardStats> {
-    const [progress, streak, weaknesses, user, attemptCount] = await Promise.all([
+    const [progress, streak, weaknesses, user, attemptCount, peerRank] = await Promise.all([
       this.calculateOverallMastery(userId),
       this.calculateStreak(userId),
       this.getCriticalWeaknesses(userId),
       prisma.user.findUnique({ where: { id: userId }, select: { diagnosticResult: true, fsrsWeights: true } }),
-      prisma.attempt.count({ where: { userId } })
+      prisma.attempt.count({ where: { userId } }),
+      PeerBenchmarkingService.getGlobalRank(userId)
     ]);
 
     let diagnosticData = null;
@@ -26,7 +30,11 @@ export class AnalyticsService {
     } catch (e) {
       console.error("Failed to parse diagnostic result:", e);
     }
-    const rankEstimation = this.estimateRank(progress, diagnosticData);
+
+    // Prioritize real-time peer rank over heuristic estimation
+    const rankEstimation = peerRank.totalUsers > 1
+      ? `${formatOrdinal(peerRank.rank)} of ${peerRank.totalUsers}`
+      : this.estimateRank(progress, diagnosticData);
 
     const isCalibrated = !!user?.fsrsWeights;
     const calibrationProgress = isCalibrated ? 50 : Math.min(attemptCount, 50);
@@ -37,7 +45,8 @@ export class AnalyticsService {
       criticalWeaknessesCount: weaknesses.length,
       rankEstimation,
       isCalibrated,
-      calibrationProgress
+      calibrationProgress,
+      percentile: peerRank.percentile
     };
   }
 

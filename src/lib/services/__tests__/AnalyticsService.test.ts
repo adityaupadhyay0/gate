@@ -3,6 +3,12 @@ import { AnalyticsService } from '../AnalyticsService';
 import prisma from '../../db/prisma';
 import { startOfDay, subDays } from 'date-fns';
 
+vi.mock('../PeerBenchmarkingService', () => ({
+  PeerBenchmarkingService: {
+    getGlobalRank: vi.fn().mockResolvedValue({ rank: 0, totalUsers: 0, percentile: 0, score: 0 }),
+  },
+}));
+
 vi.mock('../../db/prisma', () => ({
   default: {
     userProgress: {

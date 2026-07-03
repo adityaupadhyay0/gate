@@ -30,7 +30,7 @@ export default async function DashboardPage() {
     { label: "Overall Mastery", value: `${stats.overallMastery}%`, icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
     { label: "Revision Streak", value: `${stats.revisionStreak} Days`, icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
     { label: "Critical Weaknesses", value: `${stats.criticalWeaknessesCount} Topics`, icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
-    { label: "Rank Estimation", value: stats.rankEstimation, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
+    { label: stats.percentile !== undefined ? "Global Percentile" : "Rank Estimation", value: stats.percentile !== undefined ? `${stats.percentile}%` : stats.rankEstimation, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
   ];
 
   return (
@@ -53,6 +53,12 @@ export default async function DashboardPage() {
                 <Zap className={cn("w-4 h-4", stats.isCalibrated ? "fill-emerald-600" : "")} />
                 {calibrationLabel}
              </div>
+             {stats.percentile !== undefined && stats.percentile >= 90 && (
+               <div className="bg-amber-50 text-amber-600 px-3 md:px-4 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest border border-amber-100 flex items-center gap-2 animate-pulse">
+                  <TrendingUp className="w-4 h-4" />
+                  Elite 10%
+               </div>
+             )}
              <Link href="/dashboard/rank-mode" className="w-full md:w-auto text-center bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest hover:bg-brand-600 transition-colors">
                 Optimizing for Rank 1
              </Link>
@@ -61,13 +67,31 @@ export default async function DashboardPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-12">
            {dashboardMetrics.map((stat, i) => (
-             <div key={i} className="glass-card p-5 md:p-6 flex items-center gap-4 md:gap-5">
-                <div className={cn("w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center shrink-0", stat.bg, stat.color)}>
+             <div key={i} className="glass-card p-5 md:p-6 flex items-center gap-4 md:gap-5 group hover:border-brand-100 hover:shadow-lg hover:shadow-brand-500/5 transition-all duration-300">
+                <div className={cn("w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center shrink-0 transition-transform duration-500 group-hover:scale-110", stat.bg, stat.color)}>
                    <stat.icon className="w-6 h-6 md:w-7 md:h-7" />
                 </div>
                 <div>
                    <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1">{stat.label}</p>
-                   <p className="text-xl md:text-2xl font-black text-slate-900">{stat.value}</p>
+                   <div className="flex flex-col">
+                      <p className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">{stat.value}</p>
+                      {stat.label === "Global Percentile" && (
+                         <div className="flex items-center gap-1 mt-1">
+                            <div className="h-1 w-full bg-slate-100 rounded-full overflow-hidden max-w-[60px]">
+                               <div
+                                  className="h-full bg-emerald-500 transition-all duration-1000"
+                                  style={{ width: stat.value }}
+                               />
+                            </div>
+                         </div>
+                      )}
+                      {stat.label === "Rank Estimation" && stats.percentile === undefined && (
+                         <p className="text-[9px] font-bold text-slate-300 uppercase tracking-tighter mt-1">Estimating real-time rank...</p>
+                      )}
+                      {stat.label === "Rank Estimation" && stats.percentile !== undefined && (
+                         <p className="text-[9px] font-bold text-brand-600 uppercase tracking-tighter mt-1">{stats.rankEstimation}</p>
+                      )}
+                   </div>
                 </div>
              </div>
            ))}
