@@ -29,7 +29,7 @@ export default async function DashboardPage() {
   const dashboardMetrics = [
     { label: "Overall Mastery", value: `${stats.overallMastery}%`, icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
     { label: "Revision Streak", value: `${stats.revisionStreak} Days`, icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
-    { label: "Critical Weaknesses", value: `${stats.criticalWeaknessesCount} Topics`, icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
+    { label: "Global Percentile", value: stats.globalPercentile !== null ? `${stats.globalPercentile}%` : "---", icon: Zap, color: "text-indigo-500", bg: "bg-indigo-50" },
     { label: "Rank Estimation", value: stats.rankEstimation, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
   ];
 

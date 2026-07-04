@@ -19,6 +19,7 @@ vi.mock('../../db/prisma', () => ({
     },
     user: {
       findUnique: vi.fn(),
+      findMany: vi.fn(),
     },
     topic: {
       count: vi.fn(),
@@ -110,6 +111,7 @@ describe('AnalyticsService', () => {
       (prisma.topic.count as any).mockResolvedValue(100);
       (prisma.attempt.findMany as any).mockResolvedValue([]);
       (prisma.mistakeLog.findMany as any).mockResolvedValue([]);
+      (prisma.user.findMany as any).mockResolvedValue([]); // No peers, triggers heuristic fallback
 
       const stats = await AnalyticsService.getOverallStats('user-1');
       // mastery = 80/100 = 80%
