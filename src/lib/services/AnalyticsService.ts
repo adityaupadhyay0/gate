@@ -1,32 +1,43 @@
 import prisma from "@/lib/db/prisma";
 import { startOfDay, subDays, differenceInDays } from "date-fns";
+import { PeerBenchmarkingService } from "./PeerBenchmarkingService";
 
 export interface DashboardStats {
   overallMastery: number;
   revisionStreak: number;
   criticalWeaknessesCount: number;
   rankEstimation: string;
+  globalPercentile: number | null;
   isCalibrated: boolean;
   calibrationProgress: number;
 }
 
 export class AnalyticsService {
   static async getOverallStats(userId: string): Promise<DashboardStats> {
-    const [progress, streak, weaknesses, user, attemptCount] = await Promise.all([
+    const [progress, streak, weaknesses, user, attemptCount, benchmark] = await Promise.all([
       this.calculateOverallMastery(userId),
       this.calculateStreak(userId),
       this.getCriticalWeaknesses(userId),
       prisma.user.findUnique({ where: { id: userId }, select: { diagnosticResult: true, fsrsWeights: true } }),
-      prisma.attempt.count({ where: { userId } })
+      prisma.attempt.count({ where: { userId } }),
+      PeerBenchmarkingService.calculateRank(userId)
     ]);
 
     let diagnosticData = null;
     try {
-      diagnosticData = user?.diagnosticResult ? JSON.parse(user.diagnosticResult as string) : null;
+      if (user?.diagnosticResult) {
+        diagnosticData = typeof user.diagnosticResult === 'string'
+          ? JSON.parse(user.diagnosticResult)
+          : user.diagnosticResult;
+      }
     } catch (e) {
       console.error("Failed to parse diagnostic result:", e);
     }
-    const rankEstimation = this.estimateRank(progress, diagnosticData);
+
+    // Use dynamic ranking if available, fallback to heuristic
+    const rankEstimation = benchmark
+      ? `Top ${benchmark.rank}`
+      : this.estimateRank(progress, diagnosticData);
 
     const isCalibrated = !!user?.fsrsWeights;
     const calibrationProgress = isCalibrated ? 50 : Math.min(attemptCount, 50);
@@ -36,6 +47,7 @@ export class AnalyticsService {
       revisionStreak: streak,
       criticalWeaknessesCount: weaknesses.length,
       rankEstimation,
+      globalPercentile: benchmark?.percentile ?? null,
       isCalibrated,
       calibrationProgress
     };
