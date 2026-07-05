@@ -27,10 +27,10 @@ export default async function DashboardPage() {
   });
 
   const dashboardMetrics = [
-    { label: "Overall Mastery", value: `${stats.overallMastery}%`, icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
-    { label: "Revision Streak", value: `${stats.revisionStreak} Days`, icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
-    { label: "Critical Weaknesses", value: `${stats.criticalWeaknessesCount} Topics`, icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
-    { label: "Rank Estimation", value: stats.rankEstimation, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
+    { label: "Overall Mastery", value: `${stats.overallMastery}%`, subValue: "Syllabus Covered", icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
+    { label: "Revision Streak", value: `${stats.revisionStreak} Days`, subValue: "Persistent Learning", icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
+    { label: "Critical Weaknesses", value: `${stats.criticalWeaknessesCount} Topics`, subValue: "Action Required", icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
+    { label: "Rank Estimation", value: stats.rankEstimation, subValue: `Top ${100 - stats.percentile}% (n=${stats.totalUsers})`, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
   ];
 
   return (
@@ -38,7 +38,7 @@ export default async function DashboardPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 md:mb-12">
           <div>
-             <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 mb-2">Command Center</h1>
+             <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-slate-900 mb-2">Command Center</h1>
              <p className="text-slate-500 font-medium text-sm md:text-base">Real-time health map of your GATE preparation.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
@@ -67,7 +67,8 @@ export default async function DashboardPage() {
                 </div>
                 <div>
                    <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1">{stat.label}</p>
-                   <p className="text-xl md:text-2xl font-black text-slate-900">{stat.value}</p>
+                   <p className="text-xl md:text-2xl font-black text-slate-900 tracking-tighter">{stat.value}</p>
+                   <p className={cn("text-[9px] md:text-[10px] font-bold uppercase tracking-tight", i === 3 ? "text-emerald-600" : "text-slate-400")}>{stat.subValue}</p>
                 </div>
              </div>
            ))}
