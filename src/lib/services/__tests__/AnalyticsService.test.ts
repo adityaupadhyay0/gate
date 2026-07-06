@@ -19,6 +19,7 @@ vi.mock('../../db/prisma', () => ({
     },
     user: {
       findUnique: vi.fn(),
+      findMany: vi.fn(),
     },
     topic: {
       count: vi.fn(),
@@ -101,21 +102,21 @@ describe('AnalyticsService', () => {
   });
 
   describe('estimateRank', () => {
-    it('should return correct tier based on score', async () => {
+    it('should return correct percentile based on score', async () => {
       const mockDiagnostic = JSON.stringify({
         strengthMap: { "Algo": 90, "OS": 80 }
       });
       (prisma.user.findUnique as any).mockResolvedValue({ diagnosticResult: mockDiagnostic });
+      (prisma.user.findMany as any).mockResolvedValue([]); // Empty peer list
       (prisma.userProgress.findMany as any).mockResolvedValue(new Array(80).fill({ coverageScore: 1 }));
       (prisma.topic.count as any).mockResolvedValue(100);
       (prisma.attempt.findMany as any).mockResolvedValue([]);
       (prisma.mistakeLog.findMany as any).mockResolvedValue([]);
 
       const stats = await AnalyticsService.getOverallStats('user-1');
-      // mastery = 80/100 = 80%
-      // diagAvg = (90+80)/12 = 14.16
-      // overall = (14.16 * 0.4) + (80 * 0.6) = 5.66 + 48 = 53.66 -> "Top 5000" (since > 40)
-      expect(stats.rankEstimation).toBe("Top 5000");
+      // With no peers, rank is 1, percentile is 100.
+      // rankEstimation = "Top 0%" -> Wait, 100-100 = 0.
+      expect(stats.rankEstimation).toBe("Top 0%");
     });
   });
 

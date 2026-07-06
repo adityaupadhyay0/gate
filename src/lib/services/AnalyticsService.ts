@@ -1,11 +1,13 @@
 import prisma from "@/lib/db/prisma";
 import { startOfDay, subDays, differenceInDays } from "date-fns";
+import { PeerBenchmarkingService } from "./PeerBenchmarkingService";
 
 export interface DashboardStats {
   overallMastery: number;
   revisionStreak: number;
   criticalWeaknessesCount: number;
   rankEstimation: string;
+  percentile?: number;
   isCalibrated: boolean;
   calibrationProgress: number;
 }
@@ -22,11 +24,13 @@ export class AnalyticsService {
 
     let diagnosticData = null;
     try {
-      diagnosticData = user?.diagnosticResult ? JSON.parse(user.diagnosticResult as string) : null;
+      diagnosticData = user?.diagnosticResult ? (typeof user.diagnosticResult === 'string' ? JSON.parse(user.diagnosticResult) : user.diagnosticResult) : null;
     } catch (e) {
       console.error("Failed to parse diagnostic result:", e);
     }
-    const rankEstimation = this.estimateRank(progress, diagnosticData);
+
+    const { rank, percentile } = await PeerBenchmarkingService.getRankAndPercentile(userId, progress, diagnosticData);
+    const rankEstimation = `Top ${100 - percentile}%`;
 
     const isCalibrated = !!user?.fsrsWeights;
     const calibrationProgress = isCalibrated ? 50 : Math.min(attemptCount, 50);
@@ -36,6 +40,7 @@ export class AnalyticsService {
       revisionStreak: streak,
       criticalWeaknessesCount: weaknesses.length,
       rankEstimation,
+      percentile,
       isCalibrated,
       calibrationProgress
     };
@@ -144,24 +149,5 @@ export class AnalyticsService {
     });
 
     return Array.from(weakTopicIds);
-  }
-
-  private static estimateRank(mastery: number, diagnosticData: any): string {
-    if (!diagnosticData || !diagnosticData.strengthMap) return "Not Calibrated";
-
-    // Average strength across all 12 core subjects (0-100 scale)
-    const subjectStrengths = Object.values(diagnosticData.strengthMap) as number[];
-    const diagAvg = subjectStrengths.reduce((a, b) => a + b, 0) / 12;
-
-    // Heuristic: (Diagnostic Average * 0.4) + (Syllabus Coverage * 0.6)
-    // Both are on a 0-100 scale.
-    const overallScore = (diagAvg * 0.4) + (mastery * 0.6);
-
-    if (overallScore > 85) return "Top 100";
-    if (overallScore > 70) return "Top 500";
-    if (overallScore > 55) return "Top 2000";
-    if (overallScore > 40) return "Top 5000";
-    if (overallScore > 25) return "Top 10000";
-    return "Top 20000+";
   }
 }
