@@ -7,6 +7,7 @@ vi.mock('../../db/prisma', () => ({
   default: {
     userProgress: {
       findMany: vi.fn(),
+      groupBy: vi.fn(),
     },
     attempt: {
       findMany: vi.fn(),
@@ -19,10 +20,25 @@ vi.mock('../../db/prisma', () => ({
     },
     user: {
       findUnique: vi.fn(),
+      findMany: vi.fn(),
     },
     topic: {
       count: vi.fn(),
+    },
+    subject: {
+      count: vi.fn(),
     }
+  },
+}));
+
+vi.mock('../PeerBenchmarkingService', () => ({
+  PeerBenchmarkingService: {
+    getBenchmarkingStats: vi.fn().mockResolvedValue({
+      rank: 1,
+      percentile: 95,
+      totalUsers: 20,
+      score: 85,
+    }),
   },
 }));
 
@@ -116,6 +132,9 @@ describe('AnalyticsService', () => {
       // diagAvg = (90+80)/12 = 14.16
       // overall = (14.16 * 0.4) + (80 * 0.6) = 5.66 + 48 = 53.66 -> "Top 5000" (since > 40)
       expect(stats.rankEstimation).toBe("Top 5000");
+      expect(stats.globalRank).toBe(1);
+      expect(stats.globalPercentile).toBe(95);
+      expect(stats.totalOnboardedUsers).toBe(20);
     });
   });
 
