@@ -26,11 +26,17 @@ export default async function DashboardPage() {
     }
   });
 
+  const rankValue = stats.globalRank ? `#${stats.globalRank}` : stats.rankEstimation;
+  const topPercentage = stats.globalPercentile ? Math.max(1, 100 - stats.globalPercentile) : null;
+  const rankSubValue = topPercentage
+    ? `Top ${topPercentage}% (${stats.totalOnboardedUsers} aspirants)`
+    : undefined;
+
   const dashboardMetrics = [
     { label: "Overall Mastery", value: `${stats.overallMastery}%`, icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
     { label: "Revision Streak", value: `${stats.revisionStreak} Days`, icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
     { label: "Critical Weaknesses", value: `${stats.criticalWeaknessesCount} Topics`, icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
-    { label: "Rank Estimation", value: stats.rankEstimation, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
+    { label: "Rank & Percentile", value: rankValue, subValue: rankSubValue, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
   ];
 
   return (
@@ -67,7 +73,10 @@ export default async function DashboardPage() {
                 </div>
                 <div>
                    <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1">{stat.label}</p>
-                   <p className="text-xl md:text-2xl font-black text-slate-900">{stat.value}</p>
+                   <p className="text-xl md:text-2xl font-black tracking-tighter text-slate-900">{stat.value}</p>
+                   {stat.subValue && (
+                     <p className="text-xs font-black text-emerald-600 mt-0.5">{stat.subValue}</p>
+                   )}
                 </div>
              </div>
            ))}
