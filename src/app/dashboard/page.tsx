@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth/auth";
 import prisma from "@/lib/db/prisma";
 import { AnalyticsService } from "@/lib/services/AnalyticsService";
 import MasteryHeatmap from "@/components/dashboard/MasteryHeatmap";
-import { Activity, Flame, ShieldAlert, TrendingUp, Zap, Calendar } from "lucide-react";
+import { Activity, Flame, ShieldAlert, TrendingUp, Zap, Calendar, Users } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -26,11 +26,43 @@ export default async function DashboardPage() {
     }
   });
 
+  const percentileText = stats.peerBenchmark.percentile >= 50
+    ? `Top ${Math.max(1, 100 - stats.peerBenchmark.percentile)}%`
+    : `${stats.peerBenchmark.percentile}th Percentile`;
+
   const dashboardMetrics = [
-    { label: "Overall Mastery", value: `${stats.overallMastery}%`, icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
-    { label: "Revision Streak", value: `${stats.revisionStreak} Days`, icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
-    { label: "Critical Weaknesses", value: `${stats.criticalWeaknessesCount} Topics`, icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
-    { label: "Rank Estimation", value: stats.rankEstimation, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
+    {
+      label: "Overall Mastery",
+      value: `${stats.overallMastery}%`,
+      subValue: "Syllabus Completed",
+      icon: Activity,
+      color: "text-brand-600",
+      bg: "bg-brand-50"
+    },
+    {
+      label: "Revision Streak",
+      value: `${stats.revisionStreak} Days`,
+      subValue: "Active Daily Learning",
+      icon: Flame,
+      color: "text-orange-500",
+      bg: "bg-orange-50"
+    },
+    {
+      label: "Critical Weaknesses",
+      value: `${stats.criticalWeaknessesCount} Topics`,
+      subValue: "Action Needed",
+      icon: ShieldAlert,
+      color: "text-red-500",
+      bg: "bg-red-50"
+    },
+    {
+      label: "Global Rank Estimation",
+      value: stats.rankEstimation,
+      subValue: `${percentileText} (${stats.peerBenchmark.totalOnboardedPeers.toLocaleString()} Peers)`,
+      icon: TrendingUp,
+      color: "text-emerald-600",
+      bg: "bg-emerald-50"
+    },
   ];
 
   return (
@@ -53,6 +85,10 @@ export default async function DashboardPage() {
                 <Zap className={cn("w-4 h-4", stats.isCalibrated ? "fill-emerald-600" : "")} />
                 {calibrationLabel}
              </div>
+             <div className="bg-slate-100 text-slate-700 px-3 md:px-4 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center gap-1.5 border border-slate-200/60">
+                <Users className="w-3.5 h-3.5 text-slate-500" />
+                <span>{percentileText}</span>
+             </div>
              <Link href="/dashboard/rank-mode" className="w-full md:w-auto text-center bg-slate-900 text-white px-4 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest hover:bg-brand-600 transition-colors">
                 Optimizing for Rank 1
              </Link>
@@ -61,13 +97,14 @@ export default async function DashboardPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-12">
            {dashboardMetrics.map((stat, i) => (
-             <div key={i} className="glass-card p-5 md:p-6 flex items-center gap-4 md:gap-5">
+             <div key={i} className="glass-card p-5 md:p-6 flex items-center gap-4 md:gap-5 hover:border-brand-200/60 transition-all">
                 <div className={cn("w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center shrink-0", stat.bg, stat.color)}>
                    <stat.icon className="w-6 h-6 md:w-7 md:h-7" />
                 </div>
                 <div>
                    <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1">{stat.label}</p>
-                   <p className="text-xl md:text-2xl font-black text-slate-900">{stat.value}</p>
+                   <p className="text-xl md:text-2xl font-black tracking-tighter text-slate-900">{stat.value}</p>
+                   <p className="text-[10px] font-semibold text-slate-500 mt-0.5">{stat.subValue}</p>
                 </div>
              </div>
            ))}

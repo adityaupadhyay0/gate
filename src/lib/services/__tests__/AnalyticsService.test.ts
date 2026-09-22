@@ -7,6 +7,7 @@ vi.mock('../../db/prisma', () => ({
   default: {
     userProgress: {
       findMany: vi.fn(),
+      groupBy: vi.fn().mockResolvedValue([]),
     },
     attempt: {
       findMany: vi.fn(),
@@ -19,9 +20,13 @@ vi.mock('../../db/prisma', () => ({
     },
     user: {
       findUnique: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
     },
     topic: {
       count: vi.fn(),
+    },
+    subject: {
+      count: vi.fn().mockResolvedValue(12),
     }
   },
 }));
@@ -110,6 +115,7 @@ describe('AnalyticsService', () => {
       (prisma.topic.count as any).mockResolvedValue(100);
       (prisma.attempt.findMany as any).mockResolvedValue([]);
       (prisma.mistakeLog.findMany as any).mockResolvedValue([]);
+      (prisma.subject.count as any).mockResolvedValue(12);
 
       const stats = await AnalyticsService.getOverallStats('user-1');
       // mastery = 80/100 = 80%
