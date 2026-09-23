@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { auth } from "@/lib/auth/auth";
 import prisma from "@/lib/db/prisma";
 import { AnalyticsService } from "@/lib/services/AnalyticsService";
+import { PeerBenchmarkingService } from "@/lib/services/PeerBenchmarkingService";
 import MasteryHeatmap from "@/components/dashboard/MasteryHeatmap";
 import { Activity, Flame, ShieldAlert, TrendingUp, Zap, Calendar } from "lucide-react";
 import Link from "next/link";
@@ -11,8 +12,11 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session?.user?.id || "guest";
 
-  // Fetch real-time analytics
-  const stats = await AnalyticsService.getOverallStats(userId);
+  // Fetch real-time analytics and peer benchmarking
+  const [stats, peerBenchmarking] = await Promise.all([
+    AnalyticsService.getOverallStats(userId),
+    PeerBenchmarkingService.getUserBenchmarking(userId)
+  ]);
 
   const calibrationLabel = stats.isCalibrated ? "Engine Active" : `Calibration: ${stats.calibrationProgress}/50`;
 
@@ -27,10 +31,42 @@ export default async function DashboardPage() {
   });
 
   const dashboardMetrics = [
-    { label: "Overall Mastery", value: `${stats.overallMastery}%`, icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
-    { label: "Revision Streak", value: `${stats.revisionStreak} Days`, icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
-    { label: "Critical Weaknesses", value: `${stats.criticalWeaknessesCount} Topics`, icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
-    { label: "Rank Estimation", value: stats.rankEstimation, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
+    {
+      label: "Overall Mastery",
+      value: `${stats.overallMastery}%`,
+      subValue: `${peerBenchmarking.syllabusCoverage}% Coverage`,
+      subValueColor: "text-brand-600 font-semibold",
+      icon: Activity,
+      color: "text-brand-600",
+      bg: "bg-brand-50"
+    },
+    {
+      label: "Revision Streak",
+      value: `${stats.revisionStreak} Days`,
+      subValue: "Active Learning",
+      subValueColor: "text-orange-600 font-semibold",
+      icon: Flame,
+      color: "text-orange-500",
+      bg: "bg-orange-50"
+    },
+    {
+      label: "Critical Weaknesses",
+      value: `${stats.criticalWeaknessesCount} Topics`,
+      subValue: stats.criticalWeaknessesCount > 0 ? "Requires Review" : "Optimal",
+      subValueColor: stats.criticalWeaknessesCount > 0 ? "text-red-600 font-semibold" : "text-emerald-600 font-semibold",
+      icon: ShieldAlert,
+      color: "text-red-500",
+      bg: "bg-red-50"
+    },
+    {
+      label: "Rank Estimation",
+      value: stats.rankEstimation,
+      subValue: peerBenchmarking.topPercentileLabel,
+      subValueColor: "text-emerald-600 font-black",
+      icon: TrendingUp,
+      color: "text-emerald-500",
+      bg: "bg-emerald-50"
+    },
   ];
 
   return (
@@ -67,7 +103,12 @@ export default async function DashboardPage() {
                 </div>
                 <div>
                    <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1">{stat.label}</p>
-                   <p className="text-xl md:text-2xl font-black text-slate-900">{stat.value}</p>
+                   <p className="text-xl md:text-2xl font-black tracking-tighter text-slate-900">{stat.value}</p>
+                   {stat.subValue && (
+                     <p className={cn("text-xs tracking-tight mt-0.5", stat.subValueColor || "text-slate-500")}>
+                       {stat.subValue}
+                     </p>
+                   )}
                 </div>
              </div>
            ))}
@@ -81,7 +122,7 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {subjects.map((subject) => {
              const completedCount = subject.topics.filter(t => t.userProgress[0]?.status === "Completed").length;
-             const progress = (completedCount / subject.topics.length) * 100;
+             const progress = (completedCount / (subject.topics.length || 1)) * 100;
 
              return (
                <Link key={subject.id} href="/roadmap" className="premium-card group hover:scale-[1.02] transition-transform duration-300 p-6">
