@@ -3,9 +3,9 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 # Current Repository State
 - **Maturity**: Beta / MVP+
-- **Stability**: Stable core functionality; Spaced Repetition (FSRS v4) logic is now robust.
+- **Stability**: Stable core functionality; Spaced Repetition (FSRS v4), PWA Mobile UX, and Peer Benchmarking Engine are fully operational.
 - **Critical Blockers**: None.
-- **Overall Progress**: Optimization engines are active; Mobile-First UX and PWA support now complete. The platform is ready for broader adoption and data-driven scaling.
+- **Overall Progress**: Peer Benchmarking System complete; next focusing on Automated Flashcard Generation.
 
 # Current Architecture
 - **Frontend**: Next.js 14 (App Router), Tailwind CSS (Premium UI), Framer Motion (Animations), Lucide React (Icons).
@@ -14,83 +14,80 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 - **AI Systems**: Gemini 1.5 Flash (via `@google/generative-ai`).
 - **State Management**: React Server Components + Client-side state for interactive players.
 - **Infrastructure**: Vercel-ready; PWA Support enabled.
-- **Analytics**: `AnalyticsService` handles mastery, streaks, and weakness detection.
+- **Analytics**: `AnalyticsService` and `PeerBenchmarkingService` handle mastery, streaks, global rank percentile estimation, and weakness detection.
 - **Content Pipeline**: Curated JSON/CSV to Prisma seed script.
 
 ## ACTIVE TASK
 
-# Task: Mobile-First UX Overhaul (PWA support)
+# Task: Automated Flashcard Generation (AI-driven)
 
 ## Priority
-High (Accessibility & Retention)
+High (Active Recall & Reinforcement)
 
 ## Goal
-Transform the platform into a production-grade Progressive Web App (PWA) with a mobile-first UI, ensuring seamless learning on the go.
+Implement an AI-driven automated flashcard generation system that synthesizes high-yield flashcards from topic summaries and past mistake logs for rapid spaced repetition revision.
 
 ## Why It Matters
-A large portion of GATE aspirants study during commutes or in short breaks. PWA support and mobile optimization are critical for maintaining high retention and providing a native-like experience without the friction of app stores.
+Active recall through flashcards combined with FSRS v4 memory scoring accelerates retention for heavy theoretical concepts (e.g. Operating Systems, Computer Networks).
 
 ## Scope
-- PWA Configuration (`manifest.ts`, icons).
-- Responsive Navigation (Mobile hamburger menu).
-- Mobile-optimized `PYQPlayer` (Touch-friendly targets, 2x2 rating grid).
-- Responsive Dashboard layout adjustments.
+- Define flashcard generation engine utilizing Gemini 1.5 Flash.
+- Parse key concept pairs (Question/Prompt and Answer/Explanation).
+- Integrate flashcard review queue into the revision interface.
 
 ## Dependencies
-- Framer Motion for mobile animations.
-- Next.js Metadata API for PWA.
+- `@google/generative-ai` & `PromptEngine`.
+- FSRS v4 rating system in `RevisionEngine`.
 
 ## Implementation Plan
-1. Configure PWA manifest and assets.
-2. Implement mobile-responsive Navbar with animated drawer.
-3. Refactor `PYQPlayer` for better mobile ergonomics.
-4. Optimize Dashboard grid and spacing for small screens.
-5. Verify across responsive breakpoints.
+1. Design `FlashcardService` and prompt template for AI flashcard synthesis.
+2. Build UI player component for flashcard review mode.
+3. Wire flashcards into FSRS attempt tracking.
+4. Add unit tests for prompt parsing and queue management.
 
 ## UX Improvements
-- Smooth mobile transitions.
-- High-contrast touch targets.
-- Minimalist mobile navigation.
+- Interactive 3D flip card animations using Framer Motion.
+- Touch-friendly swipe gestures for mobile revision.
 
 ## Validation Strategy
-- Audit via Chrome DevTools (Lighthouse PWA).
-- Manual breakpoint testing.
+- Unit tests for flashcard parsing and state transitions.
+- Playwright E2E verification of review loop.
 
 ## Risks
-- Complex layout regressions on desktop.
+- Hallucinations in generated explanations (mitigated via prompt engineering).
 
 ## Rollback Strategy
-- Revert to standard responsive Tailwind classes.
+- Fallback to static PYQ flashcards.
 
 ## Completion Criteria
-- Platform is installable as a PWA.
-- All core flows (Roadmap, Player, Dashboard) are fully functional and aesthetic on mobile (375px+).
+- AI generates structured flashcards per topic.
+- Flashcard review loop functions smoothly with FSRS v4 ratings.
 
 ---
 
 ## QUEUED TASKS
-1. Peer Benchmarking System (Global rank estimation)
-2. Automated Flashcard Generation (AI-driven)
-3. Revision Streak Gamification (Retention engine)
-4. Advanced Mistake Clustering (Root cause analysis)
-5. Performance: Database Query Optimization & Caching
-6. Advanced Analytics Dashboard
-7. Adaptive Content Delivery (AI-tailored notes)
-8. Subject-Specific Mock Test Generation
-9. Multi-device State Sync (Reliability audit)
+1. Revision Streak Gamification (Retention engine)
+2. Advanced Mistake Clustering (Root cause analysis)
+3. AI Doubt Solver V2 Enhancements
+4. Adaptive Content Delivery (Dynamic Difficulty)
+5. Subject-Specific Mock Test Generation
+6. Performance: Database Query Optimization & Caching
+7. Multi-device State Sync (Reliability audit)
+8. Automated Revision Notes Generation
+9. Rate Limiting for AI Routes
 
 # Repository Health Audit
 - **Broken Systems**: None.
 - **Weak Abstractions**: `DiagnosticEngine` needs more granular subject-topic mapping.
 - **Technical Debt**: Standardized E2E auth mocking for tests.
 - **Missing Tests**: E2E coverage for the revision loop.
-- **Performance Issues**: Potential for N+1 queries in dashboard subject lists.
+- **Performance Issues**: Addressed via DB-level aggregations and caching for peer benchmarking.
 - **Security Concerns**: Rate-limiting needed for AI endpoints.
 - **Accessibility Concerns**: Needs a full ARIA audit.
 
 # Learning Engine State
 - **Adaptive Learning**: FSRS v4 integrated; Weight optimization active.
-- **Revision Systems**: Spaced repetition active.
+- **Revision Systems**: Spaced repetition active; Peer benchmarking live.
 - **Mastery Tracking**: Topic-level coverage scores.
 - **PYQ Systems**: 100% real GATE questions; Rating integration complete.
 - **Diagnostic Systems**: Proportional Sampling (v2.0).
@@ -103,7 +100,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Recommendation Systems**: ROI-based roadmap generation.
 
 # UI/UX State
-- **Current Design Quality**: Elite SaaS aesthetics; PWA support added.
+- **Current Design Quality**: Elite SaaS aesthetics; PWA support added; Benchmarking UI active.
 - **UX Friction**: Minimized with mobile-responsive navigation.
 - **Inconsistencies**: Loading states in players.
 - **Accessibility Gaps**: Keyboard navigation not fully tested.
@@ -113,8 +110,8 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Bundle Size**: Optimized by Next.js defaults.
 - **Rendering**: Static/Dynamic hybrid.
 - **API Latency**: Low (direct Prisma calls).
-- **Query Bottlenecks**: None at current scale.
-- **Caching**: Minimal.
+- **Query Bottlenecks**: Optimized via `prisma.userProgress.groupBy` and 10-minute distribution caching.
+- **Caching**: 10-minute in-memory distribution cache for Peer Benchmarking.
 
 # Security State
 - **Auth Systems**: Auth.js (v5 beta) with JWT.
@@ -124,14 +121,14 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Rate Limiting**: Missing for AI endpoints.
 
 # Testing State
-- **Unit Coverage**: Core engines covered.
+- **Unit Coverage**: Core engines and services covered (FSRS, Analytics, PromptEngine, PeerBenchmarking - 20/20 passing).
 - **Integration Coverage**: 0%
 - **E2E Coverage**: Minimal (Playwright verification active for UI).
 
 # Content Expansion State
 - **Completed Topics**: 95 Topics across 12 subjects.
 - **Missing Topics**: None (Syllabus complete).
-- **Weak Explanations**: Some curated explanations are one-liners.
+- **Weak Explanations**: Some curated explanations are oneliners.
 - **Needed Enrichments**: Diagrams for OS/COA/Networks.
 
 # Infrastructure State
@@ -147,12 +144,12 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Architecture Ideas**: Move heavy batch jobs to Edge/Serverless functions.
 
 # Recently Completed Tasks
+- Peer Benchmarking System (Global rank estimation)
 - Mobile-First UX Overhaul (PWA support)
 - Full FSRS v4 Rating Integration in PYQPlayer
 - FSRS Parameter Optimization (Auto-tuning weights)
 - Real-time Dashboard Analytics & Mastery Engine
 - Integrated AI Doubt Solver V2
-- Industrial-Grade Diagnostic Test Engine
 
 # Current Blockers
 - None.
@@ -166,9 +163,9 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - None reported.
 
 # Next 10 Priorities
-1. Rate Limiting for AI Routes
-2. Peer Benchmarking System
-3. Automated Flashcard Service
+1. Automated Flashcard Generation
+2. Revision Streak Gamification
+3. Rate Limiting for AI Routes
 4. Dashboard Performance Optimization
 5. CI/CD Pipeline Setup
 6. Advanced Mistake Clustering
@@ -226,11 +223,33 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - Added Framer Motion for responsive navigation states.
 
 ### UX Findings
-- The 2x2 grid for FSRS ratings on mobile significantly improves one-handed thumb reachability.
+- The 2x2 grid for FSRS ratings on mobile significantly improves onehanded thumb reachability.
 - Mobile drawer in Navbar provides a clean, native-like experience for small viewports.
 
 ### Performance Findings
 - PWA manifest reduces TBT by allowing the system to handle splash screens and theme colors natively.
 
 ### Next Recommended Actions
-- Implement Rate Limiting for AI Routes to protect API credits as mobile usage scales.
+- Implement Peer Benchmarking System (Global rank estimation).
+
+## [2025-05-16 02:15:00]
+### Completed
+- Implemented `PeerBenchmarkingService` with score formula `(Diagnostic Average * 0.4) + (Syllabus Coverage * 0.6)`.
+- Implemented global percentile calculation `Math.round(((totalUsers - rank) / totalUsers) * 100)` relative to onboarded users.
+- Optimized performance using `prisma.userProgress.groupBy` for DB-level aggregation.
+- Implemented 10-minute in-memory distribution caching with `_clearCache()` helper for unit testing.
+- Integrated peer benchmarking into `AnalyticsService` and updated `DashboardPage` metric cards with percentile highlights (`text-emerald-600 bg-emerald-50`).
+- Created comprehensive unit tests in `PeerBenchmarkingService.test.ts` (100% pass rate across 20 test cases).
+
+### Architecture Changes
+- `AnalyticsService` delegates relative performance calculations to `PeerBenchmarkingService`.
+- Database query overhead minimized via DB-level grouping and in-memory TTL caching.
+
+### UX Findings
+- Presenting percentile tags (`Top 5%`) alongside rank estimation tier gives aspirants immediate relative feedback.
+
+### Performance Findings
+- `prisma.userProgress.groupBy` reduces memory footprint by avoiding fetching individual `UserProgress` records across the userbase.
+
+### Next Recommended Actions
+- Implement Automated Flashcard Generation (AI-driven) for active recall.
