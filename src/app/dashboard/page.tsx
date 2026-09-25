@@ -27,10 +27,40 @@ export default async function DashboardPage() {
   });
 
   const dashboardMetrics = [
-    { label: "Overall Mastery", value: `${stats.overallMastery}%`, icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
-    { label: "Revision Streak", value: `${stats.revisionStreak} Days`, icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
-    { label: "Critical Weaknesses", value: `${stats.criticalWeaknessesCount} Topics`, icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
-    { label: "Rank Estimation", value: stats.rankEstimation, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
+    {
+      label: "Overall Mastery",
+      value: `${stats.overallMastery}%`,
+      subValue: "Syllabus Coverage",
+      icon: Activity,
+      color: "text-brand-600",
+      bg: "bg-brand-50"
+    },
+    {
+      label: "Revision Streak",
+      value: `${stats.revisionStreak} Days`,
+      subValue: stats.revisionStreak > 0 ? "Active Spaced Recall" : "Start a Revision Session",
+      icon: Flame,
+      color: "text-orange-500",
+      bg: "bg-orange-50"
+    },
+    {
+      label: "Critical Weaknesses",
+      value: `${stats.criticalWeaknessesCount} Topics`,
+      subValue: stats.criticalWeaknessesCount === 0 ? "Optimal Performance" : "Requires Attention",
+      icon: ShieldAlert,
+      color: "text-red-500",
+      bg: "bg-red-50"
+    },
+    {
+      label: "Peer Benchmarking",
+      value: stats.peerBenchmark?.isCalibrated ? stats.peerBenchmark.label : "Uncalibrated",
+      subValue: stats.peerBenchmark?.isCalibrated
+        ? `~Rank ${stats.peerBenchmark.rank} of ${stats.peerBenchmark.totalUsers}`
+        : "Complete Diagnostic Test",
+      icon: TrendingUp,
+      color: "text-emerald-600",
+      bg: "bg-emerald-50"
+    },
   ];
 
   return (
@@ -39,7 +69,7 @@ export default async function DashboardPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 md:mb-12">
           <div>
              <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 mb-2">Command Center</h1>
-             <p className="text-slate-500 font-medium text-sm md:text-base">Real-time health map of your GATE preparation.</p>
+             <p className="text-slate-500 font-medium text-sm md:text-base">Real-time health map & global peer benchmarking of your GATE preparation.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
              <div className="bg-brand-50 text-brand-600 px-3 md:px-4 py-2 rounded-xl text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center gap-2">
@@ -61,13 +91,14 @@ export default async function DashboardPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-12">
            {dashboardMetrics.map((stat, i) => (
-             <div key={i} className="glass-card p-5 md:p-6 flex items-center gap-4 md:gap-5">
-                <div className={cn("w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center shrink-0", stat.bg, stat.color)}>
-                   <stat.icon className="w-6 h-6 md:w-7 md:h-7" />
+             <div key={i} className="glass-card p-5 md:p-6 flex items-start justify-between gap-4">
+                <div className="space-y-1">
+                   <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400">{stat.label}</p>
+                   <p className="text-2xl md:text-3xl font-black text-slate-900 tracking-tighter">{stat.value}</p>
+                   <p className="text-[11px] font-semibold text-slate-500">{stat.subValue}</p>
                 </div>
-                <div>
-                   <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1">{stat.label}</p>
-                   <p className="text-xl md:text-2xl font-black text-slate-900">{stat.value}</p>
+                <div className={cn("w-12 h-12 md:w-13 md:h-13 rounded-2xl flex items-center justify-center shrink-0", stat.bg, stat.color)}>
+                   <stat.icon className="w-6 h-6" />
                 </div>
              </div>
            ))}
