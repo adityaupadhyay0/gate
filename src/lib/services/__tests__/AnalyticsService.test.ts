@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AnalyticsService } from '../AnalyticsService';
+import { PeerBenchmarkingService } from '../PeerBenchmarkingService';
 import prisma from '../../db/prisma';
 import { startOfDay, subDays } from 'date-fns';
 
@@ -7,6 +8,8 @@ vi.mock('../../db/prisma', () => ({
   default: {
     userProgress: {
       findMany: vi.fn(),
+      groupBy: vi.fn().mockResolvedValue([]),
+      aggregate: vi.fn().mockResolvedValue({ _sum: { coverageScore: 0 } }),
     },
     attempt: {
       findMany: vi.fn(),
@@ -19,9 +22,13 @@ vi.mock('../../db/prisma', () => ({
     },
     user: {
       findUnique: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
     },
     topic: {
-      count: vi.fn(),
+      count: vi.fn().mockResolvedValue(100),
+    },
+    subject: {
+      count: vi.fn().mockResolvedValue(12),
     }
   },
 }));
@@ -29,6 +36,7 @@ vi.mock('../../db/prisma', () => ({
 describe('AnalyticsService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    PeerBenchmarkingService._clearCache();
   });
 
   describe('calculateOverallMastery', () => {
@@ -107,7 +115,11 @@ describe('AnalyticsService', () => {
       });
       (prisma.user.findUnique as any).mockResolvedValue({ diagnosticResult: mockDiagnostic });
       (prisma.userProgress.findMany as any).mockResolvedValue(new Array(80).fill({ coverageScore: 1 }));
+      (prisma.userProgress.aggregate as any).mockResolvedValue({ _sum: { coverageScore: 80 } });
+      (prisma.userProgress.groupBy as any).mockResolvedValue([{ userId: 'user-1', _sum: { coverageScore: 80 } }]);
+      (prisma.user.findMany as any).mockResolvedValue([{ id: 'user-1', diagnosticResult: mockDiagnostic }]);
       (prisma.topic.count as any).mockResolvedValue(100);
+      (prisma.subject.count as any).mockResolvedValue(12);
       (prisma.attempt.findMany as any).mockResolvedValue([]);
       (prisma.mistakeLog.findMany as any).mockResolvedValue([]);
 

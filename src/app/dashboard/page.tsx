@@ -26,11 +26,42 @@ export default async function DashboardPage() {
     }
   });
 
+  const topPercentile = Math.max(1, 100 - stats.percentile);
+
   const dashboardMetrics = [
-    { label: "Overall Mastery", value: `${stats.overallMastery}%`, icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
-    { label: "Revision Streak", value: `${stats.revisionStreak} Days`, icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
-    { label: "Critical Weaknesses", value: `${stats.criticalWeaknessesCount} Topics`, icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
-    { label: "Rank Estimation", value: stats.rankEstimation, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
+    {
+      label: "Overall Mastery",
+      value: `${stats.overallMastery}%`,
+      subValue: "Syllabus coverage",
+      icon: Activity,
+      color: "text-brand-600",
+      bg: "bg-brand-50"
+    },
+    {
+      label: "Revision Streak",
+      value: `${stats.revisionStreak} Days`,
+      subValue: "Active retention loop",
+      icon: Flame,
+      color: "text-orange-500",
+      bg: "bg-orange-50"
+    },
+    {
+      label: "Critical Weaknesses",
+      value: `${stats.criticalWeaknessesCount} Topics`,
+      subValue: "High priority focus",
+      icon: ShieldAlert,
+      color: "text-red-500",
+      bg: "bg-red-50"
+    },
+    {
+      label: "Rank Estimation",
+      value: stats.rankEstimation,
+      subValue: `Rank #${stats.globalRank} / ${stats.totalUsers} peers`,
+      highlight: `Top ${topPercentile}%`,
+      icon: TrendingUp,
+      color: "text-emerald-500",
+      bg: "bg-emerald-50"
+    },
   ];
 
   return (
@@ -61,13 +92,23 @@ export default async function DashboardPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-12">
            {dashboardMetrics.map((stat, i) => (
-             <div key={i} className="glass-card p-5 md:p-6 flex items-center gap-4 md:gap-5">
-                <div className={cn("w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center shrink-0", stat.bg, stat.color)}>
-                   <stat.icon className="w-6 h-6 md:w-7 md:h-7" />
+             <div key={i} className="glass-card p-5 md:p-6 flex flex-col justify-between">
+                <div className="flex items-center justify-between mb-3">
+                   <div className={cn("w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center shrink-0", stat.bg, stat.color)}>
+                      <stat.icon className="w-6 h-6 md:w-7 md:h-7" />
+                   </div>
+                   {stat.highlight && (
+                     <span className="text-[10px] md:text-xs font-black tracking-tighter uppercase px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+                        {stat.highlight}
+                     </span>
+                   )}
                 </div>
                 <div>
                    <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1">{stat.label}</p>
-                   <p className="text-xl md:text-2xl font-black text-slate-900">{stat.value}</p>
+                   <p className="text-xl md:text-2xl font-black tracking-tighter text-slate-900">{stat.value}</p>
+                   {stat.subValue && (
+                     <p className="text-[11px] font-semibold text-slate-500 mt-1">{stat.subValue}</p>
+                   )}
                 </div>
              </div>
            ))}
