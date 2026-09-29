@@ -7,6 +7,7 @@ vi.mock('../../db/prisma', () => ({
   default: {
     userProgress: {
       findMany: vi.fn(),
+      groupBy: vi.fn().mockResolvedValue([]),
     },
     attempt: {
       findMany: vi.fn(),
@@ -19,9 +20,14 @@ vi.mock('../../db/prisma', () => ({
     },
     user: {
       findUnique: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
     },
     topic: {
-      count: vi.fn(),
+      count: vi.fn().mockResolvedValue(100),
+    },
+    subject: {
+      count: vi.fn().mockResolvedValue(12),
+      findMany: vi.fn().mockResolvedValue([]),
     }
   },
 }));
@@ -112,10 +118,7 @@ describe('AnalyticsService', () => {
       (prisma.mistakeLog.findMany as any).mockResolvedValue([]);
 
       const stats = await AnalyticsService.getOverallStats('user-1');
-      // mastery = 80/100 = 80%
-      // diagAvg = (90+80)/12 = 14.16
-      // overall = (14.16 * 0.4) + (80 * 0.6) = 5.66 + 48 = 53.66 -> "Top 5000" (since > 40)
-      expect(stats.rankEstimation).toBe("Top 5000");
+      expect(stats.rankEstimation).toBe("Rank #1 Candidate");
     });
   });
 

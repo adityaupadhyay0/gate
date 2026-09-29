@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth/auth";
 import prisma from "@/lib/db/prisma";
 import { AnalyticsService } from "@/lib/services/AnalyticsService";
 import MasteryHeatmap from "@/components/dashboard/MasteryHeatmap";
-import { Activity, Flame, ShieldAlert, TrendingUp, Zap, Calendar } from "lucide-react";
+import { Activity, Flame, ShieldAlert, TrendingUp, Zap, Calendar, Award, Users } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -11,8 +11,9 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session?.user?.id || "guest";
 
-  // Fetch real-time analytics
+  // Fetch real-time analytics including Peer Benchmarking
   const stats = await AnalyticsService.getOverallStats(userId);
+  const peer = stats.peerBenchmarking;
 
   const calibrationLabel = stats.isCalibrated ? "Engine Active" : `Calibration: ${stats.calibrationProgress}/50`;
 
@@ -27,10 +28,10 @@ export default async function DashboardPage() {
   });
 
   const dashboardMetrics = [
-    { label: "Overall Mastery", value: `${stats.overallMastery}%`, icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
-    { label: "Revision Streak", value: `${stats.revisionStreak} Days`, icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
-    { label: "Critical Weaknesses", value: `${stats.criticalWeaknessesCount} Topics`, icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
-    { label: "Rank Estimation", value: stats.rankEstimation, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
+    { label: "Overall Mastery", value: `${stats.overallMastery}%`, subValue: `Cohort Avg: ${peer.cohortAverageScore}%`, icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
+    { label: "Revision Streak", value: `${stats.revisionStreak} Days`, subValue: "Active Retention", icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
+    { label: "Critical Weaknesses", value: `${stats.criticalWeaknessesCount} Topics`, subValue: "Action Required", icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
+    { label: "Peer Percentile", value: `Top ${peer.topPercentile}%`, subValue: `Rank ${peer.rank} of ${peer.totalUsers}`, icon: Award, color: "text-emerald-600", bg: "bg-emerald-50" },
   ];
 
   return (
@@ -67,10 +68,43 @@ export default async function DashboardPage() {
                 </div>
                 <div>
                    <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1">{stat.label}</p>
-                   <p className="text-xl md:text-2xl font-black text-slate-900">{stat.value}</p>
+                   <p className="text-xl md:text-2xl font-black text-slate-900 tracking-tighter">{stat.value}</p>
+                   <p className="text-[10px] font-bold text-slate-400 mt-0.5">{stat.subValue}</p>
                 </div>
              </div>
            ))}
+        </div>
+
+        {/* Global Peer Benchmarking Banner */}
+        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-brand-950 text-white rounded-3xl p-6 md:p-8 mb-8 md:mb-12 shadow-xl border border-slate-800 relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-widest">
+                <Users className="w-3.5 h-3.5" /> Global Cohort Intelligence
+              </div>
+              <h2 className="text-2xl md:text-3xl font-black tracking-tight">
+                Peer Benchmarking: <span className="text-emerald-400">{peer.estimatedRankRange}</span>
+              </h2>
+              <p className="text-slate-400 text-xs md:text-sm font-medium max-w-xl">
+                Your preparation score ({peer.score}/100) places you in the <strong className="text-white">Top {peer.topPercentile}%</strong> among {peer.totalUsers} active GATE CSE aspirants. Cohort average score is {peer.cohortAverageScore}/100.
+              </p>
+            </div>
+            <div className="flex items-center gap-4 bg-slate-800/80 backdrop-blur-md p-4 rounded-2xl border border-slate-700/50 shrink-0">
+              <div className="text-center px-3 border-r border-slate-700">
+                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Global Rank</p>
+                <p className="text-2xl font-black text-white">#{peer.rank}</p>
+              </div>
+              <div className="text-center px-3 border-r border-slate-700">
+                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Percentile</p>
+                <p className="text-2xl font-black text-emerald-400">{peer.percentileRank}%</p>
+              </div>
+              <div className="text-center px-3">
+                <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Cohort Size</p>
+                <p className="text-2xl font-black text-white">{peer.totalUsers}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 mb-6 md:mb-8 flex items-center gap-3">
