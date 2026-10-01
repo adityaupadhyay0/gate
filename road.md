@@ -3,15 +3,15 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 # Current Repository State
 - **Maturity**: Beta / MVP+
-- **Stability**: Stable core functionality; Spaced Repetition (FSRS v4) logic is now robust.
+- **Stability**: Stable core functionality; Spaced Repetition (FSRS v4) logic and AI rate limiting are now robust.
 - **Critical Blockers**: None.
-- **Overall Progress**: Optimization engines are active; Mobile-First UX and PWA support now complete. The platform is ready for broader adoption and data-driven scaling.
+- **Overall Progress**: AI security & rate limiting active; Mobile-First UX and PWA support complete. The platform is ready for broader adoption and data-driven scaling.
 
 # Current Architecture
 - **Frontend**: Next.js 14 (App Router), Tailwind CSS (Premium UI), Framer Motion (Animations), Lucide React (Icons).
 - **Backend**: Next.js Server Actions, Route Handlers.
-- **Database**: SQLite (via Prisma ORM 6.4.1); personalized `fsrsWeights` enabled.
-- **AI Systems**: Gemini 1.5 Flash (via `@google/generative-ai`).
+- **Database**: SQLite (via Prisma ORM 6.4.1); personalized `fsrsWeights` and `RateLimit` enabled.
+- **AI Systems**: Gemini 1.5 Flash (via `@google/generative-ai`), protected by `RateLimitService`.
 - **State Management**: React Server Components + Client-side state for interactive players.
 - **Infrastructure**: Vercel-ready; PWA Support enabled.
 - **Analytics**: `AnalyticsService` handles mastery, streaks, and weakness detection.
@@ -19,65 +19,58 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 ## ACTIVE TASK
 
-# Task: Mobile-First UX Overhaul (PWA support)
+# Task: Peer Benchmarking System (Global rank estimation)
 
 ## Priority
-High (Accessibility & Retention)
+High (Motivation & Relative Performance)
 
 ## Goal
-Transform the platform into a production-grade Progressive Web App (PWA) with a mobile-first UI, ensuring seamless learning on the go.
+Implement a dynamic peer benchmarking system that estimates global percentile and rank distribution based on active user diagnostic and attempt performance.
 
 ## Why It Matters
-A large portion of GATE aspirants study during commutes or in short breaks. PWA support and mobile optimization are critical for maintaining high retention and providing a native-like experience without the friction of app stores.
+Aspirants need accurate visibility into how their mastery compares against the competitive GATE CSE candidate pool to prioritize high-yield ROI subjects effectively.
 
 ## Scope
-- PWA Configuration (`manifest.ts`, icons).
-- Responsive Navigation (Mobile hamburger menu).
-- Mobile-optimized `PYQPlayer` (Touch-friendly targets, 2x2 rating grid).
-- Responsive Dashboard layout adjustments.
+- Global user score distribution computation in `PeerBenchmarkingService`.
+- Rank & percentile estimation engine.
+- Peer Benchmarking card in Dashboard UI.
 
 ## Dependencies
-- Framer Motion for mobile animations.
-- Next.js Metadata API for PWA.
+- Prisma UserProgress and Attempt records.
 
 ## Implementation Plan
-1. Configure PWA manifest and assets.
-2. Implement mobile-responsive Navbar with animated drawer.
-3. Refactor `PYQPlayer` for better mobile ergonomics.
-4. Optimize Dashboard grid and spacing for small screens.
-5. Verify across responsive breakpoints.
+1. Implement `PeerBenchmarkingService` with score aggregation and percentile calculation.
+2. Integrate benchmarking data into Dashboard / Analytics.
+3. Add tests for `PeerBenchmarkingService`.
+4. Verify UI integration.
 
 ## UX Improvements
-- Smooth mobile transitions.
-- High-contrast touch targets.
-- Minimalist mobile navigation.
+- Interactive rank comparison card with clear percentile indicators.
 
 ## Validation Strategy
-- Audit via Chrome DevTools (Lighthouse PWA).
-- Manual breakpoint testing.
+- Unit tests for benchmark calculation algorithms across edge case score distributions.
 
 ## Risks
-- Complex layout regressions on desktop.
+- Database query performance on large attempt logs.
 
 ## Rollback Strategy
-- Revert to standard responsive Tailwind classes.
+- Fall back to static tier-based rank estimation in `AnalyticsService`.
 
 ## Completion Criteria
-- Platform is installable as a PWA.
-- All core flows (Roadmap, Player, Dashboard) are fully functional and aesthetic on mobile (375px+).
+- Global rank and percentile estimation calculates accurately from candidate data.
 
 ---
 
 ## QUEUED TASKS
-1. Peer Benchmarking System (Global rank estimation)
-2. Automated Flashcard Generation (AI-driven)
-3. Revision Streak Gamification (Retention engine)
-4. Advanced Mistake Clustering (Root cause analysis)
-5. Performance: Database Query Optimization & Caching
-6. Advanced Analytics Dashboard
-7. Adaptive Content Delivery (AI-tailored notes)
-8. Subject-Specific Mock Test Generation
-9. Multi-device State Sync (Reliability audit)
+1. Automated Flashcard Generation (AI-driven)
+2. Revision Streak Gamification (Retention engine)
+3. Advanced Mistake Clustering (Root cause analysis)
+4. Performance: Database Query Optimization & Caching
+5. Advanced Analytics Dashboard
+6. Adaptive Content Delivery (AI-tailored notes)
+7. Subject-Specific Mock Test Generation
+8. Multi-device State Sync (Reliability audit)
+9. Concept Map Visualizer (Interactive Graph)
 
 # Repository Health Audit
 - **Broken Systems**: None.
@@ -85,7 +78,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Technical Debt**: Standardized E2E auth mocking for tests.
 - **Missing Tests**: E2E coverage for the revision loop.
 - **Performance Issues**: Potential for N+1 queries in dashboard subject lists.
-- **Security Concerns**: Rate-limiting needed for AI endpoints.
+- **Security Concerns**: Rate-limiting implemented for `/api/ai/explain` via `RateLimitService` (10 req/10 min).
 - **Accessibility Concerns**: Needs a full ARIA audit.
 
 # Learning Engine State
@@ -98,13 +91,13 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 # AI Systems State
 - **Prompt Systems**: Structured prompts via `PromptEngine`.
 - **Retrieval Systems**: Context-aware grounding.
-- **Tutoring Systems**: Step-by-step technical derivations.
+- **Tutoring Systems**: Step-by-step technical derivations (Gemini 1.5 Flash).
 - **Memory Systems**: Basic attempt history.
 - **Recommendation Systems**: ROI-based roadmap generation.
 
 # UI/UX State
-- **Current Design Quality**: Elite SaaS aesthetics; PWA support added.
-- **UX Friction**: Minimized with mobile-responsive navigation.
+- **Current Design Quality**: Elite SaaS aesthetics; PWA support added; AI rate limit cards styled cleanly.
+- **UX Friction**: Minimized with mobile-responsive navigation and informative AI error handling.
 - **Inconsistencies**: Loading states in players.
 - **Accessibility Gaps**: Keyboard navigation not fully tested.
 - **Mobile Responsiveness**: High fidelity (375px - 4K).
@@ -121,10 +114,10 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Validation Coverage**: Zod/Prisma validation.
 - **Vulnerabilities**: None known.
 - **Secrets Handling**: `.env.example` provided.
-- **Rate Limiting**: Missing for AI endpoints.
+- **Rate Limiting**: Implemented via `RateLimitService` with standard HTTP 429 and retry headers.
 
 # Testing State
-- **Unit Coverage**: Core engines covered.
+- **Unit Coverage**: Core engines and services covered (22 tests passing).
 - **Integration Coverage**: 0%
 - **E2E Coverage**: Minimal (Playwright verification active for UI).
 
@@ -147,6 +140,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Architecture Ideas**: Move heavy batch jobs to Edge/Serverless functions.
 
 # Recently Completed Tasks
+- Rate Limiting for AI Routes (`RateLimitService`, HTTP 429, retry headers, UI handling)
 - Mobile-First UX Overhaul (PWA support)
 - Full FSRS v4 Rating Integration in PYQPlayer
 - FSRS Parameter Optimization (Auto-tuning weights)
@@ -166,16 +160,16 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - None reported.
 
 # Next 10 Priorities
-1. Rate Limiting for AI Routes
-2. Peer Benchmarking System
-3. Automated Flashcard Service
-4. Dashboard Performance Optimization
-5. CI/CD Pipeline Setup
-6. Advanced Mistake Clustering
-7. ARIA Accessibility Audit
-8. Subject Heatmap Component
-9. Global Search & Quick Navigation
-10. Multi-device State Sync
+1. Peer Benchmarking System
+2. Automated Flashcard Service
+3. Dashboard Performance Optimization
+4. CI/CD Pipeline Setup
+5. Advanced Mistake Clustering
+6. ARIA Accessibility Audit
+7. Subject Heatmap Component
+8. Global Search & Quick Navigation
+9. Multi-device State Sync
+10. Adaptive Content Delivery
 
 # Next 100 Improvements
 - [Detailed list suppressed for brevity, to be expanded in future runs]
@@ -234,3 +228,21 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 
 ### Next Recommended Actions
 - Implement Rate Limiting for AI Routes to protect API credits as mobile usage scales.
+
+## [2025-05-16 02:00:00]
+### Completed
+- Rate Limiting for AI Routes implemented.
+- Schema: Added `RateLimit` model to SQLite via Prisma schema.
+- Service: Created `RateLimitService` with window reset logic, threshold checks, and HTTP 429 header generation (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `Retry-After`).
+- Route Handler: Protected `/api/ai/explain` with sliding window rate limiter (10 requests / 10 mins per user).
+- UX: Updated `PYQPlayer` to gracefully display rate limit warnings with Gemini 1.5 Flash Analysis provider branding.
+- Tests: Added 6 unit tests covering `RateLimitService` check and header formatting (22 total tests passing).
+
+### Architecture Changes
+- Added Prisma-backed rate limiting service reusable across all current and future AI endpoints.
+
+### UX Findings
+- Informative "Limit Reached" error cards prevent user confusion when API limits are triggered.
+
+### Next Recommended Actions
+- Implement Peer Benchmarking System (Global rank estimation) to increase aspirant motivation.
