@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth/auth";
 import prisma from "@/lib/db/prisma";
 import { AnalyticsService } from "@/lib/services/AnalyticsService";
 import MasteryHeatmap from "@/components/dashboard/MasteryHeatmap";
-import { Activity, Flame, ShieldAlert, TrendingUp, Zap, Calendar } from "lucide-react";
+import { Activity, Flame, ShieldAlert, TrendingUp, Zap, Calendar, Users } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -11,7 +11,7 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session?.user?.id || "guest";
 
-  // Fetch real-time analytics
+  // Fetch real-time analytics including Peer Benchmarking stats
   const stats = await AnalyticsService.getOverallStats(userId);
 
   const calibrationLabel = stats.isCalibrated ? "Engine Active" : `Calibration: ${stats.calibrationProgress}/50`;
@@ -27,10 +27,39 @@ export default async function DashboardPage() {
   });
 
   const dashboardMetrics = [
-    { label: "Overall Mastery", value: `${stats.overallMastery}%`, icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
-    { label: "Revision Streak", value: `${stats.revisionStreak} Days`, icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
-    { label: "Critical Weaknesses", value: `${stats.criticalWeaknessesCount} Topics`, icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
-    { label: "Rank Estimation", value: stats.rankEstimation, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
+    {
+      label: "Overall Mastery",
+      value: `${stats.overallMastery}%`,
+      subValue: "Syllabus Coverage",
+      icon: Activity,
+      color: "text-brand-600",
+      bg: "bg-brand-50"
+    },
+    {
+      label: "Revision Streak",
+      value: `${stats.revisionStreak} Days`,
+      subValue: "Active Daily Recall",
+      icon: Flame,
+      color: "text-orange-500",
+      bg: "bg-orange-50"
+    },
+    {
+      label: "Critical Weaknesses",
+      value: `${stats.criticalWeaknessesCount} Topics`,
+      subValue: "Requires Targeted Drills",
+      icon: ShieldAlert,
+      color: "text-red-500",
+      bg: "bg-red-50"
+    },
+    {
+      label: "Rank Estimation",
+      value: stats.rankEstimation,
+      subValue: `Top ${stats.topPercentile}% (${stats.totalCandidates} Candidates)`,
+      subValueColor: "text-emerald-600",
+      icon: TrendingUp,
+      color: "text-emerald-500",
+      bg: "bg-emerald-50"
+    },
   ];
 
   return (
@@ -65,9 +94,14 @@ export default async function DashboardPage() {
                 <div className={cn("w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center shrink-0", stat.bg, stat.color)}>
                    <stat.icon className="w-6 h-6 md:w-7 md:h-7" />
                 </div>
-                <div>
-                   <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1">{stat.label}</p>
-                   <p className="text-xl md:text-2xl font-black text-slate-900">{stat.value}</p>
+                <div className="min-w-0 flex-1">
+                   <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1 truncate">{stat.label}</p>
+                   <p className="text-xl md:text-2xl font-black tracking-tighter text-slate-900 truncate">{stat.value}</p>
+                   {stat.subValue && (
+                     <p className={cn("text-[10px] font-bold mt-1 truncate", stat.subValueColor || "text-slate-400")}>
+                       {stat.subValue}
+                     </p>
+                   )}
                 </div>
              </div>
            ))}

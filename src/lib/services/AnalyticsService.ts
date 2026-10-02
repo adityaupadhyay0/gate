@@ -1,5 +1,6 @@
 import prisma from "@/lib/db/prisma";
 import { startOfDay, subDays, differenceInDays } from "date-fns";
+import { PeerBenchmarkingService } from "./PeerBenchmarkingService";
 
 export interface DashboardStats {
   overallMastery: number;
@@ -8,25 +9,21 @@ export interface DashboardStats {
   rankEstimation: string;
   isCalibrated: boolean;
   calibrationProgress: number;
+  topPercentile: number;
+  globalRank: number;
+  totalCandidates: number;
 }
 
 export class AnalyticsService {
   static async getOverallStats(userId: string): Promise<DashboardStats> {
-    const [progress, streak, weaknesses, user, attemptCount] = await Promise.all([
+    const [progress, streak, weaknesses, user, attemptCount, benchmark] = await Promise.all([
       this.calculateOverallMastery(userId),
       this.calculateStreak(userId),
       this.getCriticalWeaknesses(userId),
       prisma.user.findUnique({ where: { id: userId }, select: { diagnosticResult: true, fsrsWeights: true } }),
-      prisma.attempt.count({ where: { userId } })
+      prisma.attempt.count({ where: { userId } }),
+      PeerBenchmarkingService.getBenchmarkForUser(userId)
     ]);
-
-    let diagnosticData = null;
-    try {
-      diagnosticData = user?.diagnosticResult ? JSON.parse(user.diagnosticResult as string) : null;
-    } catch (e) {
-      console.error("Failed to parse diagnostic result:", e);
-    }
-    const rankEstimation = this.estimateRank(progress, diagnosticData);
 
     const isCalibrated = !!user?.fsrsWeights;
     const calibrationProgress = isCalibrated ? 50 : Math.min(attemptCount, 50);
@@ -35,9 +32,12 @@ export class AnalyticsService {
       overallMastery: progress,
       revisionStreak: streak,
       criticalWeaknessesCount: weaknesses.length,
-      rankEstimation,
+      rankEstimation: benchmark.rankEstimation,
       isCalibrated,
-      calibrationProgress
+      calibrationProgress,
+      topPercentile: benchmark.topPercentile,
+      globalRank: benchmark.rank,
+      totalCandidates: benchmark.totalUsers
     };
   }
 
@@ -144,24 +144,5 @@ export class AnalyticsService {
     });
 
     return Array.from(weakTopicIds);
-  }
-
-  private static estimateRank(mastery: number, diagnosticData: any): string {
-    if (!diagnosticData || !diagnosticData.strengthMap) return "Not Calibrated";
-
-    // Average strength across all 12 core subjects (0-100 scale)
-    const subjectStrengths = Object.values(diagnosticData.strengthMap) as number[];
-    const diagAvg = subjectStrengths.reduce((a, b) => a + b, 0) / 12;
-
-    // Heuristic: (Diagnostic Average * 0.4) + (Syllabus Coverage * 0.6)
-    // Both are on a 0-100 scale.
-    const overallScore = (diagAvg * 0.4) + (mastery * 0.6);
-
-    if (overallScore > 85) return "Top 100";
-    if (overallScore > 70) return "Top 500";
-    if (overallScore > 55) return "Top 2000";
-    if (overallScore > 40) return "Top 5000";
-    if (overallScore > 25) return "Top 10000";
-    return "Top 20000+";
   }
 }

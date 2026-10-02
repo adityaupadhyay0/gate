@@ -1,12 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AnalyticsService } from '../AnalyticsService';
+import { PeerBenchmarkingService } from '../PeerBenchmarkingService';
 import prisma from '../../db/prisma';
-import { startOfDay, subDays } from 'date-fns';
+import { subDays } from 'date-fns';
 
 vi.mock('../../db/prisma', () => ({
   default: {
     userProgress: {
       findMany: vi.fn(),
+      groupBy: vi.fn(),
+      aggregate: vi.fn(),
     },
     attempt: {
       findMany: vi.fn(),
@@ -19,8 +22,12 @@ vi.mock('../../db/prisma', () => ({
     },
     user: {
       findUnique: vi.fn(),
+      findMany: vi.fn(),
     },
     topic: {
+      count: vi.fn(),
+    },
+    subject: {
       count: vi.fn(),
     }
   },
@@ -29,6 +36,7 @@ vi.mock('../../db/prisma', () => ({
 describe('AnalyticsService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    PeerBenchmarkingService._clearCache();
   });
 
   describe('calculateOverallMastery', () => {
@@ -106,16 +114,21 @@ describe('AnalyticsService', () => {
         strengthMap: { "Algo": 90, "OS": 80 }
       });
       (prisma.user.findUnique as any).mockResolvedValue({ diagnosticResult: mockDiagnostic });
+      (prisma.user.findMany as any).mockResolvedValue([
+        { id: 'user-1', diagnosticResult: mockDiagnostic }
+      ]);
       (prisma.userProgress.findMany as any).mockResolvedValue(new Array(80).fill({ coverageScore: 1 }));
+      (prisma.userProgress.groupBy as any).mockResolvedValue([
+        { userId: 'user-1', _sum: { coverageScore: 80 } }
+      ]);
       (prisma.topic.count as any).mockResolvedValue(100);
+      (prisma.subject.count as any).mockResolvedValue(12);
       (prisma.attempt.findMany as any).mockResolvedValue([]);
       (prisma.mistakeLog.findMany as any).mockResolvedValue([]);
 
       const stats = await AnalyticsService.getOverallStats('user-1');
-      // mastery = 80/100 = 80%
-      // diagAvg = (90+80)/12 = 14.16
-      // overall = (14.16 * 0.4) + (80 * 0.6) = 5.66 + 48 = 53.66 -> "Top 5000" (since > 40)
-      expect(stats.rankEstimation).toBe("Top 5000");
+
+      expect(stats.rankEstimation).toBe("Top 100");
     });
   });
 
