@@ -3,14 +3,45 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
 import prisma from "@/lib/db/prisma";
 import { PromptEngine } from "@/lib/engines/PromptEngine";
+import { RateLimitService } from "@/lib/services/RateLimitService";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: Request) {
   // Session check to prevent unauthorized usage and cost drain
   const session = await auth();
-  if (!session?.user) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Rate Limiting: Max 10 requests per 10 minutes per user
+  const rateLimitKey = `ai_explain:${session.user.id}`;
+  const rateLimit = await RateLimitService.checkRateLimit({
+    key: rateLimitKey,
+    limit: 10,
+    windowMs: 10 * 60 * 1000 // 10 minutes
+  });
+
+  const headers = {
+    "X-RateLimit-Limit": rateLimit.limit.toString(),
+    "X-RateLimit-Remaining": rateLimit.remaining.toString(),
+    "X-RateLimit-Reset": rateLimit.resetInSeconds.toString()
+  };
+
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      {
+        error: `Rate limit exceeded. Please wait ${rateLimit.resetInSeconds} seconds before requesting another AI explanation.`,
+        retryAfter: rateLimit.resetInSeconds
+      },
+      {
+        status: 429,
+        headers: {
+          ...headers,
+          "Retry-After": rateLimit.resetInSeconds.toString()
+        }
+      }
+    );
   }
 
   try {
@@ -50,9 +81,12 @@ export async function POST(req: Request) {
     const result = await model.generateContent(prompt);
     const explanation = result.response.text();
 
-    return NextResponse.json({ explanation });
+    return NextResponse.json({ explanation }, { headers });
   } catch (error) {
     console.error("AI Explanation Error:", error);
-    return NextResponse.json({ error: "Failed to generate explanation" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to generate explanation" },
+      { status: 500, headers }
+    );
   }
 }

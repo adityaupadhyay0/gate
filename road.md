@@ -19,65 +19,56 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 ## ACTIVE TASK
 
-# Task: Mobile-First UX Overhaul (PWA support)
+# Task: Peer Benchmarking System (Global rank estimation)
 
 ## Priority
-High (Accessibility & Retention)
+High (Motivation & Realistic Assessment)
 
 ## Goal
-Transform the platform into a production-grade Progressive Web App (PWA) with a mobile-first UI, ensuring seamless learning on the go.
+Provide GATE aspirants with a realistic global rank estimation and percentile breakdown relative to all platform users based on diagnostic test performance and subject mastery.
 
 ## Why It Matters
-A large portion of GATE aspirants study during commutes or in short breaks. PWA support and mobile optimization are critical for maintaining high retention and providing a native-like experience without the friction of app stores.
+Aspirants need accurate feedback on where they stand relative to competitors across GATE CS subjects to adjust their preparation strategy dynamically.
 
 ## Scope
-- PWA Configuration (`manifest.ts`, icons).
-- Responsive Navigation (Mobile hamburger menu).
-- Mobile-optimized `PYQPlayer` (Touch-friendly targets, 2x2 rating grid).
-- Responsive Dashboard layout adjustments.
+- Global rank estimation engine.
+- Percentile distribution calculation.
+- UI benchmarking widgets on Dashboard and Diagnostic summary.
 
 ## Dependencies
-- Framer Motion for mobile animations.
-- Next.js Metadata API for PWA.
+- AnalyticsService / DiagnosticEngine for user mastery metrics.
 
 ## Implementation Plan
-1. Configure PWA manifest and assets.
-2. Implement mobile-responsive Navbar with animated drawer.
-3. Refactor `PYQPlayer` for better mobile ergonomics.
-4. Optimize Dashboard grid and spacing for small screens.
-5. Verify across responsive breakpoints.
+1. Design benchmarking calculation model using database-backed score aggregation.
+2. Build service helper for computing percentiles and estimated GATE rank ranges.
+3. Add benchmarking summary card to Dashboard UI with percentile badge.
+4. Write unit tests for rank estimation math.
+5. Validate performance on synthetic user distributions.
 
 ## UX Improvements
-- Smooth mobile transitions.
-- High-contrast touch targets.
-- Minimalist mobile navigation.
+- High-contrast percentile status indicator.
+- Minimalist ranking badge with clear comparison labels.
 
 ## Validation Strategy
-- Audit via Chrome DevTools (Lighthouse PWA).
-- Manual breakpoint testing.
-
-## Risks
-- Complex layout regressions on desktop.
-
-## Rollback Strategy
-- Revert to standard responsive Tailwind classes.
+- Unit tests for rank estimation algorithms.
+- Distribution boundary testing (0th, 50th, 99th percentiles).
 
 ## Completion Criteria
-- Platform is installable as a PWA.
-- All core flows (Roadmap, Player, Dashboard) are fully functional and aesthetic on mobile (375px+).
+- Users see live percentile and estimated rank on their dashboard.
+- All calculations are tested and performant.
 
 ---
 
 ## QUEUED TASKS
-1. Peer Benchmarking System (Global rank estimation)
-2. Automated Flashcard Generation (AI-driven)
-3. Revision Streak Gamification (Retention engine)
-4. Advanced Mistake Clustering (Root cause analysis)
-5. Performance: Database Query Optimization & Caching
-6. Advanced Analytics Dashboard
-7. Adaptive Content Delivery (AI-tailored notes)
-8. Subject-Specific Mock Test Generation
-9. Multi-device State Sync (Reliability audit)
+1. Automated Flashcard Generation (AI-driven)
+2. Revision Streak Gamification (Retention engine)
+3. Advanced Mistake Clustering (Root cause analysis)
+4. Performance: Database Query Optimization & Caching
+5. Advanced Analytics Dashboard
+6. Adaptive Content Delivery (AI-tailored notes)
+7. Subject-Specific Mock Test Generation
+8. Multi-device State Sync (Reliability audit)
+9. Global Search & Fast Command Palette
 
 # Repository Health Audit
 - **Broken Systems**: None.
@@ -85,7 +76,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Technical Debt**: Standardized E2E auth mocking for tests.
 - **Missing Tests**: E2E coverage for the revision loop.
 - **Performance Issues**: Potential for N+1 queries in dashboard subject lists.
-- **Security Concerns**: Rate-limiting needed for AI endpoints.
+- **Security Concerns**: Addressed with `RateLimitService` on AI routes.
 - **Accessibility Concerns**: Needs a full ARIA audit.
 
 # Learning Engine State
@@ -121,7 +112,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Validation Coverage**: Zod/Prisma validation.
 - **Vulnerabilities**: None known.
 - **Secrets Handling**: `.env.example` provided.
-- **Rate Limiting**: Missing for AI endpoints.
+- **Rate Limiting**: Implemented via `RateLimitService` (database-backed sliding window for `/api/ai/explain`).
 
 # Testing State
 - **Unit Coverage**: Core engines covered.
@@ -147,12 +138,12 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Architecture Ideas**: Move heavy batch jobs to Edge/Serverless functions.
 
 # Recently Completed Tasks
+- Rate Limiting for AI Routes (Database-backed window protection & 429 UI feedback)
 - Mobile-First UX Overhaul (PWA support)
 - Full FSRS v4 Rating Integration in PYQPlayer
 - FSRS Parameter Optimization (Auto-tuning weights)
 - Real-time Dashboard Analytics & Mastery Engine
 - Integrated AI Doubt Solver V2
-- Industrial-Grade Diagnostic Test Engine
 
 # Current Blockers
 - None.
@@ -234,3 +225,21 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 
 ### Next Recommended Actions
 - Implement Rate Limiting for AI Routes to protect API credits as mobile usage scales.
+
+## [2025-05-16 02:00:00]
+### Completed
+- Rate Limiting for AI Routes implemented.
+- Added `RateLimit` Prisma model (`key`, `count`, `windowStart`, `expiresAt`) with index on `[key, expiresAt]`.
+- Implemented `RateLimitService` for database-backed sliding window checking and automatic cleanup.
+- Updated `/api/ai/explain` route handler to enforce 10 requests per 10 minutes per user, returning HTTP 429 with standard headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `Retry-After`).
+- Updated `PYQPlayer` UI to display a user-friendly AI Service Notice when 429 rate limit is reached.
+- Written unit tests in `RateLimitService.test.ts` (19/19 tests passed).
+
+### Architecture Changes
+- Added persistent rate-limiting layer protecting LLM API integration.
+
+### UX Findings
+- Non-intrusive AI Service Notice banner keeps user informed without breaking question-solving flow.
+
+### Next Recommended Actions
+- Proceed with Peer Benchmarking System (Global rank estimation).
