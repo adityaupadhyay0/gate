@@ -2,7 +2,9 @@ export const dynamic = "force-dynamic";
 import { auth } from "@/lib/auth/auth";
 import prisma from "@/lib/db/prisma";
 import { AnalyticsService } from "@/lib/services/AnalyticsService";
+import { PeerBenchmarkingService } from "@/lib/services/PeerBenchmarkingService";
 import MasteryHeatmap from "@/components/dashboard/MasteryHeatmap";
+import PeerBenchmarkingCard from "@/components/dashboard/PeerBenchmarkingCard";
 import { Activity, Flame, ShieldAlert, TrendingUp, Zap, Calendar } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -11,20 +13,22 @@ export default async function DashboardPage() {
   const session = await auth();
   const userId = session?.user?.id || "guest";
 
-  // Fetch real-time analytics
-  const stats = await AnalyticsService.getOverallStats(userId);
-
-  const calibrationLabel = stats.isCalibrated ? "Engine Active" : `Calibration: ${stats.calibrationProgress}/50`;
-
-  const subjects = await prisma.subject.findMany({
-    include: {
-      topics: {
-        include: {
-          userProgress: { where: { userId } }
+  // Fetch real-time analytics & peer benchmark
+  const [stats, peerBenchmark, subjects] = await Promise.all([
+    AnalyticsService.getOverallStats(userId),
+    PeerBenchmarkingService.getUserBenchmark(userId),
+    prisma.subject.findMany({
+      include: {
+        topics: {
+          include: {
+            userProgress: { where: { userId } }
+          }
         }
       }
-    }
-  });
+    })
+  ]);
+
+  const calibrationLabel = stats.isCalibrated ? "Engine Active" : `Calibration: ${stats.calibrationProgress}/50`;
 
   const dashboardMetrics = [
     { label: "Overall Mastery", value: `${stats.overallMastery}%`, icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
@@ -72,6 +76,9 @@ export default async function DashboardPage() {
              </div>
            ))}
         </div>
+
+        {/* Global Peer Benchmarking Section */}
+        <PeerBenchmarkingCard benchmark={peerBenchmark} />
 
         <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 mb-6 md:mb-8 flex items-center gap-3">
            <Zap className="w-5 h-5 md:w-6 md:h-6 text-brand-500" />

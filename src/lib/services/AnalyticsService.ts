@@ -1,5 +1,6 @@
 import prisma from "@/lib/db/prisma";
 import { startOfDay, subDays, differenceInDays } from "date-fns";
+import { PeerBenchmarkingService } from "@/lib/services/PeerBenchmarkingService";
 
 export interface DashboardStats {
   overallMastery: number;
@@ -8,6 +9,8 @@ export interface DashboardStats {
   rankEstimation: string;
   isCalibrated: boolean;
   calibrationProgress: number;
+  percentile?: number;
+  topPercentile?: number;
 }
 
 export class AnalyticsService {
@@ -20,13 +23,25 @@ export class AnalyticsService {
       prisma.attempt.count({ where: { userId } })
     ]);
 
-    let diagnosticData = null;
+    let rankEstimation = "Not Calibrated";
+    let percentile = 0;
+    let topPercentile = 100;
+
     try {
-      diagnosticData = user?.diagnosticResult ? JSON.parse(user.diagnosticResult as string) : null;
+      const benchmark = await PeerBenchmarkingService.getUserBenchmark(userId);
+      rankEstimation = benchmark.rankLabel;
+      percentile = benchmark.percentile;
+      topPercentile = benchmark.topPercentile;
     } catch (e) {
-      console.error("Failed to parse diagnostic result:", e);
+      console.error("PeerBenchmarkingService fallback in getOverallStats:", e);
+      let diagnosticData = null;
+      try {
+        diagnosticData = user?.diagnosticResult ? JSON.parse(user.diagnosticResult as string) : null;
+      } catch (err) {
+        console.error("Failed to parse diagnostic result:", err);
+      }
+      rankEstimation = this.estimateRank(progress, diagnosticData);
     }
-    const rankEstimation = this.estimateRank(progress, diagnosticData);
 
     const isCalibrated = !!user?.fsrsWeights;
     const calibrationProgress = isCalibrated ? 50 : Math.min(attemptCount, 50);
@@ -37,7 +52,9 @@ export class AnalyticsService {
       criticalWeaknessesCount: weaknesses.length,
       rankEstimation,
       isCalibrated,
-      calibrationProgress
+      calibrationProgress,
+      percentile,
+      topPercentile
     };
   }
 
@@ -149,12 +166,14 @@ export class AnalyticsService {
   private static estimateRank(mastery: number, diagnosticData: any): string {
     if (!diagnosticData || !diagnosticData.strengthMap) return "Not Calibrated";
 
-    // Average strength across all 12 core subjects (0-100 scale)
     const subjectStrengths = Object.values(diagnosticData.strengthMap) as number[];
-    const diagAvg = subjectStrengths.reduce((a, b) => a + b, 0) / 12;
+    if (subjectStrengths.length === 0) return "Not Calibrated";
+
+    // Normalize across GATE syllabus subjects (12 core subjects)
+    const subjectCount = Math.max(12, subjectStrengths.length);
+    const diagAvg = subjectStrengths.reduce((a, b) => a + b, 0) / subjectCount;
 
     // Heuristic: (Diagnostic Average * 0.4) + (Syllabus Coverage * 0.6)
-    // Both are on a 0-100 scale.
     const overallScore = (diagAvg * 0.4) + (mastery * 0.6);
 
     if (overallScore > 85) return "Top 100";
