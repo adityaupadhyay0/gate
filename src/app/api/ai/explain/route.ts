@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
 import prisma from "@/lib/db/prisma";
 import { PromptEngine } from "@/lib/engines/PromptEngine";
+import { RateLimitService } from "@/lib/services/RateLimitService";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
@@ -11,6 +12,30 @@ export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const userId = session.user.id || session.user.email || "anonymous";
+  const rateLimitKey = `ai_explain:${userId}`;
+
+  // Enforce rate limiting (e.g. max 10 requests per 10 minutes)
+  const rateLimit = await RateLimitService.checkRateLimit(rateLimitKey, 10, 10 * 60 * 1000);
+
+  const headers = new Headers({
+    "X-RateLimit-Limit": rateLimit.limit.toString(),
+    "X-RateLimit-Remaining": rateLimit.remaining.toString(),
+    "X-RateLimit-Reset": rateLimit.resetAt.toISOString()
+  });
+
+  if (!rateLimit.success) {
+    headers.set("Retry-After", rateLimit.retryAfterSeconds.toString());
+    return NextResponse.json(
+      {
+        error: "Rate limit exceeded. Please wait before requesting another AI explanation.",
+        retryAfterSeconds: rateLimit.retryAfterSeconds,
+        resetAt: rateLimit.resetAt.toISOString()
+      },
+      { status: 429, headers }
+    );
   }
 
   try {
@@ -50,7 +75,7 @@ export async function POST(req: Request) {
     const result = await model.generateContent(prompt);
     const explanation = result.response.text();
 
-    return NextResponse.json({ explanation });
+    return NextResponse.json({ explanation }, { headers });
   } catch (error) {
     console.error("AI Explanation Error:", error);
     return NextResponse.json({ error: "Failed to generate explanation" }, { status: 500 });
