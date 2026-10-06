@@ -29,6 +29,8 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
   const [timer, setTimer] = useState(0);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [rateLimitResetTime, setRateLimitResetTime] = useState<string | null>(null);
 
   const currentPYQ = pyqs[currentIndex];
   const options = JSON.parse(currentPYQ.options || '[]');
@@ -81,13 +83,17 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
     setStartTime(Date.now());
     setTimer(0);
     setAiExplanation(null);
+    setAiError(null);
+    setRateLimitResetTime(null);
   };
 
   const getAiHelp = async () => {
     setIsAiLoading(true);
+    setAiError(null);
     try {
         const resp = await fetch('/api/ai/explain', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 pyqId: currentPYQ.id,
                 question: currentPYQ.question,
@@ -96,10 +102,27 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
                 userAnswer: selectedOption
             })
         });
+
         const data = await resp.json();
+
+        if (resp.status === 429) {
+            setAiError(data.error || "Rate limit exceeded. Please try again later.");
+            if (data.retryAfterSeconds) {
+                const retryMinutes = Math.ceil(data.retryAfterSeconds / 60);
+                setRateLimitResetTime(`${retryMinutes} minute${retryMinutes > 1 ? 's' : ''}`);
+            }
+            return;
+        }
+
+        if (!resp.ok) {
+            setAiError(data.error || "Failed to generate AI explanation.");
+            return;
+        }
+
         setAiExplanation(data.explanation);
     } catch (e) {
-        console.error(e);
+        console.error("AI Fetch Error:", e);
+        setAiError("Network error. Please check your connection and try again.");
     } finally {
         setIsAiLoading(false);
     }
@@ -281,7 +304,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
                  </div>
                  <div>
                     <h3 className="text-lg md:text-xl font-black">Technical Derivation</h3>
-                    <p className="text-[10px] font-bold text-brand-400 uppercase tracking-widest">Gemini 1.5 Pro Analysis</p>
+                    <p className="text-[10px] font-bold text-brand-400 uppercase tracking-widest">Gemini 1.5 Flash Analysis</p>
                  </div>
                  <button onClick={() => setAiExplanation(null)} className="ml-auto text-slate-500 hover:text-white">
                     <XCircle className="w-6 h-6" />
@@ -289,6 +312,38 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
               </div>
               <div className="prose prose-invert max-w-none font-medium leading-relaxed text-slate-300 text-sm md:text-base">
                  {aiExplanation.split('\n').map((line, i) => <p key={i}>{line}</p>)}
+              </div>
+           </motion.div>
+         )}
+
+         {aiError && (
+           <motion.div
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             exit={{ opacity: 0, y: 20 }}
+             className="bg-amber-500/10 border border-amber-500/30 rounded-2xl md:rounded-3xl p-6 md:p-8 text-white relative"
+           >
+              <div className="flex items-start gap-4">
+                 <div className="w-10 h-10 bg-amber-500/20 border border-amber-500/40 rounded-xl flex items-center justify-center text-amber-400 shrink-0">
+                    <Zap className="w-5 h-5" />
+                 </div>
+                 <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                       <h4 className="text-amber-400 font-bold text-sm md:text-base">AI Limit Reached</h4>
+                       <button onClick={() => setAiError(null)} className="text-slate-500 hover:text-white">
+                          <XCircle className="w-5 h-5" />
+                       </button>
+                    </div>
+                    <p className="text-slate-300 text-xs md:text-sm mt-1 leading-relaxed">
+                       {aiError}
+                    </p>
+                    {rateLimitResetTime && (
+                       <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-amber-500/10 border border-amber-500/20 rounded-lg text-[11px] font-bold text-amber-300">
+                          <Timer className="w-3.5 h-3.5" />
+                          Try again in ~{rateLimitResetTime}
+                       </div>
+                    )}
+                 </div>
               </div>
            </motion.div>
          )}
