@@ -19,65 +19,67 @@ To build the world's most advanced GATE CSE preparation platform, leveraging ada
 
 ## ACTIVE TASK
 
-# Task: Mobile-First UX Overhaul (PWA support)
+# Task: Peer Benchmarking System (Global rank estimation)
 
 ## Priority
-High (Accessibility & Retention)
+High (Motivation & Peer Relative Positioning)
 
 ## Goal
-Transform the platform into a production-grade Progressive Web App (PWA) with a mobile-first UI, ensuring seamless learning on the go.
+Implement a global peer benchmarking engine that calculates real-time candidate rank estimation and percentiles based on user mastery, diagnostic performance, and peer distributions.
 
 ## Why It Matters
-A large portion of GATE aspirants study during commutes or in short breaks. PWA support and mobile optimization are critical for maintaining high retention and providing a native-like experience without the friction of app stores.
+GATE CSE aspirants need to know where they stand relative to the entire candidate population. Standard static score metrics lack relative context; dynamic benchmarking builds motivation and clarifies actual exam readiness.
 
 ## Scope
-- PWA Configuration (`manifest.ts`, icons).
-- Responsive Navigation (Mobile hamburger menu).
-- Mobile-optimized `PYQPlayer` (Touch-friendly targets, 2x2 rating grid).
-- Responsive Dashboard layout adjustments.
+- `PeerBenchmarkingService.ts` for scoring formula `(Diagnostic Average * 0.4) + (Syllabus Coverage * 0.6)`.
+- Dynamic database subject count via Prisma.
+- Database-level aggregation using `prisma.userProgress.groupBy` for onboarded users (`onboardingComplete: true`).
+- Percentile calculation and GATE rank band mapping ("Top 100", "Top 500", etc.).
+- 10-minute in-memory distribution caching with `_clearCache()` for test isolation.
+- Integration into `AnalyticsService` and Dashboard UI with `tracking-tighter`, `font-black`, and `text-emerald-600` percentile highlights.
 
 ## Dependencies
-- Framer Motion for mobile animations.
-- Next.js Metadata API for PWA.
+- Prisma ORM 6.4.1.
+- `AnalyticsService`.
 
 ## Implementation Plan
-1. Configure PWA manifest and assets.
-2. Implement mobile-responsive Navbar with animated drawer.
-3. Refactor `PYQPlayer` for better mobile ergonomics.
-4. Optimize Dashboard grid and spacing for small screens.
-5. Verify across responsive breakpoints.
+1. Create `PeerBenchmarkingService.ts` with score calculation and caching logic.
+2. Integrate into `AnalyticsService.ts`.
+3. Enhance Dashboard UI (`src/app/dashboard/page.tsx`) with peer benchmarking component.
+4. Write unit tests in `src/lib/services/__tests__/PeerBenchmarkingService.test.ts`.
+5. Perform regression testing and validation.
 
 ## UX Improvements
-- Smooth mobile transitions.
-- High-contrast touch targets.
-- Minimalist mobile navigation.
+- Prominent Top Percentile badge with `text-emerald-600` styling.
+- Clear cohort comparison and subject-level relative performance.
 
 ## Validation Strategy
-- Audit via Chrome DevTools (Lighthouse PWA).
-- Manual breakpoint testing.
+- Unit tests for score formula, single/multi-user percentiles, dynamic subject counts, and caching.
+- Test suite verification (`npm test`).
 
 ## Risks
-- Complex layout regressions on desktop.
+- Database query overhead if aggregating all user progress directly without caching.
 
 ## Rollback Strategy
-- Revert to standard responsive Tailwind classes.
+- Revert to static `estimateRank` heuristic in `AnalyticsService`.
 
 ## Completion Criteria
-- Platform is installable as a PWA.
-- All core flows (Roadmap, Player, Dashboard) are fully functional and aesthetic on mobile (375px+).
+- `PeerBenchmarkingService` accurately computes percentiles and GATE rank bands against onboarded peer distribution.
+- Dashboard displays top percentile badges and cohort stats.
+- 100% test pass rate for service unit tests.
 
 ---
 
 ## QUEUED TASKS
-1. Peer Benchmarking System (Global rank estimation)
-2. Automated Flashcard Generation (AI-driven)
-3. Revision Streak Gamification (Retention engine)
-4. Advanced Mistake Clustering (Root cause analysis)
-5. Performance: Database Query Optimization & Caching
-6. Advanced Analytics Dashboard
-7. Adaptive Content Delivery (AI-tailored notes)
-8. Subject-Specific Mock Test Generation
-9. Multi-device State Sync (Reliability audit)
+1. Automated Flashcard Generation (AI-driven)
+2. Revision Streak Gamification (Retention engine)
+3. Advanced Mistake Clustering (Root cause analysis)
+4. Performance: Database Query Optimization & Caching
+5. Advanced Analytics Dashboard
+6. Adaptive Content Delivery (AI-tailored notes)
+7. Subject-Specific Mock Test Generation
+8. Multi-device State Sync (Reliability audit)
+9. Global Search & Fast Command Palette
 
 # Repository Health Audit
 - **Broken Systems**: None.
@@ -147,6 +149,7 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 - **Architecture Ideas**: Move heavy batch jobs to Edge/Serverless functions.
 
 # Recently Completed Tasks
+- Peer Benchmarking System (Global rank estimation)
 - Mobile-First UX Overhaul (PWA support)
 - Full FSRS v4 Rating Integration in PYQPlayer
 - FSRS Parameter Optimization (Auto-tuning weights)
@@ -234,3 +237,25 @@ A large portion of GATE aspirants study during commutes or in short breaks. PWA 
 
 ### Next Recommended Actions
 - Implement Rate Limiting for AI Routes to protect API credits as mobile usage scales.
+
+## [2025-05-16 02:15:00]
+### Completed
+- Peer Benchmarking System (Global rank estimation) implemented.
+- `PeerBenchmarkingService.ts` created for score formula `(Diagnostic Average * 0.4) + (Syllabus Coverage * 0.6)`.
+- Dynamic subject count fetched via Prisma `prisma.subject.count()`.
+- Database-level aggregation using `prisma.userProgress.groupBy` for onboarded users (`onboardingComplete: true`).
+- Percentile calculations (`topPercentile`, `overallPercentile`) and GATE rank band mapping ("Top 100", "Top 500", etc.).
+- 10-minute in-memory distribution caching with `_clearCache()` for test isolation.
+- Integrated into `AnalyticsService.ts` and enhanced Dashboard UI (`src/app/dashboard/page.tsx`) with global benchmarking card, `tracking-tighter` typography, and `text-emerald-600` percentile highlights.
+- Wrote unit tests in `PeerBenchmarkingService.test.ts` (100% test pass rate, 22/22 tests passing).
+
+### Architecture Changes
+- `AnalyticsService` delegates global cohort distribution logic to `PeerBenchmarkingService`.
+- N+1 query pattern avoided by batch-fetching user diagnostic results in single `prisma.user.findMany` call.
+
+### UX Findings
+- Prominent Top Percentile badge (`text-emerald-600`) and cohort progress visualizer provide immediate relative standing clarity.
+- `tracking-tighter` typography on key metrics improves readability and elite SaaS visual alignment.
+
+### Next Recommended Actions
+- Implement Automated Flashcard Generation (AI-driven) to accelerate concept reinforcement.
