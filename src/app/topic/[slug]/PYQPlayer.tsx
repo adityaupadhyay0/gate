@@ -12,7 +12,8 @@ import {
   ArrowRight,
   BrainCircuit,
   Loader2,
-  Zap
+  Zap,
+  AlertTriangle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ScientificCalculator from "@/components/ScientificCalculator";
@@ -29,6 +30,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
   const [timer, setTimer] = useState(0);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const currentPYQ = pyqs[currentIndex];
   const options = JSON.parse(currentPYQ.options || '[]');
@@ -81,13 +83,16 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
     setStartTime(Date.now());
     setTimer(0);
     setAiExplanation(null);
+    setAiError(null);
   };
 
   const getAiHelp = async () => {
     setIsAiLoading(true);
+    setAiError(null);
     try {
         const resp = await fetch('/api/ai/explain', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 pyqId: currentPYQ.id,
                 question: currentPYQ.question,
@@ -97,9 +102,16 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
             })
         });
         const data = await resp.json();
-        setAiExplanation(data.explanation);
+        if (!resp.ok) {
+            setAiError(data.error || "Failed to generate explanation");
+            setAiExplanation(null);
+        } else {
+            setAiExplanation(data.explanation);
+            setAiError(null);
+        }
     } catch (e) {
         console.error(e);
+        setAiError("A network error occurred while connecting to the AI tutor.");
     } finally {
         setIsAiLoading(false);
     }
@@ -268,6 +280,31 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
       </div>
 
       <AnimatePresence>
+         {aiError && (
+           <motion.div
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             exit={{ opacity: 0, y: 20 }}
+             className="premium-card p-6 md:p-8 bg-amber-950/40 border-amber-500/40 text-amber-200"
+           >
+              <div className="flex items-center gap-3 mb-3">
+                 <div className="w-8 h-8 md:w-10 md:h-10 bg-amber-500/20 rounded-lg md:rounded-xl flex items-center justify-center text-amber-400 shrink-0">
+                    <AlertTriangle className="w-5 h-5 md:w-6 md:h-6" />
+                 </div>
+                 <div>
+                    <h3 className="text-base md:text-lg font-black text-white">AI Assistant Quota Notice</h3>
+                    <p className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">Gemini 1.5 Flash Rate Limiter</p>
+                 </div>
+                 <button onClick={() => setAiError(null)} className="ml-auto text-amber-400/60 hover:text-white">
+                    <XCircle className="w-6 h-6" />
+                 </button>
+              </div>
+              <p className="text-sm md:text-base font-medium leading-relaxed text-amber-200/90 pl-11">
+                 {aiError}
+              </p>
+           </motion.div>
+         )}
+
          {aiExplanation && (
            <motion.div
              initial={{ opacity: 0, y: 20 }}
@@ -281,7 +318,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
                  </div>
                  <div>
                     <h3 className="text-lg md:text-xl font-black">Technical Derivation</h3>
-                    <p className="text-[10px] font-bold text-brand-400 uppercase tracking-widest">Gemini 1.5 Pro Analysis</p>
+                    <p className="text-[10px] font-bold text-brand-400 uppercase tracking-widest">Gemini 1.5 Flash Analysis</p>
                  </div>
                  <button onClick={() => setAiExplanation(null)} className="ml-auto text-slate-500 hover:text-white">
                     <XCircle className="w-6 h-6" />
