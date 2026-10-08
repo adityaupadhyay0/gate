@@ -177,6 +177,7 @@ const syllabus = [
 async function main() {
   console.log('Cleaning DB (Safe Way)...');
   const tableNames = [
+    'RateLimit',
     'MistakeClassificationRule',
     'MistakeLog',
     'Attempt',
