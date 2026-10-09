@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth/auth";
 import prisma from "@/lib/db/prisma";
 import { AnalyticsService } from "@/lib/services/AnalyticsService";
 import MasteryHeatmap from "@/components/dashboard/MasteryHeatmap";
+import PeerBenchmarkingCard from "@/components/dashboard/PeerBenchmarkingCard";
 import { Activity, Flame, ShieldAlert, TrendingUp, Zap, Calendar } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -27,16 +28,16 @@ export default async function DashboardPage() {
   });
 
   const dashboardMetrics = [
-    { label: "Overall Mastery", value: `${stats.overallMastery}%`, icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
-    { label: "Revision Streak", value: `${stats.revisionStreak} Days`, icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
-    { label: "Critical Weaknesses", value: `${stats.criticalWeaknessesCount} Topics`, icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
-    { label: "Rank Estimation", value: stats.rankEstimation, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
+    { label: "Overall Mastery", value: `${stats.overallMastery}%`, subValue: "Syllabus Progress", icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
+    { label: "Revision Streak", value: `${stats.revisionStreak} Days`, subValue: "Retention Target", icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
+    { label: "Critical Weaknesses", value: `${stats.criticalWeaknessesCount} Topics`, subValue: "High-Priority Fixes", icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
+    { label: "Rank Estimation", value: stats.rankEstimation, subValue: stats.benchmarking ? `Top ${stats.benchmarking.topPercentile}% Global` : "Diagnostic Rank", icon: TrendingUp, color: "text-emerald-600", bg: "bg-emerald-50", valueColor: "text-emerald-600" },
   ];
 
   return (
     <div className="min-h-screen pt-28 md:pt-32 pb-20 px-4 md:px-6 bg-slate-50/50">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 md:mb-12">
+      <div className="max-w-7xl mx-auto space-y-8 md:space-y-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
              <h1 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900 mb-2">Command Center</h1>
              <p className="text-slate-500 font-medium text-sm md:text-base">Real-time health map of your GATE preparation.</p>
@@ -59,7 +60,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 md:mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
            {dashboardMetrics.map((stat, i) => (
              <div key={i} className="glass-card p-5 md:p-6 flex items-center gap-4 md:gap-5">
                 <div className={cn("w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center shrink-0", stat.bg, stat.color)}>
@@ -67,46 +68,53 @@ export default async function DashboardPage() {
                 </div>
                 <div>
                    <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1">{stat.label}</p>
-                   <p className="text-xl md:text-2xl font-black text-slate-900">{stat.value}</p>
+                   <p className={cn("text-xl md:text-2xl font-black tracking-tighter", stat.valueColor || "text-slate-900")}>{stat.value}</p>
+                   {stat.subValue && <p className="text-[10px] font-medium text-slate-400 mt-0.5">{stat.subValue}</p>}
                 </div>
              </div>
            ))}
         </div>
 
-        <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 mb-6 md:mb-8 flex items-center gap-3">
-           <Zap className="w-5 h-5 md:w-6 md:h-6 text-brand-500" />
-           Subject Health Map
-        </h2>
+        {stats.benchmarking && (
+          <PeerBenchmarkingCard benchmarking={stats.benchmarking} />
+        )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {subjects.map((subject) => {
-             const completedCount = subject.topics.filter(t => t.userProgress[0]?.status === "Completed").length;
-             const progress = (completedCount / subject.topics.length) * 100;
+        <div>
+          <h2 className="text-xl md:text-2xl font-black tracking-tight text-slate-900 mb-6 md:mb-8 flex items-center gap-3">
+             <Zap className="w-5 h-5 md:w-6 md:h-6 text-brand-500" />
+             Subject Health Map
+          </h2>
 
-             return (
-               <Link key={subject.id} href="/roadmap" className="premium-card group hover:scale-[1.02] transition-transform duration-300 p-6">
-                  <div className="flex justify-between items-start mb-6">
-                     <h3 className="text-lg md:text-xl font-black text-slate-900 group-hover:text-brand-600 transition-colors leading-tight">{subject.name}</h3>
-                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0 ml-2">{completedCount}/{subject.topics.length}</span>
-                  </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {subjects.map((subject) => {
+               const completedCount = subject.topics.filter(t => t.userProgress[0]?.status === "Completed").length;
+               const progress = (completedCount / subject.topics.length) * 100;
 
-                  <div className="relative h-2.5 bg-slate-100 rounded-full overflow-hidden mb-8">
-                     <div
-                        className="absolute inset-y-0 left-0 bg-brand-600 transition-all duration-1000"
-                        style={{ width: `${progress}%` }}
-                     />
-                  </div>
+               return (
+                 <Link key={subject.id} href="/roadmap" className="premium-card group hover:scale-[1.02] transition-transform duration-300 p-6">
+                    <div className="flex justify-between items-start mb-6">
+                       <h3 className="text-lg md:text-xl font-black text-slate-900 group-hover:text-brand-600 transition-colors leading-tight">{subject.name}</h3>
+                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0 ml-2">{completedCount}/{subject.topics.length}</span>
+                    </div>
 
-                  <div className="space-y-4">
-                     <div className="flex justify-between items-center text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-400">
-                        <span>Topic Mastery Heatmap</span>
-                        <span className="text-brand-600">{Math.round(progress)}% Coverage</span>
-                     </div>
-                     <MasteryHeatmap topics={subject.topics} />
-                  </div>
-               </Link>
-             )
-          })}
+                    <div className="relative h-2.5 bg-slate-100 rounded-full overflow-hidden mb-8">
+                       <div
+                          className="absolute inset-y-0 left-0 bg-brand-600 transition-all duration-1000"
+                          style={{ width: `${progress}%` }}
+                       />
+                    </div>
+
+                    <div className="space-y-4">
+                       <div className="flex justify-between items-center text-[9px] md:text-[10px] font-black uppercase tracking-widest text-slate-400">
+                          <span>Topic Mastery Heatmap</span>
+                          <span className="text-brand-600">{Math.round(progress)}% Coverage</span>
+                       </div>
+                       <MasteryHeatmap topics={subject.topics} />
+                    </div>
+                 </Link>
+               )
+            })}
+          </div>
         </div>
       </div>
     </div>
