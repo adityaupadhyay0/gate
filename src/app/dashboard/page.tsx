@@ -27,10 +27,41 @@ export default async function DashboardPage() {
   });
 
   const dashboardMetrics = [
-    { label: "Overall Mastery", value: `${stats.overallMastery}%`, icon: Activity, color: "text-brand-600", bg: "bg-brand-50" },
-    { label: "Revision Streak", value: `${stats.revisionStreak} Days`, icon: Flame, color: "text-orange-500", bg: "bg-orange-50" },
-    { label: "Critical Weaknesses", value: `${stats.criticalWeaknessesCount} Topics`, icon: ShieldAlert, color: "text-red-500", bg: "bg-red-50" },
-    { label: "Rank Estimation", value: stats.rankEstimation, icon: TrendingUp, color: "text-emerald-500", bg: "bg-emerald-50" },
+    {
+      label: "Overall Mastery",
+      value: `${stats.overallMastery}%`,
+      subValue: "Syllabus Coverage",
+      icon: Activity,
+      color: "text-brand-600",
+      bg: "bg-brand-50"
+    },
+    {
+      label: "Revision Streak",
+      value: `${stats.revisionStreak} Days`,
+      subValue: stats.revisionStreak > 0 ? "Active Practice" : "Start Revision",
+      icon: Flame,
+      color: "text-orange-500",
+      bg: "bg-orange-50"
+    },
+    {
+      label: "Critical Weaknesses",
+      value: `${stats.criticalWeaknessesCount} Topics`,
+      subValue: "Needs Focus",
+      icon: ShieldAlert,
+      color: "text-red-500",
+      bg: "bg-red-50"
+    },
+    {
+      label: "Rank Estimation",
+      value: stats.rankEstimation,
+      subValue: stats.peerMetrics?.isCalibrated
+        ? stats.peerMetrics.percentileHighlight
+        : "Cohort Standings",
+      subValueColor: "text-emerald-600 font-bold",
+      icon: TrendingUp,
+      color: "text-emerald-500",
+      bg: "bg-emerald-50"
+    },
   ];
 
   return (
@@ -67,7 +98,12 @@ export default async function DashboardPage() {
                 </div>
                 <div>
                    <p className="text-[10px] md:text-xs font-black uppercase tracking-widest text-slate-400 mb-0.5 md:mb-1">{stat.label}</p>
-                   <p className="text-xl md:text-2xl font-black text-slate-900">{stat.value}</p>
+                   <p className="text-xl md:text-2xl font-black tracking-tighter text-slate-900">{stat.value}</p>
+                   {stat.subValue && (
+                     <p className={cn("text-[10px] font-bold uppercase tracking-wider mt-0.5", stat.subValueColor || "text-slate-400")}>
+                       {stat.subValue}
+                     </p>
+                   )}
                 </div>
              </div>
            ))}
