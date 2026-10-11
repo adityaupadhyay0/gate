@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
 import prisma from "@/lib/db/prisma";
 import { PromptEngine } from "@/lib/engines/PromptEngine";
+import { RateLimitService } from "@/lib/services/RateLimitService";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
@@ -11,6 +12,27 @@ export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const userId = session.user.id || session.user.email || "anonymous";
+
+  // Enforce Rate Limiting (10 requests per 10 minutes)
+  const rateLimit = await RateLimitService.checkLimit(`ai_explain:${userId}`, {
+    limit: 10,
+    windowSeconds: 600,
+  });
+
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      {
+        error: "Rate limit exceeded. Please try again later.",
+        retryAfter: rateLimit.resetInSeconds,
+      },
+      {
+        status: 429,
+        headers: rateLimit.headers,
+      }
+    );
   }
 
   try {
@@ -27,10 +49,10 @@ export async function POST(req: Request) {
           metadata: true,
           topic: {
             include: {
-              summaries: true
-            }
-          }
-        }
+              summaries: true,
+            },
+          },
+        },
       });
       metadata = pyq?.metadata;
       summary = pyq?.topic?.summaries;
@@ -44,15 +66,21 @@ export async function POST(req: Request) {
       answer,
       userAnswer,
       metadata,
-      summary
+      summary,
     });
 
     const result = await model.generateContent(prompt);
     const explanation = result.response.text();
 
-    return NextResponse.json({ explanation });
+    return NextResponse.json(
+      { explanation },
+      { headers: rateLimit.headers }
+    );
   } catch (error) {
     console.error("AI Explanation Error:", error);
-    return NextResponse.json({ error: "Failed to generate explanation" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to generate explanation" },
+      { status: 500, headers: rateLimit.headers }
+    );
   }
 }
