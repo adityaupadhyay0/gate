@@ -200,3 +200,11 @@ model MistakeClassificationRule {
   rootCause          String
   precomputedAt      DateTime @default(now())
 }
+
+model RateLimit {
+  id          String   @id @default(cuid())
+  identifier  String   @unique
+  count       Int      @default(1)
+  windowStart DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
