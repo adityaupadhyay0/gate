@@ -28,6 +28,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
   const [startTime, setStartTime] = useState(Date.now());
   const [timer, setTimer] = useState(0);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
   const currentPYQ = pyqs[currentIndex];
@@ -81,10 +82,12 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
     setStartTime(Date.now());
     setTimer(0);
     setAiExplanation(null);
+    setAiError(null);
   };
 
   const getAiHelp = async () => {
     setIsAiLoading(true);
+    setAiError(null);
     try {
         const resp = await fetch('/api/ai/explain', {
             method: 'POST',
@@ -97,9 +100,17 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
             })
         });
         const data = await resp.json();
-        setAiExplanation(data.explanation);
+
+        if (!resp.ok) {
+            setAiError(data.error || "Failed to retrieve AI derivation.");
+            setAiExplanation(null);
+        } else {
+            setAiExplanation(data.explanation);
+            setAiError(null);
+        }
     } catch (e) {
         console.error(e);
+        setAiError("A network error occurred while contacting AI service.");
     } finally {
         setIsAiLoading(false);
     }
@@ -268,6 +279,30 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
       </div>
 
       <AnimatePresence>
+         {aiError && (
+           <motion.div
+             initial={{ opacity: 0, y: 20 }}
+             animate={{ opacity: 1, y: 0 }}
+             exit={{ opacity: 0, y: 20 }}
+             className="premium-card p-6 md:p-8 bg-rose-950/40 border-rose-500/40 text-white flex items-start gap-4"
+           >
+              <div className="w-10 h-10 bg-rose-500/20 border border-rose-500/30 rounded-xl flex items-center justify-center text-rose-400 shrink-0">
+                 <XCircle className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                 <h4 className="text-rose-400 text-[10px] font-black uppercase tracking-widest mb-1">
+                    Rate Limit / Request Notice
+                 </h4>
+                 <p className="text-slate-200 text-sm font-semibold leading-relaxed">
+                    {aiError}
+                 </p>
+              </div>
+              <button onClick={() => setAiError(null)} className="text-slate-400 hover:text-white">
+                 <XCircle className="w-5 h-5" />
+              </button>
+           </motion.div>
+         )}
+
          {aiExplanation && (
            <motion.div
              initial={{ opacity: 0, y: 20 }}
@@ -281,7 +316,7 @@ export default function PYQPlayer({ pyqs, topicSlug }: { pyqs: any[], topicSlug:
                  </div>
                  <div>
                     <h3 className="text-lg md:text-xl font-black">Technical Derivation</h3>
-                    <p className="text-[10px] font-bold text-brand-400 uppercase tracking-widest">Gemini 1.5 Pro Analysis</p>
+                    <p className="text-[10px] font-bold text-brand-400 uppercase tracking-widest">Gemini 1.5 Flash Analysis</p>
                  </div>
                  <button onClick={() => setAiExplanation(null)} className="ml-auto text-slate-500 hover:text-white">
                     <XCircle className="w-6 h-6" />
